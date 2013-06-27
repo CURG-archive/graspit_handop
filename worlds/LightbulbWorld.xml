@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<world>
+	<obstacle>
+		<filename>/cgdb/HarvardObstacles/lightbulb_obstacle.xml</filename>
+		<transform>
+			<fullTransform>(+1 +0 +0 +0)[+0 +0 +0]</fullTransform>
+		</transform>
+	</obstacle>
+	<graspableBody>
+		<filename>/cgdb/HarvardObjects/lightbulb.xml</filename>
+		<transform>
+			<fullTransform>(+1 +0 +0 +0)[+0 +0 +0]</fullTransform>
+		</transform>
+	</graspableBody>
+</world>

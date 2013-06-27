@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<world>
+	<obstacle>
+		<filename>models/obstacles/zeroplane.xml</filename>
+		<transform>
+			<fullTransform>(+1 +0 +0 +0)[+0 +0 +0]</fullTransform>
+		</transform>
+	</obstacle>
+	<graspableBody>
+		<filename>cgdb/arm/darpaflashlight.xml</filename>
+		<transform>
+			<fullTransform>(+0.99996 -0.00853521 +0.00249451 +0.00118383)[+0.718556 +1.66769 +109.94]</fullTransform>
+		</transform>
+	</graspableBody>
+	<camera>
+		<position>+1187.4 -296.58 +3.3841</position>
+		<orientation>-0.568262 -0.491378 -0.37976 -0.539823</orientation>
+		<focalDistance>+1234.15</focalDistance>
+	</camera>
+</world>

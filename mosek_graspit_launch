@@ -1,0 +1,9 @@
+#!/bin/bash
+export GRASPIT=$PWD
+#INSERT MOSEK DIRECTORY HERE
+export LD_LIBRARY_PATH=$PWD/mosek_lib/
+export CGDB_MODEL_ROOT=$GRASPIT/cgdb
+export GRASPIT_WAIT_DISPLAY_LEN=0
+export GRASPIT_QUIT_ON_TASK_COMPLETE=NO #YES|anything else
+./bin/graspit 
+

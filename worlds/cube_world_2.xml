@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<world>
+	<graspableBody>
+		<filename>models/objects/cube.xml</filename>
+		<transform>
+			<fullTransform>(+1 +0 +0 +0)[+0 +0 +0]</fullTransform>
+		</transform>
+	</graspableBody>
+	<robot>
+		<filename>models/robots/Eigenhand Lite Model VRML/Eigenhand_autograsp.xml</filename>
+		<dofValues>+0 +0 +0.673743 +0 +0.49921 +0 +0 +0 +0.614681 +0 +0.440148 +0 +0 +0 +0.614681 +0 +0.440148 +0 +0 +0 +0.673743 +0 +0.49921 +0 </dofValues>
+		<transform>
+			<fullTransform>(+1 +0 +1 +0)[+0 -153.009 +0]</fullTransform>
+		</transform>
+	</robot>
+	<camera>
+		<position>-388.514 +55.4312 +749.249</position>
+		<orientation>+0 -0.23691 +0 +0.971532</orientation>
+		<focalDistance>+843.989</focalDistance>
+	</camera>
+</world>

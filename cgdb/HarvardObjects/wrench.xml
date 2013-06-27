@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<root>
+        <material>metal</material>
+	<mass>500.0</mass>
+ 	<scale>1.0</scale> 
+	<geometryFile type="Inventor">wrench.wrl</geometryFile>
+</root>

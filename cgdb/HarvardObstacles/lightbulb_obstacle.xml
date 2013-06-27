@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<root>
+	<mass>50.0</mass>
+ 	<scale>1.0</scale> 
+	<geometryFile type="Inventor">lightbulb_obstacle.wrl</geometryFile>
+</root>

@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<world>
+	<graspableBody>
+		<filename>/cgdb/HarvardObjects/stapler.xml</filename>
+		<transform>
+			<fullTransform>(+1 +0 +0 +0)[+0 +0 +0]</fullTransform>
+		</transform>
+	</graspableBody>
+	<obstacle>
+		<filename>/cgdb/HarvardObstacles/stapler_obstacle.xml</filename>
+		<transform>
+			<fullTransform>(+1 +0 +0 +0)[+0 +0 +0]</fullTransform>
+		</transform>
+	</obstacle>
+</world>

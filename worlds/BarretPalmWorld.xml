@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<world>
+	<graspableBody>
+		<filename>models/robots/NewBarrett/iv/palm.xml</filename>
+		<transform>
+			<fullTransform>(+1 +0 +0 +0)[+0 +0 +0]</fullTransform>
+		</transform>
+	</graspableBody>
+	<obstacle>
+		<filename>models/obstacles/zeroplane.xml</filename>
+		<transform>
+			<fullTransform>(+1 +0 +0 +0)[+0 +0 -1]</fullTransform>
+		</transform>
+	</obstacle>
+	<camera>
+		<position>+0 +0 +465.836</position>
+		<orientation>+0 +0 +0 +1</orientation>
+		<focalDistance>+470.962</focalDistance>
+	</camera>
+</world>

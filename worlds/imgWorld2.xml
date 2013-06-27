@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<world>
+	<obstacle>
+		<filename>models/obstacles/zeroplane.xml</filename>
+		<transform>
+			<fullTransform>(+1 +0 +0 +0)[+0 +0 +0]</fullTransform>
+		</transform>
+	</obstacle>
+	<graspableBody>
+		<filename>models/objects/flask.xml</filename>
+		<transform>
+			<fullTransform>(+1 +0 +0 +0)[+0 +0 +70.94]</fullTransform>
+		</transform>
+	</graspableBody>
+	<camera>
+		<position>+210.176 +114.108 +268.968</position>
+		<orientation>-0.223953 -0.402321 -0.749504 -0.475633</orientation>
+		<focalDistance>+292.552</focalDistance>
+	</camera>
+</world>

@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<root>
+	<mass>500.0</mass>
+ 	<scale>700</scale> 
+	<geometryFile type="Inventor">screwdriver.wrl</geometryFile>
+</root>

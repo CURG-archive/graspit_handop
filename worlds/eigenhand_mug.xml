@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<world>
+	<graspableBody>
+		<filename>models/objects/mug.xml</filename>
+		<transform>
+			<fullTransform>(+1 +0 +0 +0)[+0 +0 +0]</fullTransform>
+		</transform>
+	</graspableBody>
+	<robot>
+		<filename>models/robots/Eigenhand Lite Model VRML/Eigenhand_autograsp.xml</filename>
+		<dofValues>+0 +0 +0 +0 +0 +0 +0 +0 +0 +0 +0 +0 +0 +0 +0 +0 +0 +0 +0 +0 +0 +0 +0 +0 </dofValues>
+		<transform>
+			<fullTransform>(+1 +0 +0 +0)[-9.4917 -168.059 +0]</fullTransform>
+		</transform>
+	</robot>
+	<camera>
+		<position>+0 +55.4312 +496.778</position>
+		<orientation>+0 +0 +0 +1</orientation>
+		<focalDistance>+496.778</focalDistance>
+	</camera>
+</world>

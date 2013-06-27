@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<world>
+	<graspableBody>
+		<filename>/cgdb/HarvardObjects/bowl.xml</filename>
+		<transform>
+			<fullTransform>(+1 +0 +0 +0)[+0 +0 +0]</fullTransform>
+		</transform>
+	</graspableBody>
+</world>

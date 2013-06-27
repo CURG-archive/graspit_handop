@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<root>
+	<material>metal</material>
+        <scale>500.0</scale>
+	<mass>50</mass>
+        <geometryFile type="Inventor">doorknob.wrl</geometryFile>
+</root>

@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<world>
+	<obstacle>
+		<filename>models/obstacles/zeroplane.xml</filename>
+		<transform>
+			<fullTransform>(+1 +0 +0 +0)[+0 +0 +7]</fullTransform>
+		</transform>
+	</obstacle>
+	<graspableBody>
+		<filename>cgdb/arm/darpahammer.xml</filename>
+		<transform>
+			<fullTransform>(+1 +0 +0 +0)[+0 +0 +202]</fullTransform>
+		</transform>
+	</graspableBody>
+<!--bottom view z	<camera>
+		<position>+0 +0 -128.896</position>
+		<orientation>+0 +0 -1 +0</orientation>
+		<focalDistance>+303.952</focalDistance>
+	</camera>-->
+	<camera>
+		<position>+0 -128.896 0</position>
+		<orientation>+0 -1 +0 +0</orientation>
+		<focalDistance>+303.952</focalDistance>
+		</camera>
+</world>

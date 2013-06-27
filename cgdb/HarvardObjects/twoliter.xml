@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<root>
+        <material>plastic</material>
+	<mass>1200.0</mass>
+ 	<scale>1</scale> 
+	<geometryFile type="Inventor">twoliter.wrl</geometryFile>
+</root>

@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<root>
+	<mass>500</mass>
+ 	<scale>0.001</scale> 
+	<geometryFile type="Inventor">hammer_obstacle.wrl</geometryFile>
+</root>
