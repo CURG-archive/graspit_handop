@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<robot type="Hand">
+  <palm>palmcirc.xml</palm>
+    <approachDirection>
+        <referenceLocation>0 0 0</referenceLocation>
+        <direction>0 1 0</direction>
+    </approachDirection>
+    <virtualContacts>virtual/dynamic_palm_virtual_contacts.vgr</virtualContacts>
+</robot>
