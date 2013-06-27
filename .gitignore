@@ -1,0 +1,251 @@
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+# Logs and databases #
+######################
+*.log
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+\#*\#
+
+####################
+#emacs files
+*~
+
+####################
+#random garbage
+*backup
+*orig
+*bak
+
+
+#Other repos
+.svn
+.hg
+.hgignore
+.svnignore
+.hgtags
+
+#QT files
+ui_*
+moc_*
+.moc
+
+##########################
+#unneeded models
+models/robots/Eigenhand/Eigenhand/Previous Models/
+models/robots/Barrett/Barrett2.xml
+models/robots/Barrett/Barrett3.xml
+models/robots/Barrett/Barrett4.xml
+models/robots/Barrett/Barrett5.xml
+models/robots/Barrett/Barrett6.xml
+models/robots/Barrett/Barrett7.xml
+
+mosek_lib
+REARM*
+*Eigenhand_old*
+robotTools.*
+
+#Python files
+*.pyc
+
+*.sldprt
+*Previous\ Models*
+*Old VGR*
+hands.wld
+hands.xml
+M7.wld
+M7.xml
+Makefile
+.hgignore
+src/DBase/Tasks/harvardHandPlanningTask.h
+images
+
+#########################
+#visual studio nonesense
+*.idb
+*.pdb
+logfile*
+Debug
+Release
+Speed
+
+project.hg
+qmake_image_collection.cpp
+
+utilities
+qhull
+
+matlab
+
+
+########################
+#Experimental scripts
+scripts/build
+*.npy
+kill_script.py
+graspit_dispatcher.py
+reset_job.py
+reset.sql
+pip-log.txt
+eigenhand_optimization_300_gens.dat
+bin
+
+mk_windows.bat
+
+
+
+######################
+#Excess robot files
+models/robots/ACT/
+models/robots/Barrett/
+models/robots/DLR/
+models/robots/Eigenhand Lite Model VRML/Eigenhand Old.xml
+models/robots/Eigenhand Lite Model VRML/Eigenhand v1.3 - ORIGINAL.xml
+models/robots/Eigenhand Lite Model VRML/Eigenhand v1.3-test.xml
+models/robots/Eigenhand Lite Model VRML/Eigenhand v1.3-test2.xml
+models/robots/Eigenhand Lite Model VRML/Eigenhand v1.3-test3.xml
+models/robots/Eigenhand Lite Model VRML/Eigenhand v1.3.xml
+models/robots/Eigenhand Lite Model VRML/EigenhandStock.xml
+models/robots/Eigenhand Lite Model VRML/Eigenhand_autograsp.xml
+models/robots/Eigenhand Lite Model VRML/Eigenhandv0.xml
+models/robots/Eigenhand Lite Model VRML/Eigenhandv1.xml
+models/robots/Eigenhand Lite Model VRML/Eigenhandv2.xml
+models/robots/Eigenhand Lite Model VRML/Eigenhandv3.xml
+models/robots/Eigenhand Lite Model VRML/iv/palm.wrl
+models/robots/Eigenhand Lite Model VRML/iv/palm.xml
+models/robots/Eigenhand Lite Model VRML/virtual/contactpointsv3.vgr
+models/robots/Eigenhand Lite Model VRML/virtual/contactpointsv3lite.vgr
+models/robots/Eigenhand Lite Model VRML/virtual/contactpointsv4lite.vgr
+models/robots/Eigenhand Lite Model VRML/virtual/eigenhandcontacts.vgr
+models/robots/Eigenhand Lite Model VRML/virtual/eigenhandcontacts2.1.vgr
+models/robots/Eigenhand Lite Model VRML/virtual/eigenhandcontacts2.vgr
+models/robots/Eigenhand/Eigenhandc3.back
+models/robots/Eigenhand/Eigenhandv1.xml
+models/robots/Eigenhand/Eigenhandv2.xml
+models/robots/Eigenhand/Eigenhandv3.xml
+models/robots/Eigenhand/Eigenhandv3_real.xml
+models/robots/Eigenhand/Eigenhandv4.xml
+models/robots/Eigenhand/Eigenhandv5 (0th design).xml
+models/robots/Eigenhand/Eigenhandv5 (1st redesign).xml
+models/robots/Eigenhand/Eigenhandv5 (2nd redesign).xml
+models/robots/Eigenhand/Eigenhandv5 (3rd redesign).xml
+models/robots/Eigenhand/Eigenhandv5 (4th redesign).xml
+models/robots/Eigenhand/Eigenhandv5 (5th redesign).xml
+models/robots/Eigenhand/Eigenhandv5 (6th redesign).xml
+models/robots/Eigenhand/Eigenhandv5 (7th redesign - current).xml
+models/robots/Eigenhand/Eigenhandv5 Stock.xml
+models/robots/Eigenhand/Eigenhandv5.xml
+models/robots/Eigenhand/Eigenhandv5pc1-1.xml
+models/robots/Eigenhand/Eigenhandv5pc1-2.xml
+models/robots/Eigenhand/Eigenhandv5pc1-3.xml
+models/robots/Eigenhand/Eigenhandv5pc1-4.xml
+models/robots/Eigenhand/Eigenhandv5pc1-5.xml
+models/robots/Eigenhand/Eigenhandv5pc1-6.xml
+models/robots/Eigenhand/adelallera_eigenhand1.xml
+models/robots/Eigenhand/adelallera_eigenhand1_edit.txt
+models/robots/Eigenhand/adelallera_eigenhand1_edit.xml
+models/robots/Eigenhand/adelallera_eigenhand_ORIGINAL.xml
+models/robots/Eigenhand/chain_1.xml
+models/robots/Eigenhand/dynamic_link.xml
+models/robots/Eigenhand/dynamic_link6.xml
+models/robots/Eigenhand/eigen/
+models/robots/Eigenhand/iv/
+models/robots/Eigenhand/virtual/
+models/robots/HarvardFinger2/
+models/robots/HumanFinger/
+models/robots/HumanHand/
+models/robots/Kanguera/
+models/robots/Karlsruhe/
+models/robots/Kth-Columbia/
+models/robots/Kthand/
+models/robots/M7body/
+models/robots/M7tool/
+models/robots/McHand/
+models/robots/MekaHand/
+models/robots/MonkeyHand/
+models/robots/NewBarrett/
+models/robots/Puma560/
+models/robots/Robonaut/
+models/robots/Rutgers/
+models/robots/ShadowHand/
+models/robots/SimpleArm/
+models/robots/TX60L/
+models/robots/XR4000/
+models/robots/cobra_gripper/
+models/robots/cobra_gripper_fixed/
+models/robots/columbia_hand test.zip
+models/robots/columbia_hand test/
+models/robots/harvardHand/
+models/robots/pr2_gripper/
+models/robots/puma_gripper/
+models/robots/snake.xml
+models/robots/snake_2_units/
+models/robots/snake_lower/
+models/robots/snake_upper/
+models/robots/snake_with_gripper/
+models/robots/snake_with_gripper_2_units/
+models/robots/tri_gripper/
+models/robots/tri_gripper_0.5/
+
+#######################
+# unused objects
+
+models/objects/IROS08/
+models/objects/acone.iv.lnk
+models/objects/acuboid.iv.lnk
+models/objects/acyl.iv.lnk
+models/objects/ashtray.IV
+models/objects/asphere.iv.lnk
+models/objects/graspStage/
+models/objects/plated/
+models/objects/primitives/
+models/objects/soap.IV
+cgdb/HarvardObjects/ReadMe.txt
+cgdb/HarvardObjects/VRML 1.0/
+cgdb/HarvardObjects/VRML 97/
+cgdb/HarvardObstacles/VRML 1.0/
+cgdb/HarvardObstacles/VRML 97/
+cgdb/arm/
+cgdb/model_database
+cgdb/models
+cgdb/psb/
+
+
+##########################
+#Random garbage
+cgdb_install
+colladaconverter
+condor_scripts
+debug_launch
+doc
+eigengrids
+graspit_launch_template
+hardware
+images.tmp
+insertnewobjectgrasps
+launch_set_display
+misc
+HarvardGlassDyn.xml
+cgdb_install.txt
+xmlconverter
+update_graspit_databases
+rosnode
+mk_win.bat
+mk_linux_template
+
+
+
