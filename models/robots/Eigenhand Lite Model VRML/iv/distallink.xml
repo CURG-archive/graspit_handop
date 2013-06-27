@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<root>
+    <material>rubber</material>
+    <youngs>9.0</youngs>
+    <mass>20.0</mass>
+    <geometryFile>distallink.wrl</geometryFile>
+</root>

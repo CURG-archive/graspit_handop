@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<root>
+    <material>plastic</material>
+    <youngs>9.0</youngs>
+    <mass>5.0</mass>
+    <geometryFile>hybridjoint.wrl</geometryFile>
+</root>

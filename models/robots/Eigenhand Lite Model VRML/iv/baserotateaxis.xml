@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<root>
+    <material>plastic</material>
+    <youngs>9.0</youngs>
+    <mass>6.00</mass>
+    <geometryFile>baserotateaxis.wrl</geometryFile>
+</root>
