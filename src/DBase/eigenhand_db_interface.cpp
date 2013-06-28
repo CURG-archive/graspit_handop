@@ -133,6 +133,7 @@ bool EigenHandLoader::testDefaultCollisions(Hand * h)
     std::cout << "Failed to load hand -- collision in default pose\n";
       return false;
   }
+  return true;
 }
 
 
@@ -142,7 +143,7 @@ Hand * EigenHandLoader::loadHand(World * w)
     QString graspitRoot = getenv("GRASPIT");
     
     // Load the base hand with just the palm
-    Hand * h = static_cast<Hand *>(w->importRobot(graspitRoot + "/models/robots/Eigenhand/EigenhandBase.xml"));
+    Hand * h = static_cast<Hand *>(w->importRobot(graspitRoot + "/models/robots/Eigenhand Lite Model VRML/EigenhandBase.xml"));
     
     // Get the diagonalized palm scaling matrix
     std::vector<mat3> output;
@@ -270,12 +271,21 @@ void EigenHandLoader::getScalingMatrixListFromFD(KinematicChain * finger,
       //create the scaling matrix	
 	scalingMatrixList.push_back(mat3::IDENTITY);
     }
-  // Set the scaling matrices
+  // Set the scaling matrices  
+  
+  //Sets the scaling matrix distance from palm
   scalingMatrixList[0][0] = fd.jointLenList[0];
-  scalingMatrixList[2][8] = fd.jointLenList[3];
-  scalingMatrixList[3][4] = fd.jointLenList[3];
-  scalingMatrixList[4][8] = fd.jointLenList[5];
-  scalingMatrixList[5][8] = fd.jointLenList[5];
+  //Sets the scaling matrices for the proximal joints
+  for(unsigned int scaledMatrixIndex = 3; scaledMatrixIndex < fd.jointLenList.size(); scaledMatrixIndex += 2)
+    {
+      scalingMatrixList[scaledMatrixIndex-1][8] = fd.jointLenList[scaledMatrixIndex];
+      scalingMatrixList[scaledMatrixIndex][4] = fd.jointLenList[scaledMatrixIndex];
+    }
+
+  //Sets the scaling matrix for the most distal joint
+  unsigned int jointLen = fd.jointLenList.size();
+  scalingMatrixList[jointLen - 2][8] = fd.jointLenList[jointLen - 1];
+  scalingMatrixList[jointLen - 1][8] = fd.jointLenList[jointLen - 1];
 }
 
 
