@@ -50,7 +50,7 @@
     <CoulombFriction>0</CoulombFriction>
   </joint>
   <joint type="Revolute"> %% second Proximal flexion joint
-    <theta>d4+-60</theta>
+    <theta>d4</theta>
     <d>0</d>
     <a>0</a>
     <alpha>-90</alpha>
@@ -71,7 +71,7 @@
     <CoulombFriction>0</CoulombFriction>
   </joint>
   <joint type="Revolute"> %% third Proximal flexion joint
-    <theta>d6+-60</theta>
+    <theta>d6</theta>
     <d>0</d>
     <a>0</a>
     <alpha>-90</alpha>
