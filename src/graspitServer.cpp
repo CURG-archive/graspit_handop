@@ -219,6 +219,19 @@ ClientSocket::readClient()
 			for (i=0;i<numBodies;i++)
 				sendContacts(bodyVec[i],numData);
 		}
+		if (*strPtr == "getCollisions")
+		  {
+		    strPtr++;
+		    CollisionReport colrep;
+		    graspItGUI->getIVmgr()->getWorld()->getCollisionReport(&colrep);
+		    for(int i = 0; i < colrep.size(); ++i)
+		      {
+			std::cout << "collision " << i << ": Body1: " << colrep[i].first->getName().toStdString() << " Body2: " << colrep[i].second->getName().toStdString() <<std::endl;
+		      }
+		    
+		    std::cout << "Done with collision report \n";
+		    break;
+		  }
 
 		else if (*strPtr == "getAverageContacts") {
 			strPtr++;
