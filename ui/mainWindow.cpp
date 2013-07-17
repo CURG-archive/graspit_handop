@@ -26,7 +26,7 @@
 #include <QStatusBar>
 #include <QTime>
 #include <QFileDialog>
-#include <QAssistantClient>
+
 
 #include <list>
 
@@ -194,8 +194,6 @@ void MainWindow::init()
 	QString("doc")+ QDir::separator() + QString("html")+QDir::separator() + QString("user") +QDir::separator() +
 	QString("graspit.adp");
 
-  assistantClient = new QAssistantClient("",this);
-  assistantClient->setArguments(argList);
 }
 
 /*!
@@ -203,7 +201,7 @@ void MainWindow::init()
 */
 void MainWindow::destroy()
 {
-   delete assistantClient;
+
 }
 
 void MainWindow::destroyChildren()
@@ -484,7 +482,7 @@ void MainWindow::fileSaveImage()
 void MainWindow::helpManual()
 {
   QString docsPath = QString(getenv("GRASPIT"))+"/doc/html";
-  assistantClient->showPage(QString("%1/user/index.html").arg(docsPath));
+  
 }
 
 /*!
