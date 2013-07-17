@@ -96,6 +96,7 @@ public:
 		QObject::connect(exitButton, SIGNAL(clicked()), this, SLOT(exitButton_clicked()));
 		QObject::connect(connectButton, SIGNAL(clicked()), this, SLOT(connectButton_clicked()));
 		QObject::connect(loadModelButton, SIGNAL(clicked()), this, SLOT(loadModelButton_clicked()));
+		QObject::connect(loadHandButton, SIGNAL(clicked()), this, SLOT(loadHandButton_clicked()));
 		QObject::connect(loadGraspButton, SIGNAL(clicked()), this, SLOT(loadGraspButton_clicked()));
 		QObject::connect(nextGraspButton, SIGNAL(clicked()), this, SLOT(nextGraspButton_clicked()));
 		QObject::connect(previousGraspButton, SIGNAL(clicked()), this, SLOT(previousGraspButton_clicked()));
@@ -116,8 +117,9 @@ public slots:
 	//! Button events
 	void connectButton_clicked();
 	void exitButton_clicked();
+	void loadHandButton_clicked();
+	void loadGraspButton_clicked();
 	void loadModelButton_clicked();
-	void loadGraspButton_clicked();	
 	void nextGraspButton_clicked();
 	void previousGraspButton_clicked();
 	void plannerButton_clicked();

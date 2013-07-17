@@ -11,7 +11,7 @@ export MOSEK6_0_INSTALLDIR=$PWD/mosek_6/
 echo $GRASPIT
 echo $CGDB_MODEL_ROOT
 #if libraries are not installed on the standard path variable, add them here.
-libspaths=#space delimited list of -L/path/to/lib
+#libspaths=#space delimited list of -L/path/to/lib
 qmake $libspaths ./graspit.pro 
 
 

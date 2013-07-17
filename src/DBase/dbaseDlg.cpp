@@ -165,7 +165,8 @@ void DBaseDlg::connectButton_clicked()
 	if (!mDBMgr->HandList(handNameVector))
 	  std::cout << "failed to get hand name list \n";
 	for(unsigned int i = 0; i < handNameVector.size(); ++i)
-	  handNameComboBox->addItem(handNameVector[i].c_str());
+	  handNameComboBox->addItem(QString(handNameVector[i].c_str()).toLower());
+	handNameComboBox->model()->sort(0);
 //	reRunButton_clicked();
 	//delete and release all the memories occupied by the grasps
 	deleteVectorElements<db_planner::Grasp*, GraspitDBGrasp*>(mGraspList);
@@ -177,27 +178,32 @@ PROF_DECLARE(GET_GRASPS);
 PROF_DECLARE(GET_GRASPS_CALL);
 
 
+void DBaseDlg::loadHandButton_clicked()
+{
+  //get the current hand and check its validity       
+  Hand *hand = graspItGUI->getIVmgr()->getWorld()->getCurrentHand();
+  if (!hand || hand->getName() != handNameComboBox->currentText().split("_")[1]) {
+    if (hand)
+      hand->getWorld()->destroyElement(hand);
+    int hand_id = handNameComboBox->currentText().split("_")[1].toInt();
+    EigenHandLoader * egl = mDBMgr->getEigenhand(hand_id);
+    if (egl){
+      graspItGUI->getIVmgr()->getWorld()->toggleAllCollisions(false);
+      hand = egl->loadHand(graspItGUI->getIVmgr()->getWorld());
+      hand->getWorld()->setCurrentHand(hand);
+      graspItGUI->getIVmgr()->getWorld()->toggleAllCollisions(true);
+    }
+    else{
+      DBGA("Select a hand before loading a grasp!");
+      return;
+    }
+  }
+}
+
 void DBaseDlg::loadGraspButton_clicked(){
 	PROF_RESET_ALL;
 	PROF_START_TIMER(GET_GRASPS);
-	//get the current hand and check its validity       
-	Hand *hand = graspItGUI->getIVmgr()->getWorld()->getCurrentHand();
-	if (!hand || hand->getName() != handNameComboBox->currentText().split("_")[1]) {
-	  if (hand)
-	    hand->getWorld()->destroyElement(hand);
-	  int hand_id = handNameComboBox->currentText().split("_")[1].toInt();
-	  EigenHandLoader * egl = mDBMgr->getEigenhand(hand_id);
-	  if (egl){
-	    graspItGUI->getIVmgr()->getWorld()->toggleAllCollisions(false);
-	    hand = egl->loadHand(graspItGUI->getIVmgr()->getWorld());
-	    hand->getWorld()->setCurrentHand(hand);
-	    graspItGUI->getIVmgr()->getWorld()->toggleAllCollisions(true);
-	  }
-	  else{
-	    DBGA("Load and select a hand before viewing grasps!");
-	    return;
-	  }
-	}
+	loadHandButton_clicked();
 	//check the currently loaded model
 	if(!mCurrentLoadedModel){
 		DBGA("Load model first!");
@@ -209,6 +215,12 @@ void DBaseDlg::loadGraspButton_clicked(){
 	mCurrentFrame = 0;
 	//get new grasps from database manager
 	PROF_START_TIMER(GET_GRASPS_CALL);
+	Hand *hand = graspItGUI->getIVmgr()->getWorld()->getCurrentHand();
+	if(!hand)
+	  {
+	    DBGA("Load and select a hand before viewing grasps!");
+	    return;
+	  }
 	if(!mDBMgr->GetGrasps(*mCurrentLoadedModel,hand->getName().toInt(), &mGraspList)){
 		DBGA("Load grasps failed");
 		mGraspList.clear();

@@ -355,8 +355,9 @@ cgdb{
 		     src/DBase/dbaseUtilDlg.cpp \
 		     src/DBase/TaskDispatcher.cpp \ 
 		     src/DBase/graspPlanningTask.cpp \
-		     src/DBase/DBPlanner/model_utils.cpp\
-                     src/DBase/Tasks/graspAnalyzingTask.cpp
+		     src/DBase/DBPlanner/model_utils.cpp \
+                     src/DBase/Tasks/graspAnalyzingTask.cpp \
+                     src/DBase/eigenhand_db_interface.cpp  
 
 	HEADERS += src/DBase/dbaseDlg.h \
 		     src/DBase/dbasePlannerDlg.h \
@@ -373,9 +374,9 @@ cgdb{
 		     src/DBase/DBPlanner/model_utils.h \
 		     src/DBase/TaskDispatcher.h \ 
                      src/DBase/graspPlanningTask.h \
-		     src/DBase/Tasks/graspAnalyzingTask.h 
-
-
+		     src/DBase/Tasks/graspAnalyzingTask.h \
+                     src/DBase/eigenhand_db_interface.h  
+                     
 
 	FORMS += src/DBase/dbaseDlg.ui \
 		   src/DBase/dbasePlannerDlg.ui \
