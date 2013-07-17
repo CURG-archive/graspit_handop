@@ -7,7 +7,7 @@ export GRASPIT=$PWD
 export CGDB_MODEL_ROOT=$GRASPIT/cgdb
 
 #INSERT YOUR MOSEK DIRECTORY HERE
-export MOSEK6_0_INSTALLDIR=/home/jweisz/Desktop/mosek/6/
+export MOSEK6_0_INSTALLDIR=$PWD/mosek_6/
 echo $GRASPIT
 echo $CGDB_MODEL_ROOT
 #if libraries are not installed on the standard path variable, add them here.
