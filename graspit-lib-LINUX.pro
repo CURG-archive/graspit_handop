@@ -22,8 +22,16 @@ OBJECTS_DIR = .obj
 #------------------------------------ add-ons --------------------------------------------
 
 mosek {
+linux-g++-64{
+message(Using 64 bit mosek)
+INCLUDEPATH += $(MOSEK6_0_INSTALLDIR)/tools/platform/linux64x86/h/
+        LIBS += -L$(MOSEK6_0_INSTALLDIR)/tools/platform/linux64x86/bin/ -lmosek64 -liomp5
+}
+
+linux-g++-32{
 	INCLUDEPATH += $(MOSEK6_0_INSTALLDIR)/tools/platform/linux32x86/h/
         LIBS += -L$(MOSEK6_0_INSTALLDIR)/tools/platform/linux32x86/bin/ -lmosek -liomp5
+}
 }
 
 cgal_qp {
