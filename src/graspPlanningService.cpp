@@ -79,7 +79,7 @@ QString GraspPlanningService::report()
 	else
 	{
 		std::cout << "Only RETRIEVAL method is supported so far" << std::endl;
-		return QString(NULL);
+		return QString();
 	}
 }
 

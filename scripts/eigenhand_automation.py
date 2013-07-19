@@ -649,6 +649,39 @@ def GA_pair(h1, h2):
 def mutate_item(mean, std, increment, min_, max_):
         return max(min(round(rnd.gauss(mean,std)/increment)*increment, max_),min_)
 
+def remove_link(finger, shrink_index):
+    if shrink_index < len(finger.link_length_list): 
+        return []
+    del finger.link_length_list[shrink_index]
+    del finger.joint_range_list[2*shrink_index: 2*shrink_index + 2]
+    del finger.joint_default_speed_list.[shrink_index]        
+    return finger
+
+
+def remove_phalange(finger, link_num):
+    new_finger = cp.deep_copy(finger)
+    new_finger = remove_link(new_finger, link_num + 1)        
+    new_finger = remove_link(new_finger, link_num)
+    return new_finger
+
+
+def split_phalange(finger, link_num):
+    new_finger = cp.deep_copy(finger)
+
+    #Insert a the new joint lengths
+    new_finger.link_length_list.insert(link_num + 2, new_finger.link_length_list[link_num])
+    new_finger.link_length_list.insert(link_num + 2, new_finger.link_length_list[link_num+1])
+
+    #insert new joint ranges
+    #These will be a copy of the old ranges
+    joint_range_index = 2*link_num
+    joint_range_to_copy = new_finger.joint_range_list[joint_range_index:joint_range_index + 4]
+    #Do the insertion
+    new_finger.joint_range_list[joint_range_index + 4:1] = joint_range_to_copy
+    
+    
+    return new_finger
+
 def GA_mutate(hand, rel_stdev):
 
 
@@ -673,18 +706,22 @@ def GA_mutate(hand, rel_stdev):
     new_hand = cp.deepcopy(hand)
 
 
-    """mutate finger positions"""
+    """mutate finger position around the base"""
     finger_position_mutation_probability = .25
         
     d = new_hand.finger_base_positions
     finger_position_diffs = vector_diff(d)
+
+    """Finger positions are actually stored as their absolute position,
+     but they are modified as their relative position.
+    """
 
     for i in range(len(finger_position_diffs)):
         if rnd.random() < finger_position_mutation_probability:
             continue
         finger_position_diffs[i] = mutate_item(finger_position_diffs[i], finger_position_dev,
                                                finger_position_increment, finger_position_change_min, finger_position_change_max)
-    
+   
     new_positions =  cumsum(finger_position_diffs)
     new_hand.finger_base_positions[1:] = new_positions
     if new_hand.finger_base_positions[-1] > 340:
@@ -701,7 +738,9 @@ def GA_mutate(hand, rel_stdev):
 
     new_hand.finger_id_list = []
     for f in new_hand.fingers:
-        for i in [3,5]: #for i in range(len(f.link_length_list)):
+        for i in [3,5,7,9]: #for i in range(len(f.link_length_list)):
+            if i > f.link_length_list:
+                continue
             if rnd.random() < mutation_probability:
                 f.link_length_list[i] = mutate_item(f.link_length_list[i], finger_len_dev,
                                                     finger_len_increment, finger_min_len, finger_max_len)

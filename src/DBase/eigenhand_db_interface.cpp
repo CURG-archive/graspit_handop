@@ -276,7 +276,7 @@ void EigenHandLoader::getScalingMatrixListFromFD(KinematicChain * finger,
   //Sets the scaling matrix distance from palm
   scalingMatrixList[0][0] = fd.jointLenList[0];
   //Sets the scaling matrices for the proximal joints
-  for(unsigned int scaledMatrixIndex = 3; scaledMatrixIndex < fd.jointLenList.size(); scaledMatrixIndex += 2)
+  for(unsigned int scaledMatrixIndex = 3; scaledMatrixIndex < fd.jointLenList.size()-1; scaledMatrixIndex += 2)
     {
       scalingMatrixList[scaledMatrixIndex-1][8] = fd.jointLenList[scaledMatrixIndex];
       scalingMatrixList[scaledMatrixIndex][4] = fd.jointLenList[scaledMatrixIndex];
