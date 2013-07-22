@@ -5,8 +5,8 @@ import pylab
 def get_e_list(generation_num, interface = []):
     if not interface:
         interface = EGHandDBaseInterface()
-    task_prototype_list = [model_dict['hammer']]
-    gm = GenerationManager(interface, task_prototype_list, generation_num, 15, 5, 4, ATE_hand)
+    task_model_list = [model_dict['hammer']]
+    gm = GenerationManager(interface, task_model_list, generation_num, 15, 5, 4, ATE_hand)
     gm.load_hands()
     if not gm.hands:
         raise Exception()
