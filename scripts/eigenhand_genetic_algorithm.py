@@ -163,6 +163,10 @@ def split_phalange(finger, phalange_num):
     new_finger.link_length_list.insert(phalange_num + 2, new_finger.link_length_list[phalange_num])
     new_finger.link_length_list.insert(phalange_num + 2, new_finger.link_length_list[phalange_num+1])
 
+    #Insert new default speeds
+    new_finger.joint_default_speed_list.insert(phalange_num + 2, new_finger.joint_default_speed_list[phalange_num])
+    new_finger.joint_default_speed_list.insert(phalange_num + 2, new_finger.joint_default_speed_list[phalange_num+1])
+    
     #insert new joint ranges
     #These will be a copy of the old ranges
     joint_range_index = 2*phalange_num
