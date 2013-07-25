@@ -8,13 +8,13 @@
 // Only license, (found in the file LICENSE.txt), that you should have
 // received with this distribution.
 //
-// Author(s): Andrew T. Miller 
+// Author(s): Andrew T. Miller
 //
 // $Id: graspitServer.cpp,v 1.7 2009/03/25 22:10:04 cmatei Exp $
 //
 //######################################################################
 
-/*! \file 
+/*! \file
 \brief Implements the application's TCP server.
 */
 
@@ -34,17 +34,20 @@
 #include "searchEnergy.h"
 
 
-void loadEigenhand(int eigenHandInd)
+bool loadEigenhand(int eigenHandInd)
 {
   db_planner::SqlDatabaseManager sql("tonga.cs.columbia.edu", 5432, "postgres", "roboticslab","eigenhanddb", new GraspitDBModelAllocator(), NULL);
   EigenHandLoader * egl = sql.getEigenhand(eigenHandInd);
   if(!egl){
     std::cout << "Failed to load\n";
-    return;
+    return false;
   }
   Hand * h = egl->loadHand(graspItGUI->getIVmgr()->getWorld());
+  if(!h)
+  	return false;
   graspItGUI->getIVmgr()->getWorld()->setCurrentHand(h);
   delete egl;
+  return true;
 }
 
 /*!
@@ -228,7 +231,7 @@ ClientSocket::readClient()
 		      {
 			std::cout << "collision " << i << ": Body1: " << colrep[i].first->getName().toStdString() << " Body2: " << colrep[i].second->getName().toStdString() <<std::endl;
 		      }
-		    
+
 		    std::cout << "Done with collision report \n";
 		    break;
 		  }
@@ -269,7 +272,7 @@ ClientSocket::readClient()
 			strPtr++;
 			readDOFVals();
 		}
-		
+
 		else if (*strPtr == "autoGrasp") {
 			strPtr++;
 			autoGraspCommand();
@@ -367,13 +370,14 @@ ClientSocket::readClient()
 		    ++strPtr;
 		    scaleRobotLink();
 		  }
-		
+
 		else if((*strPtr) == "loadEigenhand")
 		  {
 		    ++strPtr;
-		    loadEigenhand(strPtr->toInt());
+		    QTextStream os(this);
+		    os << loadEigenhand(strPtr->toInt()) << " \n";
 		    ++strPtr;
-		      
+
 		  }
 
 
@@ -481,7 +485,7 @@ ClientSocket::sendContacts(Body *bod,int numData)
 
 		os << wrench[0]<<" "<<wrench[1]<<" "<<wrench[2]<<" "<<wrench[3]<<" "<<
 			wrench[4]<<" "<<wrench[5]<<"\n";
-		if (numData > 1) 
+		if (numData > 1)
 			os << loc[0] << " "<< loc[1] << " " << loc[2]<<"\n";
 		if (numData > 2)
 			os << err << "\n";
@@ -696,7 +700,7 @@ ClientSocket::moveDynamicBodies(double timeStep)
 		graspItGUI->getIVmgr()->getWorld()->moveDynamicBodies(timeStep);
 	if (actualTimeStep < 0)
 		os << "Error: Timestep failsafe reached.\n";
-	else 
+	else
 		os << actualTimeStep << "\n";
 }
 
@@ -713,7 +717,7 @@ ClientSocket::computeNewVelocities(double timeStep)
 	os << result << "\n";
 }
 
-// read in 7 param transf given as  pos(x y z) Qauternion(w x y z) 
+// read in 7 param transf given as  pos(x y z) Qauternion(w x y z)
 int ClientSocket::readTransf(transf * tr){
 	bool ok = true;
 	try{
@@ -748,14 +752,14 @@ the hand used here should be assumed as Barrett
 */
 GraspPlanningService* ClientSocket::mService;
 void ClientSocket::planGrasp()
-{	
+{
 	QString object_name;
 	//Initialize defaults to standard dbase
 	QString dbURL("borneo.cs.columbia.edu");
 	QString dbPassword("super");
 	QString dbLogin("postgres");
-	QString dbName("harvardhand_armdb"); 
-	QString dbPort("5432"); 
+	QString dbName("harvardhand_armdb");
+	QString dbPort("5432");
 	QString method_type("RETRIEVAL");
 	QString hand_name = QString("BARRETT_RUBBER");
 	vec3 workspace_approach_vector(1/sqrt(2),1/sqrt(2),0);
@@ -793,7 +797,7 @@ void ClientSocket::planGrasp()
 					strPtr +=2;
 				}
 				else if(*strPtr == "--dbName"){
-					dbName = *(strPtr+1);	
+					dbName = *(strPtr+1);
 					strPtr +=2;
 				}
 				else if(*strPtr == "--dbLogin"){
@@ -810,7 +814,7 @@ void ClientSocket::planGrasp()
 				}
 				else if(*strPtr == "--workspace_vector"){
 				    bool ok;
-				    workspace_approach_vector = vec3((*(strPtr +1)).toDouble(&ok), 
+				    workspace_approach_vector = vec3((*(strPtr +1)).toDouble(&ok),
 								     (*(strPtr +2)).toDouble(&ok),
 								     (*(strPtr +3)).toDouble(&ok));
 				    workspace_approach_angle = (*(strPtr +4)).toDouble(&ok);
@@ -829,18 +833,18 @@ void ClientSocket::planGrasp()
 	if(!strcmp(method_type.latin1(),"PLAN_TASK"))
 	{
 	  mService->setParams(hand_name, object_name, method_type, this, object_pose,  workspace_approach_vector, workspace_approach_angle);
-	      
+
 		mService->plan_from_tasks();
 		return;
 	}
-	
+
 	if(strcmp(method_type.latin1(),"RETRIEVAL"))
 	{
 		std::cout <<"Only retrieval type is supported so far, please input the object name in the CGDB and a set of pre-computed grasps will be returned" <<
 			std::endl;
 		return;
 	}
-	
+
 	if(!strcmp(method_type.latin1(),"RETRIEVAL"))
 	{
 	  mService->setParams(hand_name, object_name, method_type, this, object_pose,  workspace_approach_vector, workspace_approach_angle);
@@ -887,7 +891,7 @@ void ClientSocket::sendBodyTransf(){
 	readBodyIndList(bd);
 	QTextStream os(this);
 	for(std::vector<Body *>::iterator bp = bd.begin(); bp != bd.end(); ++bp){
-		//this is a hack around the overloading for standard strings and not qstrings.  
+		//this is a hack around the overloading for standard strings and not qstrings.
 		//this should be templated
 		std::stringstream ss(std::stringstream::in);
 		ss << (*bp)->getTran().translation() << (*bp)->getTran().rotation();
@@ -914,7 +918,7 @@ void ClientSocket::sendRobotTransf(){
 	readRobotIndList(rb);
 	QTextStream os(this);
 	for(std::vector<Robot *>::iterator rp = rb.begin(); rp != rb.end(); ++rp){
-		//this is a hack around the overloading for standard strings and not qstrings.  
+		//this is a hack around the overloading for standard strings and not qstrings.
 		//this should be templated
 		std::stringstream ss(std::stringstream::in);
 		ss << (*rp)->getTran().translation() << (*rp)->getTran().rotation();
@@ -963,7 +967,7 @@ void ClientSocket::setTaskWrench(){
 
   graspItGUI->getIVmgr()->getWorld()->getCurrentHand()->getGrasp()->setTaskWrench(wrench);
   return;
-  
+
 }
 
 
@@ -986,8 +990,8 @@ void ClientSocket::getBodyVertices(std::vector<Body *> & b){
      (*bi)->getGeometryVertices( &vertices);
      //    for (std::vector<position>::iterator p= localVertices.begin(); p != localVertices.end(); ++p)
      //      *p = (*p)*(*bi)->getTran();
- 
- 
+
+
   //transform and copy over
      // vertices.insert(vertices.end(), localVertices.begin(), localVertices.end());
      //}
@@ -1000,14 +1004,14 @@ void ClientSocket::getBodyVertices(std::vector<Body *> & b){
 void ClientSocket::getEnergy(){
   SearchEnergy se;
   int type = (++strPtr)->toInt();
-  bool legal; 
+  bool legal;
   double energy;
   se.setType(SearchEnergyType(type));
-  se.analyzeCurrentPosture(graspItGUI->getIVmgr()->getWorld()->getCurrentHand(), 
+  se.analyzeCurrentPosture(graspItGUI->getIVmgr()->getWorld()->getCurrentHand(),
 			   graspItGUI->getIVmgr()->getWorld()->getGB(0), legal, energy, true);
   std::cout << "state legal " << legal <<" state energy: " << energy <<std::endl;
 
-  
+
 }
 
 mat3 readMatrix(QStringList::const_iterator & strPtr)
@@ -1017,13 +1021,13 @@ mat3 readMatrix(QStringList::const_iterator & strPtr)
   bool ok;
   mat3 matrix(mat3::IDENTITY);
   m00 = (*strPtr++).toDouble(&ok);
-  if (!ok) 
+  if (!ok)
     return matrix;
   m11 = (*strPtr++).toDouble(&ok);
-  if (!ok) 
+  if (!ok)
     return matrix;
   m22 = (*strPtr++).toDouble(&ok);
-  if (!ok) 
+  if (!ok)
     return matrix;
   matrix.element(0,0) = m00;
   matrix.element(1,1) = m11;
@@ -1051,20 +1055,20 @@ void ClientSocket::scaleRobotLink()
     return;
   scale = readMatrix(strPtr);
   Hand * hand = graspItGUI->getIVmgr()->getWorld()->getCurrentHand();
- 
+
   if(hand)
     {
       if (chainNum == -1){
 	RobotTools::scalePalm(scale, hand);
 	return;
       }
-      
-      l = hand->getChain(chainNum)->getLink(linkNum);    
-      RobotTools::scaleLink(scale, l); 
+
+      l = hand->getChain(chainNum)->getLink(linkNum);
+      RobotTools::scaleLink(scale, l);
       j = hand->getChain(chainNum)->getJoint(linkNum);
       RobotTools::scaleJoint(scale, j, l);
 
- 
+
     }
   return;
 }
@@ -1089,7 +1093,7 @@ Starts a TCP server that listens on port \a port.  \a backlog specifies
 the number of pending connections the server can have.
 */
 GraspItServer::GraspItServer(Q_UINT16 port, int backlog,
-							 QObject *parent,const char *name) : 
+							 QObject *parent,const char *name) :
 Q3ServerSocket(port,backlog,parent,name)
 {
 	if (!ok()) {
@@ -1097,7 +1101,7 @@ Q3ServerSocket(port,backlog,parent,name)
 	}
 }
 
-/*! 
+/*!
 Creates a new ClientSocket to handle communication with this client.
 */
 void
