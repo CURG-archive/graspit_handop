@@ -1,3 +1,4 @@
+import eigenhand_db_objects
 
 class GenerationManager (object):
     """
@@ -41,8 +42,8 @@ class GenerationManager (object):
         @brief Insert all of the tasks necessary to run this generation.        
         """
         for hand in self.hand_id_list:
-            for p in self.task_model_list:
-                t = Task(task_id = [], #set automatically
+            for p in self.task_model_list.values():
+                t = eigenhand_db_objects.Task(task_id = [], #set automatically
                          task_time = self.trial_len,
                          scaled_model_id = p.scaled_model_id,
                          hand_id = hand,

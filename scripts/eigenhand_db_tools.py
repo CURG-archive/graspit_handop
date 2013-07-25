@@ -57,8 +57,8 @@ def insert_unique_hand_list(hand_list, interface):
     @param interface - the interface to insert in to.
     """
     for hand in hand_list:
-        db_hand_list = interface.get_data_obj_from_table(eigenhand_db_object.Hand, "hand")
-        db_finger_list = interface.get_data_obj_from_table(eigenhand_db_object.Finger, "finger")
+        db_hand_list = interface.get_data_obj_from_table(eigenhand_db_objects.Hand, "hand")
+        db_finger_list = interface.get_data_obj_from_table(eigenhand_db_objects.Finger, "finger")
         insert_unique_hand(interface, hand, db_hand_list, db_finger_list)
 
 
@@ -71,7 +71,7 @@ def get_num_unlaunched_jobs(interface):
 
     @returns the number of unlaunched jobs
     """
-    return len(interface.get_data_obj_by_index_list(eigenhand_db_object.Task, "task", "task_outcome_id", [1]))
+    return len(interface.get_data_obj_by_index_list(eigenhand_db_objects.Task, "task", "task_outcome_id", [1]))
 
 
 

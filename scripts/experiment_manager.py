@@ -2,7 +2,8 @@ import eigenhand_db_tools
 import generation_manager
 import eigenhand_db_objects
 import server_list
-
+import time
+import remote_dispatcher
 
 
 class ExperimentManager(object):
@@ -101,7 +102,7 @@ class ExperimentManager(object):
 
     def run_experiment(self):
         """
-        @brief Run the whole experiment. Does num_ga_generations genetic algorithm runs each containing num_atr iterations
+        @brief Run the whole experiment. Does num_ga_iters genetic algorithm runs each containing num_atr iterations
         of ATR.
         """
         #initialize new generation manager to configure the database to start running.    
@@ -110,11 +111,11 @@ class ExperimentManager(object):
 
         
         
-        for ga_gen_num in range(ga_start_num, num_ga_generations):
-            for atr_gen_num in range(num_atr):
+        for ga_gen_num in range(self.starting_ga_iter, self.num_ga_iters):
+            for atr_gen_num in range(self.num_atr_iters):
                 #Doing ATR
                 #Run the planning jobs
-                self.run_remote_dispatcher_tasks(self.gm.interface)
+                self.run_remote_dispatcher_tasks()
 
                 #Get the resulting grasps for the latest generation of hands
                 grasp_list = gm.get_all_grasps()
@@ -131,19 +132,19 @@ class ExperimentManager(object):
         #DOING GA
          
         #run the planning jobs
-        self.run_remote_dispatcher_tasks(self.gm.interface)
+        self.run_remote_dispatcher_tasks()
         #Get the resulting grasps for the latest generation of hands
         grasp_list = self.gm.get_all_grasps()
         
         #Generate new hands based on these grasps, scaling the variance of the mutations down linearly as the
         #generations progress.
-        new_hand_list = eigenhand_genetic_algorithm.GA_generation(grasp_list, self.gm.hands, self.eval_functor, .5-.4/num_ga_generations*ga_gen_num)
+        new_hand_list = eigenhand_genetic_algorithm.GA_generation(grasp_list, self.gm.hands, self.eval_functor, .5-.4/self.num_ga_iters*ga_gen_num)
         
         #Put the new hands in to the database.
         eigenhand_db_tools.insert_unique_hand_list(new_hand_list)
         self.gm.next_generation()
 
         #Plan grasps for the final set of hands.
-        self.run_remote_dispatcher_tasks(gm.interface)
+        self.run_remote_dispatcher_tasks()
 
         
