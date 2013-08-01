@@ -59,7 +59,7 @@ def insert_unique_hand_list(hand_list, interface):
     for hand in hand_list:
         db_hand_list = interface.get_data_obj_from_table(eigenhand_db_objects.Hand, "hand")
         db_finger_list = interface.get_data_obj_from_table(eigenhand_db_objects.Finger, "finger")
-        insert_unique_hand(interface, hand, db_hand_list, db_finger_list)
+        hand = insert_unique_hand(interface, hand, db_hand_list, db_finger_list)
 
 
 
