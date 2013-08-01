@@ -21,7 +21,7 @@ def GA_pair(h1, h2):
     Cross the two hands to produce a new hand that has half of the fingers of each hand. The palm is
     randomly selected to be one of the parent's palms. Not all hands can be crossed, because the finger
     offsets going around the palm may set on of the fingers further than the 0th finger, which is
-    not allowed. 
+    not allowed.
 
     @returns new child hand with no valid hand_id or an empty list if the produced hand is illegal.
 
@@ -52,7 +52,7 @@ def GA_pair(h1, h2):
     #randomize the list of all possible permuations
     permutation_samples = rnd.sample(hand_permutation_list,len(hand_permutation_list))
 
-    
+
 
     finger_selector_vector = []
     #iterate over the randomized list and take the first legal examples
@@ -69,14 +69,14 @@ def GA_pair(h1, h2):
             #record the valid finger selector vector
             finger_selector_vector = test_finger_selector_vector
             break
-        
+
     #If we did not manage to generate a valid hand, return []
     if not finger_selector_vector:
         return []
 
     #Set the new hands finger base positions and initialize other finger members.
     new_hand.finger_base_positions = child_angle_vector
-    new_hand.finger_id_list = []   
+    new_hand.finger_id_list = []
     new_hand.fingers = []
 
     #Record parent finger ids and Fingers.
@@ -99,7 +99,7 @@ def GA_pair(h1, h2):
     new_hand.parents = [h1.hand_id, h2.hand_id]
     new_hand.hand_name = "Eigenhand"
 
-    
+
     return new_hand
 
 
@@ -125,11 +125,11 @@ def remove_link(finger, shrink_index):
 
     @returns a Finger with the relevant link removed.
     """
-    if shrink_index < len(finger.link_length_list): 
+    if shrink_index >= len(finger.link_length_list):
         return []
     del finger.link_length_list[shrink_index]
     del finger.joint_range_list[2*shrink_index: 2*shrink_index + 2]
-    del finger.joint_default_speed_list[shrink_index]        
+    del finger.joint_default_speed_list[shrink_index]
     return finger
 
 
@@ -142,9 +142,10 @@ def remove_phalange(finger, phalange_num):
 
     @returns a new Finger with 1 fewer phalanges than the input Finger.
     """
-    new_finger = cp.deep_copy(finger)
-    new_finger = remove_link(new_finger, phalange_num + 1)        
-    new_finger = remove_link(new_finger, phalange_num)
+    new_finger = cp.deepcopy(finger)
+    joint_index = phalange_num * 2
+    new_finger = remove_link(new_finger, joint_index + 1)
+    new_finger = remove_link(new_finger, joint_index)
     return new_finger
 
 
@@ -157,24 +158,24 @@ def split_phalange(finger, phalange_num):
 
     @returns A new Finger with one more phalange than the input finger.
     """
-    new_finger = cp.deep_copy(finger)
-
+    new_finger = cp.deepcopy(finger)
+    joint_index = 2 * phalange_num;
     #Insert a the new joint lengths
-    new_finger.link_length_list.insert(phalange_num + 2, new_finger.link_length_list[phalange_num])
-    new_finger.link_length_list.insert(phalange_num + 2, new_finger.link_length_list[phalange_num+1])
+    new_finger.link_length_list.insert(joint_index + 2, new_finger.link_length_list[joint_index])
+    new_finger.link_length_list.insert(joint_index + 3, new_finger.link_length_list[joint_index + 1])
 
     #Insert new default speeds
-    new_finger.joint_default_speed_list.insert(phalange_num + 2, new_finger.joint_default_speed_list[phalange_num])
-    new_finger.joint_default_speed_list.insert(phalange_num + 2, new_finger.joint_default_speed_list[phalange_num+1])
-    
+    new_finger.joint_default_speed_list.insert(joint_index + 2, new_finger.joint_default_speed_list[joint_index])
+    new_finger.joint_default_speed_list.insert(joint_index + 3, new_finger.joint_default_speed_list[joint_index+1])
+
     #insert new joint ranges
     #These will be a copy of the old ranges
-    joint_range_index = 2*phalange_num
+    joint_range_index = 4 * phalange_num
     joint_range_to_copy = new_finger.joint_range_list[joint_range_index:joint_range_index + 4]
     #Do the insertion
     new_finger.joint_range_list[joint_range_index + 4:1] = joint_range_to_copy
-    
-    
+
+
     return new_finger
 
 
@@ -220,7 +221,7 @@ def GA_mutate(hand, rel_stdev):
 
     """mutate finger position around the base"""
     finger_position_mutation_probability = .25
-        
+
     d = new_hand.finger_base_positions
     finger_position_diffs = vector_diff(d)
 
@@ -233,7 +234,7 @@ def GA_mutate(hand, rel_stdev):
             continue
         finger_position_diffs[i] = mutate_item(finger_position_diffs[i], finger_position_dev,
                                                finger_position_increment, finger_position_change_min, finger_position_change_max)
-    #Translate finger position increments to finger positions 
+    #Translate finger position increments to finger positions
     new_positions =  cumsum(finger_position_diffs)
     new_hand.finger_base_positions[1:] = new_positions
 
@@ -245,11 +246,11 @@ def GA_mutate(hand, rel_stdev):
     if new_hand.finger_base_positions[1] < 20:
         return []
 
-   
+
 
     """mutate finger length"""
     for i in range(len(hand.fingers)):
-        new_hand.fingers[i] = cp.deepcopy(hand.fingers[i])        
+        new_hand.fingers[i] = cp.deepcopy(hand.fingers[i])
 
     new_hand.finger_id_list = []
     for f in new_hand.fingers:
@@ -261,9 +262,7 @@ def GA_mutate(hand, rel_stdev):
             if rnd.random() < mutation_probability:
                 f.link_length_list[i] = mutate_item(f.link_length_list[i], finger_len_dev,
                                                     finger_len_increment, finger_min_len, finger_max_len)
-    
-    
-    
+
     """mutate palm"""
     palm_mutation_probability = .25
     palm_size_max = 1.25
@@ -286,7 +285,7 @@ def GA_mutate(hand, rel_stdev):
     new_hand.generation = [hand.generation[-1] + 1]
     new_hand.parents = [hand.hand_id]
     return new_hand
-            
+
 
 def GA_generation(grasp_list, hand_list, eval_functor, rel_stdev):
     """
@@ -305,7 +304,7 @@ def GA_generation(grasp_list, hand_list, eval_functor, rel_stdev):
     grasp_dict = grasp_sorting_utils.get_grasps_by_hand(grasp_list)
 
     #organize the hand list into a dictionary sorted by hand_id keys.
-    hand_dict = dict()    
+    hand_dict = dict()
     for h in hand_list:
         hand_dict[h.hand_id] = h
 
@@ -321,7 +320,7 @@ def GA_generation(grasp_list, hand_list, eval_functor, rel_stdev):
             energy_list.append(1e10)
 
     #Now we get the best hands by lowest energy
-    
+
     sorted_key_indices = [hand_dict.keys()[i] for i in argsort(energy_list)]
     elite_list_len = 4
     elite_hand_list = [hand_dict[k] for k in sorted_key_indices[:elite_list_len]]
@@ -329,7 +328,7 @@ def GA_generation(grasp_list, hand_list, eval_functor, rel_stdev):
     #Get a list of all pairs of the elite hands
     #and then pair them all to generate a set of new hands
     hand_pair_list = itertools.combinations(elite_hand_list, 2)
-    
+
     for pair in hand_pair_list:
         new_hand = GA_pair(pair[0], pair[1])
         if new_hand:
@@ -355,6 +354,6 @@ def GA_generation(grasp_list, hand_list, eval_functor, rel_stdev):
     for hand in elite_hand_list:
         hand.generation.append(hand.generation[-1] + 1)
         new_hand_list.append(hand)
-        
+
     return new_hand_list
 

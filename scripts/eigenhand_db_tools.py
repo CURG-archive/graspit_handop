@@ -127,7 +127,7 @@ def insert_hand_list(new_hand_list, interface):
     @brief Inserts a list of hands in to the database if they do not exist.
 
     @param new_hand_list - The list of hands to add
-    @param interface - The interface to add it to. 
+    @param interface - The interface to add it to.
     """
 
     # Get all of the existing fingers and hands in the database
