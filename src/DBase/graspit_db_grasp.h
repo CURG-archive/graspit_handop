@@ -80,6 +80,7 @@ public:
 	static QString getHandGraspitPath(const QString & handDBName);
 	static bool setHandMaterialFromDBName(Hand * h, const QString &hand_db_name);
 	static Hand * loadHandFromDBName(const QString & hand_db_name);
+	static Hand * loadEigenhand(const int eigenHandInd);
 };
 
 /*! For now, the hand is passed to the constructor. In the future,

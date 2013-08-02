@@ -32,6 +32,8 @@
 #include "grasp.h"
 #include "graspitGUI.h"
 #include "debug.h"
+#include "DBase/eigenhand_db_interface.h"
+#include "DBase/DBPlanner/sql_database_manager.h"
 
 //! Create a HandObjectState from data
 bool initializeHandObjectState(const std::vector<double>& joints, const std::vector<double>& position, 
@@ -250,24 +252,51 @@ bool GraspitDBGrasp::setHandMaterialFromDBName(Hand * h, const QString &hand_db_
 	return true;
 }
 
-Hand * GraspitDBGrasp::loadHandFromDBName(const QString &hand_db_name){
-	QString handPath = getHandGraspitPath(hand_db_name);
-	if(handPath ==QString::null)
-		return NULL;
-	handPath = QString(getenv("GRASPIT")) + handPath;
-	if(!QDir().exists(handPath) && !modelUtils::repairHandGeometry()){
-	  DBGA("Hand path not found");
-	  return NULL;
-	}
-	DBGA("GraspitDBGrasp: loading hand from " << handPath.latin1());	      
-	Hand *h = static_cast<Hand*>(graspItGUI->getIVmgr()->getWorld()->importRobot(handPath));
-	if ( !h ) {
-		DBGA("Failed to load hand");
-	}
-	else
-		setHandMaterialFromDBName(h, hand_db_name);
-	return h;
+
+Hand * GraspitDBGrasp::loadEigenhand(int eigenHandInd)
+{
+db_planner::SqlDatabaseManager sql("tonga.cs.columbia.edu", 5432, "postgres", "roboticslab","eigenhanddb", new GraspitDBModelAllocator(), NULL);
+  EigenHandLoader * egl = sql.getEigenhand(eigenHandInd);
+  if(!egl){
+    std::cout << "Failed to load\n";
+    return NULL;
+  }
+  Hand * h = egl->loadHand(graspItGUI->getIVmgr()->getWorld());
+  graspItGUI->getIVmgr()->getWorld()->setCurrentHand(h);
+  delete egl;
+  return h;
 }
+
+
+Hand * GraspitDBGrasp::loadHandFromDBName(const QString &hand_db_name){
+  bool ok;
+  Hand *h;
+  int handInt = hand_db_name.toInt(&ok);
+  if (ok)
+    {
+    h = loadEigenhand(handInt);
+    }
+  else
+    {
+      QString handPath = getHandGraspitPath(hand_db_name);
+      if(handPath ==QString::null)
+	return NULL;
+      handPath = QString(getenv("GRASPIT")) + handPath;
+      if(!QDir().exists(handPath) && !modelUtils::repairHandGeometry()){
+	DBGA("Hand path not found");
+	return NULL;
+      }
+      DBGA("GraspitDBGrasp: loading hand from " << handPath.latin1());	      
+      h = static_cast<Hand*>(graspItGUI->getIVmgr()->getWorld()->importRobot(handPath));
+      if ( !h ) {
+	DBGA("Failed to load hand");
+      }
+      else
+	setHandMaterialFromDBName(h, hand_db_name);
+    }
+  return h;
+}
+
 
 QString GraspitDBGrasp::getHandGraspitPath(const QString & handDBName)
 {
