@@ -150,7 +150,7 @@ class LocalJob(object):
 
     def start(self):
         self.set_env()
-        args = "nice -n 50 /home/jweisz/condor_output/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
+        args = "nice -n 50 /home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
         self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=self.file)
 
     def flush_std_out(self):

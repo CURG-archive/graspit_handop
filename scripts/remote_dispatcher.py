@@ -9,9 +9,15 @@ class RemoteServer(object):
         self.filename = open("/dev/null","rw")
         self.subprocess = self.launch_job()
         self.interface = interface
+        self.killed_forcibly = False
 
     def launch_job(self):
         args = ["ssh", self.server_name, "python", "/home/jweisz/gm/graspit_dispatcher.py"]
+        print "%s \n"%(self.server_name)
+        return subprocess.Popen(args, stdin = subprocess.PIPE, stdout=self.filename, stderr=subprocess.STDOUT)
+
+    def kill_if_busy(self):       
+        args = ["ssh", self.server_name, "python", "/home/jweisz/gm/graspit_dispatch_monitor.py"]
         print "%s \n"%(self.server_name)
         return subprocess.Popen(args, stdin = subprocess.PIPE, stdout=self.filename, stderr=subprocess.STDOUT)
 
@@ -68,3 +74,13 @@ class RemoteDispatcher(object):
         while running:
             running = len([server for server in self.server_dict.values() if server.is_running()])
             
+    def run_monitored(self):
+        running = 1:
+        while running:
+            for server in server_dict.values():                
+                if server.kill_if_busy():
+                    server.killed_forcibly = True
+                    server.kill_previous()
+                    #This is where you would report busyness if necessary
+                    #This is where you would generate an update to any reported statistics if necessary
+            running = len([server for server in self.server_dict.values() if server.is_running()])
