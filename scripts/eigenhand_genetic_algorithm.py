@@ -195,7 +195,8 @@ def GA_mutate(hand, rel_stdev):
 
     #The baseline probability that a finger will be mutated
     mutation_probability = .25
-
+    reduction_probability = .1
+    expansion_probability = .1
     #Each mutating item has a minimum and maximum length, a discretization increment, and a standard deviation.
 
     #Finger length modifier description
@@ -215,6 +216,10 @@ def GA_mutate(hand, rel_stdev):
     finger_position_change_max = 315
     finger_position_increment = 15
     finger_position_dev = 45 * rel_stdev
+
+    #Finger phlange modifier description
+    finger_max_phalanges = 4
+    finger_min_phalanges = 2
 
     new_hand = cp.deepcopy(hand)
 
@@ -262,6 +267,20 @@ def GA_mutate(hand, rel_stdev):
             if rnd.random() < mutation_probability:
                 f.link_length_list[i] = mutate_item(f.link_length_list[i], finger_len_dev,
                                                     finger_len_increment, finger_min_len, finger_max_len)
+
+    """mutate finger phalanges"""
+
+    for i in range(len(hand.fingers)):
+        finger = hand.fingers[i]
+        num_phalanges = (len(finger.link_length_list) - 2)/2 #Note - the "zeroth phlange" is the palm - should be untouched.
+        if rnd.random() < reduction_probability and num_phalanges > finger_min_phalanges:
+            phalange_index = rnd.randint(1, num_phalanges)
+            new_finger = remove_phalange(finger, phalange_index)
+            hand.fingers[i] = new_finger
+        elif (rnd.random() < expansion_probability) and (num_phalanges < finger_max_phalanges):
+            phalange_index = rnd.randint(1, num_phalanges)
+            new_finger = split_phalange(finger, phalange_index)
+            hand.fingers[i] = new_finger
 
     """mutate palm"""
     palm_mutation_probability = .25
