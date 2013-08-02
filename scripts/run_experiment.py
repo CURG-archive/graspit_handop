@@ -1,4 +1,4 @@
-import eigenhand_automation
+
 import eigenhand_db_interface
 import experiment_manager
 import task_models
@@ -6,7 +6,7 @@ import eigenhand_db_objects
 import ate
 
 
-def start_experiment(num_ga_iters = 50, num_atr_iters = 5, trials_per_task = 5, 
+def start_experiment(num_ga_iters = 2, num_atr_iters = 2, trials_per_task = 5): 
     interface = eigenhand_db_interface.EGHandDBaseInterface()
     interface.reset_database()
     task_prototype = eigenhand_db_objects.Task(task_id = 4, task_time = 60)
