@@ -74,13 +74,16 @@ class RemoteDispatcher(object):
         while running:
             running = len([server for server in self.server_dict.values() if server.is_running()])
             
-    def run_monitored(self):
+    def run_monitored(self, monitor_functor = []):
         running = 1:
         while running:
-            for server in server_dict.values():                
+            for server in self.server_dict.values():                
                 if server.kill_if_busy():
                     server.killed_forcibly = True
                     server.kill_previous()
+                    server.subprocess.kill()
                     #This is where you would report busyness if necessary
                     #This is where you would generate an update to any reported statistics if necessary
             running = len([server for server in self.server_dict.values() if server.is_running()])
+            if monitor_functor:
+                monitor_functor(self.server_dict)
