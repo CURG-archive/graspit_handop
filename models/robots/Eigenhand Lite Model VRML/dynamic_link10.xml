@@ -114,12 +114,12 @@
   </joint>
   <link dynamicJointType="Revolute">baserotateaxis.xml</link>
   <link dynamicJointType="Revolute">baselink.xml</link>
-  <link dynamicJointType="Revolute">hybridjoint.xml</link>
+  <link dynamicJointType="Revolute">faux.xml</link>
   <link dynamicJointType="Revolute">proximallink.xml</link>
-  <link dynamicJointType="Revolute">hybridjoint.xml</link>
+  <link dynamicJointType="Revolute">faux.xml</link>
   <link dynamicJointType="Revolute">proximallink.xml</link>
-  <link dynamicJointType="Revolute">hybridjoint.xml</link>
+  <link dynamicJointType="Revolute">faux.xml</link>
   <link dynamicJointType="Revolute">proximallink.xml</link>
-  <link dynamicJointType="Revolute">hybridjoint.xml</link>
+  <link dynamicJointType="Revolute">faux.xml</link>
   <link dynamicJointType="Revolute">distallink.xml</link>
 </chain>

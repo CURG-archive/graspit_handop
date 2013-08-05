@@ -3,5 +3,5 @@
     <material>rubber</material>
     <youngs>9.0</youngs>
     <mass>6.00</mass>
-    <geometryFile>baselink.wrl</geometryFile>
+    <geometryFile>base_link_superlite.wrl</geometryFile>
 </root>
