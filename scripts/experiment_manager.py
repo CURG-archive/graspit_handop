@@ -61,9 +61,11 @@ class ExperimentManager(object):
         """
         @brief Create the generation manager that will be used in this experiment
         """
-        self.gm = generation_manager.GenerationManager(self.db_interface, self.task_model_list, self.starting_ga_iter*self.get_generations_per_ga_iter(),
-                                    self.task_prototype.task_time, self.trials_per_task, self.task_prototype.task_type_id,
-                                    self.eval_functor)
+        self.gm = generation_manager.GenerationManager(self.db_interface, self.task_model_list,
+                                                       self.starting_ga_iter*self.get_generations_per_ga_iter(),
+                                                       self.task_prototype.task_time, self.trials_per_task,
+                                                       self.task_prototype.task_type_id,
+                                                       self.eval_functor)
 
     
 
@@ -86,7 +88,7 @@ class ExperimentManager(object):
             rd = remote_dispatcher.RemoteDispatcher(self.server_dict, self.db_interface)
             #Blocks until all of the remote dispatcher's jobs have terminated, closing all of the connections
             #to remote machines. 
-            rd.run_monitored()
+            rd.run()
             #Reset any incomplete jobs. These are essentially jobs that we have lost connection with and cannot be
             #relied upon to terminate.
             self.db_interface.reset_incompletes()
