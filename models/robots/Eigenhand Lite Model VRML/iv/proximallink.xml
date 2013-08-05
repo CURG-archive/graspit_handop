@@ -3,5 +3,5 @@
     <material>plastic</material>
     <youngs>9.0</youngs>
     <mass>20.0</mass>
-    <geometryFile>proximallink.wrl</geometryFile>
+    <geometryFile>proximal_link_superlite.wrl</geometryFile>
 </root>
