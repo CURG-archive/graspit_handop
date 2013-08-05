@@ -162,6 +162,7 @@ class EGHandDBaseInterface(object):
         self.cursor.execute("delete from task;")
         self.cursor.execute("delete from grasp;")
         self.cursor.execute("delete from hand where hand_id > 312;")
+        self.cursor.execute("delete from finger where finger_id > 800;")
         self.connection.commit()
 
     @staticmethod
