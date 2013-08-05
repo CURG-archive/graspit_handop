@@ -28,7 +28,7 @@ def test_remove_phalange(hand = None):
 	new_hand.fingers[0] = new_finger
 	return new_hand
 
-def DB_test_split_phalange(hand = None):
+def DB_test_split_phalange(hand = None, test_load = True):
 	interface = eigenhand_db_interface.EGHandDBaseInterface()
 	hands = interface.load_hands_for_generation(0)
 	if hand is None:
@@ -39,14 +39,14 @@ def DB_test_split_phalange(hand = None):
 	new_hand = copy.deepcopy(test_hand)
 	new_hand.fingers[0] = new_finger
 	hand_list = [new_hand]
-	hand_list = eigenhand_db_tools.insert_hand_list(hand_list, interface)
-
-	s = socket.socket()
-	s.connect(('localhost', 4765))
-	s.send('loadEigenhand %i \n'%(hand_list[0].hand_id))
-	output = s.recv(2048)
-	if int(output.split(" ")[0]) == 0:
-		raise ValueError("could not load hand")
+	hand_list = eigenhand_db_tools.insert_unique_hand_list(hand_list, interface)
+        if test_load:
+            s = socket.socket()
+            s.connect(('localhost', 4765))
+            s.send('loadEigenhand %i \n'%(hand_list[0].hand_id))
+            output = s.recv(2048)
+            if int(output.split(" ")[0]) == 0:
+                raise ValueError("could not load hand")
 	return new_hand
 
 def DB_test_remove_phalange(hand = None):
