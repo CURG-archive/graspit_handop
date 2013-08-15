@@ -188,7 +188,7 @@ class LocalJob(object):
 
 
     def reset_job(self, job_id):
-        args = ["ssh", "tonga.cs.columbia.edu", "export PGPASSWORD=roboticslab; psql -c 'update task set task_outcome_id = 1 where task_id = %i' -U postgres -d eigenhanddb -h tonga.cs.columbia.edu;"%(job_id)]
+        args = ["ssh", "tonga.cs.columbia.edu", "export PGPASSWORD=roboticslab; psql -c 'update task set task_outcome_id = 1, last_updater=%s where task_id = %i' -U postgres -d eigenhanddb -h tonga.cs.columbia.edu;"%(job_id, self.server_name)]
         s = subprocess.Popen(args,  stdout = subprocess.PIPE, stderr = subprocess.STDOUT, stdin = subprocess.PIPE)
         s.wait()
 

@@ -24,6 +24,7 @@
 #include <sstream>
 #include <vector>
 #include <cmath>
+#include <QHostInfo>
 using std::make_pair;    // Included from <utility> in "db_manager.h"
 using std::stringstream;
 using std::vector;
@@ -248,7 +249,7 @@ bool SqlDatabaseManager::SetTaskStatus(const TaskRecord &rec, const string &stat
 	  }
 	}
 	//mark it as current status and timestamp this status
-	if (!succeeded || !database_.Query("UPDATE task SET task_outcome_id=(SELECT task_outcome_id FROM task_outcome WHERE task_outcome_name='"+status+"'), task_time_stamp=NOW() WHERE task_id="+id.str()+";", NULL)) {
+	if (!succeeded || !database_.Query("UPDATE task SET task_outcome_id=(SELECT task_outcome_id FROM task_outcome WHERE task_outcome_name='"+status+"'), task_time_stamp=NOW(), last_updater='"+QHostInfo::localHostName().toStdString().c_str()+"' WHERE task_id="+id.str()+";", NULL)) {
 		DBGA("SqlDatabaseManager:SetTaskStatus:Failed to update task");
 		succeeded = false;
 	}
@@ -268,7 +269,7 @@ bool SqlDatabaseManager::AgeTaskStatus(const int &tType, const string &currentSt
 	if (!database_.QueryAndConnect("START TRANSACTION ISOLATION LEVEL READ COMMITTED", NULL))
 		succeeded = false;
 	//Get all matching types in database
-	string queryString = "UPDATE task SET task_outcome_id=(SELECT task_outcome_id FROM task_outcome where task_outcome_name='" +ageToStatus +"'), task_time_stamp = NOW() WHERE task_type_id=" + QString::number(tType).toStdString() + " AND task_outcome_id=(SELECT task_outcome_id FROM task_outcome WHERE task_outcome_name='"+currentStatus +"') AND (task_time_stamp + '" + QString::number(expirationTime).toStdString() +" seconds') < NOW();";
+	string queryString = "UPDATE task SET task_outcome_id=(SELECT task_outcome_id FROM task_outcome where task_outcome_name='" +ageToStatus +"'), task_time_stamp = NOW(), last_updater='"+QHostInfo::localHostName().toStdString().c_str()+" :Aged' WHERE task_type_id=" + QString::number(tType).toStdString() + " AND task_outcome_id=(SELECT task_outcome_id FROM task_outcome WHERE task_outcome_name='"+currentStatus +"') AND (task_time_stamp + '" + QString::number(expirationTime).toStdString() +" seconds') < NOW();";
 	DBGA(queryString);
 	     if (!succeeded || !database_.QueryAndConnect(queryString, NULL)) {
 		DBGA("Nothing was aged out");	

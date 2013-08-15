@@ -1,6 +1,7 @@
 import psycopg2
 import psycopg2.extras
 import eigenhand_db_objects
+import socket
 
 #The task table outcome codes.
 TASK_READY = 1
@@ -160,10 +161,54 @@ class EGHandDBaseInterface(object):
         Assumes that the starting set of hands is all hands with an id below 313.
         """
         self.cursor.execute("delete from task;")
-        self.cursor.execute("delete from grasp;")
-        self.cursor.execute("delete from hand where hand_id > 312;")
-        self.cursor.execute("delete from finger where finger_id > 800;")
         self.connection.commit()
+        self.cursor.execute("delete from grasp;")
+        self.connection.commit()
+        self.cursor.execute("delete from hand;")
+        self.connection.commit()
+        self.cursor.execute("delete from finger;")
+        self.connection.commit()
+
+
+    def insert_gen_0(self):
+        """
+        @brief Insert the prestored hands and fingers from generation 0 in to the database
+        """
+        self.cursor.execute("insert into finger select * from finger_gen_0;")
+        self.cursor.execute("insert into hand select * from hand_gen_0;")
+        self.cursor.execute("select setval('finger_finger_id_seq',(select max(finger_id) from finger))")
+        self.cursor.execute("select setval('hand_hand_id_seq',(select max(hand_id) from hand))")
+        
+        self.connection.commit()
+
+    def prepare_gen_0(self):
+        self.reset_database()
+        self.insert_gen_0()
+        
+    def incremental_backup(self, base_filename = '/tmp/test', tables = ['finger','hand','grasp']):
+        """
+        @param filename - The filename to store to.
+        @param tables - The name of the tables to backup
+        
+        """
+        filenames = []
+        d = dict()
+        for table in tables:
+            filename = base_filename + '_' + table
+            d[table] = filename
+            self.cursor.execute("copy %s to %s"%(table, filename))
+            self.connection.commit()
+
+        return d
+
+    def incremental_restore(self, filename_dict):
+        """
+        @param filename_dict - Load data from filenames.
+        """
+        for table, filename in filename_dict.iteritems():
+            self.cursor.execute("copy %s to %s"%(table, filename))
+            self.connection.commit()
+        return
 
     @staticmethod
     def get_value_str(value):
@@ -385,7 +430,7 @@ class EGHandDBaseInterface(object):
         """
         @brief Sets all tasks that are still running back to the ready to run state.
         """
-        command_str = "update task set task_outcome_id = 1 where task_outcome_id = 2;"
+        command_str = "update task set task_outcome_id = 1, last_updater='%s' where task_outcome_id = 2;"%(socket.gethostname())
         self.cursor.execute(command_str)
         self.connection.commit()
 
@@ -393,7 +438,7 @@ class EGHandDBaseInterface(object):
         """
         @brief Sets all tasks that are still running to the error state.
         """
-        command_str = "update task set task_outcome_id = 4 where (task_outcome_id = 2 or task_outcome_id = 1);"
+        command_str = "update task set task_outcome_id = 4, last_updater='%s' where (task_outcome_id = 2 or task_outcome_id = 1);"%(socket.gethostname())
         self.cursor.execute(command_str)
         self.connection.commit()
 
@@ -403,7 +448,7 @@ class EGHandDBaseInterface(object):
         @param task_id - The task to update
         @param outcome_id - The outcome which to set it to.
         """
-        command_str = "update task set task_outcome_id = %i where task_id = %i"%(outcome_id, task_id)
+        command_str = "update task set task_outcome_id = %i, last_updater='%s' where task_id = %i"%(outcome_id, socket.gethostname(), task_id)
         self.cursor.execute(command_str)
         self.connection.commit()
 
