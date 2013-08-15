@@ -95,7 +95,7 @@ void GraspPlanningTask::getHand(){
 	if (eh){
 	  mHand = eh->loadHand(world);
 	  if (mHand){
-	    transf t = translate_transf(vec3(0,-200,0));	  
+	    transf t = translate_transf(vec3(0,-400,0));	  
 	    mHand->setTran(t);
 	  }
 	}

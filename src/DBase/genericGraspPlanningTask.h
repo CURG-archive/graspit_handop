@@ -60,7 +60,7 @@ class GenericGraspPlanningTask:public GraspPlanningTask{
 	mStatus=ERROR;
 	return;
       }
-    
+    mHand->findInitialContact(400);
     //set mObject
     mObject = w->getGB(0);
     mObject->setMaterial(wood);
@@ -100,7 +100,7 @@ public:
     //sets mObject
     getObject();	
     //get a planner from the factory
-
+    mHand->findInitialContact(0);
     //create new planner
     mPlanner = mPlannerFactory.newPlanner(mHand, static_cast<GraspitDBModel*>(mRecord.model));
 
