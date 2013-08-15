@@ -1,13 +1,17 @@
 import subprocess
 import sh
 import select
+import time
+import pdb
+
 
 class RemoteServer(object):
-    def __init__(self, server_name, interface):
+    def __init__(self, server_name, interface, launch_job = True):
         self.server_name = server_name
         self.kill_previous()
         self.filename = open("/dev/null","rw")
-        self.subprocess = self.launch_job()
+        if launch_job:
+            self.subprocess = self.launch_job()
         self.interface = interface
         self.killed_forcibly = False
 
@@ -25,7 +29,11 @@ class RemoteServer(object):
         args = ["ssh", self.server_name, "killall", "python"]
         s = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         s.communicate()
+        args = ["ssh", self.server_name, "killall", "graspit"]
+        s = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        s.communicate()
 
+        
     def is_running(self):
         #self.process_output()
         return self.subprocess.poll() == None
@@ -69,11 +77,19 @@ class RemoteDispatcher(object):
             print "pinged %s"%(server)                
             self.server_dict[server] = RemoteServer(server, interface)
 
+        self.file = open('/tmp/running_jobs.txt','w')
+
     def run(self):
         running = 1
-        while running:
-            running = len([server for server in self.server_dict.values() if server.is_running()])
             
+        while running:            
+            running = len([server for server in self.server_dict.values() if server.is_running()])
+            self.file.seek(0)
+            self.file.write('Running processes %i %s \n'%(running, time.strftime('%c')))
+            self.file.flush()
+            time.sleep(1)
+            
+    
     def run_monitored(self, monitor_functor = []):
         running = 1
         while running:
