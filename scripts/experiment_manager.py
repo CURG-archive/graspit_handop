@@ -4,6 +4,8 @@ import eigenhand_db_objects
 import server_list
 import time
 import remote_dispatcher
+import atr
+import eigenhand_genetic_algorithm
 
 
 class ExperimentManager(object):
@@ -100,7 +102,10 @@ class ExperimentManager(object):
         print "done.  Time %f \n"%(time.time() - t)
 
 
-
+    def kill_existing(self):
+        for server in self.server_dict.keys():
+            rd = remote_dispatcher.RemoteServer(server, [], launch_job=False)
+            
 
     def run_experiment(self):
         """
@@ -110,7 +115,7 @@ class ExperimentManager(object):
         #initialize new generation manager to configure the database to start running.    
         self.initialize_generation_manager()
         self.gm.start_generation()
-
+        
         
         
         for ga_gen_num in range(self.starting_ga_iter, self.num_ga_iters):
@@ -120,31 +125,33 @@ class ExperimentManager(object):
                 self.run_remote_dispatcher_tasks()
 
                 #Get the resulting grasps for the latest generation of hands
-                grasp_list = gm.get_all_grasps()
+                grasp_list = self.gm.get_all_grasps()
 
                 #Run atr on the existing hand for the latest generation of grasps
-                new_hand_list = atr.ATR_generation(grasp_list, gm.hands)
+                new_hand_list = atr.ATR_generation(grasp_list, self.gm.hands)
 
                 #Update database with new hands
-                eigenhand_db_tools.insert_unique_hand_list(new_hand_list)
+                eigenhand_db_tools.insert_unique_hand_list(new_hand_list, self.db_interface)
 
-            # Get the database ready to perform jobs for the next generation
-            gm.next_generation()
+                # Get the database ready to perform jobs for the next generation
+                self.gm.next_generation()
 
-        #DOING GA
-         
-        #run the planning jobs
-        self.run_remote_dispatcher_tasks()
-        #Get the resulting grasps for the latest generation of hands
-        grasp_list = self.gm.get_all_grasps()
+            #DOING GA
+            
+            #run the planning jobs
+            self.run_remote_dispatcher_tasks()
+            #Get the resulting grasps for the latest generation of hands
+            grasp_list = self.gm.get_all_grasps()
         
-        #Generate new hands based on these grasps, scaling the variance of the mutations down linearly as the
-        #generations progress.
-        new_hand_list = eigenhand_genetic_algorithm.GA_generation(grasp_list, self.gm.hands, self.eval_functor, .5-.4/self.num_ga_iters*ga_gen_num)
-        
-        #Put the new hands in to the database.
-        eigenhand_db_tools.insert_unique_hand_list(new_hand_list)
-        self.gm.next_generation()
+            #Generate new hands based on these grasps, scaling the variance of the mutations down linearly as the
+            #generations progress.
+            new_hand_list = eigenhand_genetic_algorithm.GA_generation(grasp_list, self.gm.hands, self.eval_functor, .5-.4/self.num_ga_iters*ga_gen_num)
+            
+            #Put the new hands in to the database.
+            eigenhand_db_tools.insert_unique_hand_list(new_hand_list, self.db_interface)
+            
+            #Run the planner to get grasps for the last set of hands    
+            self.gm.next_generation()
 
         #Plan grasps for the final set of hands.
         self.run_remote_dispatcher_tasks()
