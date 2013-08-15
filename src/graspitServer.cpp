@@ -390,6 +390,14 @@ ClientSocket::readClient()
 		  {
 		    getEnergy();
 		  }
+		else if ((*strPtr) == "removeRobot")
+		  {
+		    ++strPtr;
+		    std::vector<Robot *> rb;
+		    readRobotIndList(rb);
+		    for(int i = 0; i < rb.size(); ++i)
+		      rb[i]->getWorld()->removeRobot(rb[i]);
+		  }
 	}
 }
 
