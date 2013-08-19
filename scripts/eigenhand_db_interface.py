@@ -12,26 +12,26 @@ TASK_ERROR = 4
 class EGHandDBaseInterface(object):
     """@brief Class that allows high level control over the database for the eigenhand project.
     """
-    
+
     def __init__(self):
         """@brief Connect to the postgres database.
         """
         self.connection = psycopg2.connect("dbname='eigenhanddb' user='postgres' password='roboticslab' host='tonga.cs.columbia.edu'")
         self.cursor = self.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        
+
 
     def get_table_columns(self, table_name):
         """@brief Get an ordered list of the names of the columns of a table
 
         @param table_name - the name of the table to get the columns of.
 
-        @returns a list of column names, in order of appearance in the table. 
+        @returns a list of column names, in order of appearance in the table.
         """
         self.cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name ='%s'"%table_name);
         return [s[0] for s in self.cursor.fetchall()]
 
 
-    
+
     def get_hand(self, hand_id):
         """
         @brief Get a particular hand from the database by hand_id. Does not populate the finger
@@ -76,7 +76,7 @@ class EGHandDBaseInterface(object):
             h.fingers.append(self.get_finger(f_id))
         return h
 
-    
+
 
     def get_grasps_for_hands(self, hand_id_list):
         """
@@ -101,7 +101,7 @@ class EGHandDBaseInterface(object):
             g.from_row_dict(row)
             grasp_list.append(g)
         return grasp_list
-    
+
 
 
     def get_hand_ids_for_generation(self, generation, highest_only = False):
@@ -114,7 +114,7 @@ class EGHandDBaseInterface(object):
         The hand's generation does not necessarily represent only the one in which it is made.
         A hand may be annotated with it's parent's generation also, if it is made by ATR or if it is carried forward from
         the previous iteration because it is more successful.
-        
+
         """
 
         if highest_only:
@@ -147,12 +147,12 @@ class EGHandDBaseInterface(object):
         @param highest_only - Whether to load the hand if the generation requested is the
                               highest one the hand is present in.
 
-        @returns A list of loaded hands. 
+        @returns A list of loaded hands.
         """
         hand_ids = self.get_hand_ids_for_generation(generation, highest_only)
         return [self.load_hand(h) for h in hand_ids]
-    
-    
+
+
 
     def reset_database(self):
         """
@@ -178,25 +178,25 @@ class EGHandDBaseInterface(object):
         self.cursor.execute("insert into hand select * from hand_gen_0;")
         self.cursor.execute("select setval('finger_finger_id_seq',(select max(finger_id) from finger))")
         self.cursor.execute("select setval('hand_hand_id_seq',(select max(hand_id) from hand))")
-        
+
         self.connection.commit()
 
     def prepare_gen_0(self):
         self.reset_database()
         self.insert_gen_0()
-        
+
     def incremental_backup(self, base_filename = '/tmp/test', tables = ['finger','hand','grasp']):
         """
         @param filename - The filename to store to.
         @param tables - The name of the tables to backup
-        
+
         """
         filenames = []
         d = dict()
         for table in tables:
             filename = base_filename + '_' + table
             d[table] = filename
-            self.cursor.execute("copy %s to %s"%(table, filename))
+            self.cursor.execute("COPY %s TO '%s'"%(table, filename))
             self.connection.commit()
 
         return d
@@ -206,7 +206,7 @@ class EGHandDBaseInterface(object):
         @param filename_dict - Load data from filenames.
         """
         for table, filename in filename_dict.iteritems():
-            self.cursor.execute("copy %s to %s"%(table, filename))
+            self.cursor.execute("COPY %s FROM '%s'"%(table, filename))
             self.connection.commit()
         return
 
@@ -217,16 +217,16 @@ class EGHandDBaseInterface(object):
 
         @param value - The value to convert
 
-        @returns a string that is appropriate to insert the given datatype. 
-    
+        @returns a string that is appropriate to insert the given datatype.
+
         """
         if (type(value) == type("")):   #If the data type is a string, put it in as a string
-            return "'" + value + "'"        
+            return "'" + value + "'"
         elif(hasattr(value, 'append')): #If the data type is iterable put it in as an array
             return "array%s"%str(value)
         else:
             return str(value)
-            
+
 
 
     def get_insert_command(self, table_name, data_object, keys = [], return_key = [], exclude_keys = []):
@@ -243,8 +243,8 @@ class EGHandDBaseInterface(object):
                             by the database itself, which will then be returned. Sequences such as the serial id of
                             an object is appropriate for this. This is generally used to return the id of a newly
                             inserted object.
-                            
-        @param exclude_keys - A list of keys no to insert. 
+
+        @param exclude_keys - A list of keys no to insert.
         """
 
         #If no keys have been set, use them all by default.
@@ -255,7 +255,7 @@ class EGHandDBaseInterface(object):
         if return_key:
             keys.remove(return_key)
 
-        #Remove any additional keys we want to ignore. 
+        #Remove any additional keys we want to ignore.
         for key in exclude_keys:
             keys.remove(key)
 
@@ -268,25 +268,25 @@ class EGHandDBaseInterface(object):
 
         #Now create the command.
         key_list_str = ','.join(keys)
-        
+
         command_str = "INSERT into " + table_name + " ("
         command_str += key_list_str
         command_str += ") VALUES ("
-        
+
         #Create the value list to be inserted, converted into strings
         #representing the appropriate datatypes
         value_str_list = [self.get_value_str(data_object.__dict__[key]) for key in keys]
 
-        #Convert it to a string. 
+        #Convert it to a string.
         value_str = ','.join(value_str_list)
         command_str += value_str + ")"
 
         #Add the request to return the return key
         if return_key:
             command_str += " RETURNING %s" %return_key
-        
+
         return command_str
-        
+
 
 
     def get_rows_by_index_list(self, table_name, index_name, index_list):
@@ -327,7 +327,7 @@ class EGHandDBaseInterface(object):
             obj.from_row_list(row, columns)
             object_list.append(obj)
         return object_list
-    
+
     def get_data_obj_from_table(self, object_class, table_name):
         """
         @brief Get a set of all objects from the table.
@@ -348,7 +348,7 @@ class EGHandDBaseInterface(object):
             obj.from_row_list(row, columns)
             object_list.append(obj)
         return object_list
-    
+
 
     def add_finger_to_db(self, finger):
         """
@@ -358,11 +358,11 @@ class EGHandDBaseInterface(object):
 
         @returns the index of the inserted object.
         """
-        command_str = self.get_insert_command(table_name = "finger", data_object = finger, keys = [], return_key ='finger_id')        
+        command_str = self.get_insert_command(table_name = "finger", data_object = finger, keys = [], return_key ='finger_id')
         self.cursor.execute(command_str)
         self.connection.commit()
         return self.cursor.fetchall()[0]
-    
+
     def add_hand_to_db(self, hand):
         """
         @brief Add a Hand to the database, retrieves the index of the inserted object
@@ -370,7 +370,7 @@ class EGHandDBaseInterface(object):
         @param hand - The Hand object to insert.
 
         @returns the index of the inserted object.
-        """        
+        """
         command_str = self.get_insert_command(table_name = "hand", data_object = hand, keys = [], return_key ='hand_id', exclude_keys = ['fingers'])
         print command_str
         self.cursor.execute(command_str)
@@ -389,12 +389,12 @@ class EGHandDBaseInterface(object):
         self.cursor.execute(command_str)
         self.connection.commit()
         return self.cursor.fetchall()[0]
-    
+
     def update_hand_energy(self, hand):
         """
         @brief Store the energy from the Hand to the table, assuming the hand exists in the table.
 
-        @param hand - The Hand's energy to store. 
+        @param hand - The Hand's energy to store.
         """
         command_str = "update hand set energy_list=%s where hand_id=%s"%(self.get_value_str(hand.energy_list),
                                                                          self.get_value_str(hand.hand_id))
@@ -405,8 +405,8 @@ class EGHandDBaseInterface(object):
         """
         @brief Store the generation of the Hand to the table, assuming the hand exists in the table.
 
-        @param hand - The Hand which to update the generation of to store. 
-        
+        @param hand - The Hand which to update the generation of to store.
+
         """
         command_str = "update hand set generation=%s where hand_id=%s"%(self.get_value_str(hand.generation),
                                                                          self.get_value_str(hand.hand_id))
