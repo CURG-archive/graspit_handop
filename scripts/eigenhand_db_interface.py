@@ -13,10 +13,10 @@ class EGHandDBaseInterface(object):
     """@brief Class that allows high level control over the database for the eigenhand project.
     """
 
-    def __init__(self):
+    def __init__(self, eigenhanddb_name = 'eigenhanddb'):
         """@brief Connect to the postgres database.
         """
-        self.connection = psycopg2.connect("dbname='eigenhanddb' user='postgres' password='roboticslab' host='tonga.cs.columbia.edu'")
+        self.connection = psycopg2.connect("dbname='%s' user='postgres' password='roboticslab' host='tonga.cs.columbia.edu'"%(eigenhanddb_name))
         self.cursor = self.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 
