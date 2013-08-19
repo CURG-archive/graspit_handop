@@ -16,7 +16,7 @@ class EGHandDBaseInterface(object):
     def __init__(self, eigenhanddb_name = 'eigenhanddb'):
         """@brief Connect to the postgres database.
         """
-        self.connection = psycopg2.connect("dbname='%s' user='postgres' password='roboticslab' host='tonga.cs.columbia.edu'"%(eigenhanddb_name)
+        self.connection = psycopg2.connect("dbname='%s' user='postgres' password='roboticslab' host='tonga.cs.columbia.edu'"%(eigenhanddb_name))
         self.cursor = self.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 
