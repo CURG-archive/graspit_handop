@@ -66,12 +66,15 @@ namespace egPlannerUtils{
     //! The task identifier for the task type
     int mTaskNum;
 
+    //! An identifier for the task generation
+    int mGeneration;
+
     //! Name of task identifier
     QString mSource;
   public:
   PlannerSaver(db_planner::DatabaseManager * dbm, const int taskNum, QString source) 
     : mDBMgr(*dbm), mTaskNum(taskNum), mSource(source){};
-    
+    void setGeneration(int generation){mGeneration = generation;}
     //! Save a list of grasps from an EGPlanner to the database 
     virtual bool saveGraspList(EGPlanner * finishedPlanner) = 0;
   };
@@ -81,8 +84,8 @@ namespace egPlannerUtils{
   class GuidedPlannerSaver : public PlannerSaver
   {    
   public:
-    GuidedPlannerSaver(db_planner::DatabaseManager * dbm, const int taskNum, QString source)
-      : PlannerSaver(dbm, taskNum, source){};
+  GuidedPlannerSaver(db_planner::DatabaseManager * dbm, const int taskNum, QString source)
+    : PlannerSaver(dbm, taskNum, source){};
      
     //! Save a list of grasps from an EGPlanner to the database 
     virtual bool saveGraspList(EGPlanner * finishedPlanner);
