@@ -1,4 +1,5 @@
 import eigenhand_db_objects
+from grasp_sorting_utils import *
 
 class GenerationManager (object):
     """
@@ -28,6 +29,7 @@ class GenerationManager (object):
         self.load_hands()
         self.trials_per_task = trials_per_task
         self.task_list = list()
+        self.grasp_list = []
         
     def load_hands(self):
         """
@@ -59,7 +61,8 @@ class GenerationManager (object):
     def get_all_grasps(self):
         """@brief Get the grasps for this generation
         """
-        return self.interface.load_grasps_for_generation(self.generation, True)
+        self.grasp_list = self.interface.load_grasps_for_generation(self.generation, True)
+        return self.grasp_list
 
     def get_sorted_grasps(self):
         """@brief Get the grasps as a list of lists of grasps for each hand.
@@ -84,6 +87,7 @@ class GenerationManager (object):
         """
         @brief Prepare the database for the current generation
         """
+        self.grasp_list = []
         self.load_hands()
         self.insert_tasks()
 #        send_condor_jobs()
