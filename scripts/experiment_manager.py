@@ -6,12 +6,12 @@ import time
 import remote_dispatcher
 import atr
 import eigenhand_genetic_algorithm
-
+import examine_database
 
 class ExperimentManager(object):
     def __init__(self, num_ga_iters, num_atr_iters, task_model_list, task_prototype,
                  trials_per_task, eval_functor, db_interface, start_ga_iter = 0,
-                 server_dict = server_list.clic_lab_dict, experiment_name = "default"):
+                 server_dict = server_list.larger_dict, experiment_name = "default"):
         """
         @param num_ga_iters - The number of genetic algorithm generations to run
         @param num_atr_iters - The number of ATR iterations to run for each GA generation
@@ -34,7 +34,9 @@ class ExperimentManager(object):
         self.gm = []
         self.server_dict = server_dict
         self.experiment_name = experiment_name
-
+        self.e_list = dict()
+        #self.score_array = numpy.array([4,0])
+        
 
 
     def get_current_ga_iteration(self):
@@ -71,6 +73,11 @@ class ExperimentManager(object):
                                                        self.eval_functor)
 
 
+    def output_current_status(self):
+        filename = '/var/www/eigenhand_project/results'
+        self.e_list.update(examine_database.get_e_list(self.gm))
+        score_array = examine_database.e_list_to_score_array(self.e_list)
+        examine_database.plot_elist_vs_gen(score_array, filename)
 
 
     def run_remote_dispatcher_tasks(self):
@@ -104,22 +111,48 @@ class ExperimentManager(object):
 
 
     def kill_existing(self):
-        for server in self.server_dict.keys():
-            rd = remote_dispatcher.RemoteServer(server, [], launch_job=False)
+        rd_list = [remote_dispatcher.RemoteServer(server, []) for server in self.server_dict.keys()]
+        [rd.kill_previous() for rd in rd_list]
+        [rd.collect_subprocesses() for rd in rd_list]
+            
 
     def get_grasp_file(self, generation_number):
         '''
         @brief generates a simplistic filename for a specified generation, using the experiment experiment_name
         '''
-        return "%s_%i_grasps.backup"%(self.experiment_name, generation)
+        return "/data/%s_generation_%i"%(self.experiment_name, generation_number)
 
     def backup_grasps(self, generation):
-        self.interface.incremental_backup(self.get_grasp_file(), ['Grasp'])
-        self.interface.clear_grasp_table()
+        self.db_interface.incremental_backup(self.get_grasp_file(generation), ['grasp'])
+        self.db_interface.clear_grasp_table()
 
     def restore_grasps(self, generation):
-        d = {['Grasp'] : self.get_grasp_file(generation)}
-        self.interface.incremental_restore(d)
+        d = {'grasp' : self.get_grasp_file(generation)+'_grasp'}
+        self.db_interface.incremental_restore(d)
+
+    def backup_hands(self):
+        self.db_interface.incremental_backup('/data/%s'%(self.experiment_name),['hand','finger'])
+
+    def restore_hands(self):
+        d = {'finger':'/data/%s_%s'%(self.experiment_name,'finger'),'hand':'/data/%s_hand'%(self.experiment_name)}
+        self.db_interface.incremental_restore(d)
+
+    def restore_all_grasps(self):
+        gen = 0
+        for gen in xrange(self.db_interface.get_max_hand_gen()):
+            try:
+                self.restore_grasps(gen)
+            except Exception as e:
+                print e
+                self.db_interface.connection.commit()
+                
+
+
+    
+    def restore_all(self):
+        self.db_interface.reset_database()
+        self.restore_hands()
+        self.restore_all_grasps()
 
     def run_experiment(self):
         """
@@ -140,7 +173,7 @@ class ExperimentManager(object):
 
                 #Get the resulting grasps for the latest generation of hands
                 grasp_list = self.gm.get_all_grasps()
-
+                self.output_current_status()
                 #Run atr on the existing hand for the latest generation of grasps
                 new_hand_list = atr.ATR_generation(grasp_list, self.gm.hands)
 
@@ -156,7 +189,7 @@ class ExperimentManager(object):
             self.run_remote_dispatcher_tasks()
             #Get the resulting grasps for the latest generation of hands
             grasp_list = self.gm.get_all_grasps()
-
+            self.output_current_status()
             #Generate new hands based on these grasps, scaling the variance of the mutations down linearly as the
             #generations progress.
             new_hand_list = eigenhand_genetic_algorithm.GA_generation(grasp_list, self.gm.hands, self.eval_functor, .5-.4/self.num_ga_iters*ga_gen_num)
@@ -164,13 +197,15 @@ class ExperimentManager(object):
             #Put the new hands in to the database.
             eigenhand_db_tools.insert_unique_hand_list(new_hand_list, self.db_interface)
 
+            #Backup old grasps and remove them from the grasp table
+            self.backup_grasps(self.gm.generation)
+
             #Run the planner to get grasps for the last set of hands
             self.gm.next_generation()
 
-            #Backup old grasps and remove them from the grasp table
-            self.backup_grasps(ga_gen_num)
+            
 
         #Plan grasps for the final set of hands.
         self.run_remote_dispatcher_tasks()
-
-
+        self.backup_grasps(self.gm.generation)
+        self.backup_hands()
