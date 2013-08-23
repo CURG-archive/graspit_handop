@@ -13,12 +13,15 @@ class LocalDispatcher(object):
         self.get_idle_percent()
         self.num_processors = self.get_num_processors()
         self.job_list = []
-        self.min_server_idle_level = 20
-        self.max_server_idle_level = 30
+        self.min_server_idle_level = 10
+        self.max_server_idle_level = 20
         self.server_name = socket.gethostname()
         self.kill_existing_graspit()
-        
-        
+        try:
+            self.status_file = open('/home/jweisz/html/server_status/%s_status.html'%(socket.gethostname()),'w')
+        except:
+            self.status_file = open('/dev/null','w')
+            
     def get_num_processors(self):
         args = ["cat /proc/cpuinfo | grep processor | wc -l"]
         s = subprocess.Popen(args, stdout=subprocess.PIPE, stdin = subprocess.PIPE, stderr=subprocess.STDOUT, shell = True)
@@ -112,6 +115,7 @@ class LocalDispatcher(object):
         if len(valid_jobs) == 0:
             print "no valid jobs on server %s\n"%(self.server_name)
             return False
+        self.output_status(len(valid_jobs))
         self.kill_jobs_while_busy()
         self.clear_inactive_jobs()
         return True
@@ -119,8 +123,16 @@ class LocalDispatcher(object):
     def run_loop(self):
         while(self.run_server()):
             pass
+	self.status_file.seek(0)
+	self.status_file.write('Host: %s finished\n'%(socket.gethostname()))
+	self.status_file.close()
         print "done\n"
 
+    def output_status(self, num_valid_jobs):
+        status_string = "Host: %s  Idle level: %f Num running: %i Date: %s \n"%(socket.gethostname(), self.idle_percent, num_valid_jobs, time.strftime('%c'))
+        self.status_file.seek(0)
+        self.status_file.write(status_string)
+        self.status_file.flush()
 
 class LocalJob(object):
     def __init__(self):
