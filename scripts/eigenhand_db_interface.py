@@ -134,10 +134,22 @@ class EGHandDBaseInterface(object):
         @param highest_only - Whether to load the hand if the generation for the hand is only the highest one that
         that hand is present in.
 
-        @returns a list of all grasps planned in this generation.
-        """
-        hand_ids = self.get_hand_ids_for_generation(generation, highest_only)
-        return self.get_grasps_for_hands(hand_ids)
+        @returns a list of all grasps planned in this generation.        """
+
+        grasp_list = []
+        
+        try:
+            self.cursor.execute("SELECT * from grasp where grasp_iteration = %i"%(generation))
+        except:
+            print generation
+            return grasp_list
+        for r in range(self.cursor.rowcount):
+            row = self.cursor.fetchone()
+            g = eigenhand_db_objects.Grasp()
+            g.from_row_dict(row)
+            grasp_list.append(g)
+        return grasp_list
+
 
     def load_hands_for_generation(self, generation, highest_only = False):
         """
@@ -149,6 +161,7 @@ class EGHandDBaseInterface(object):
 
         @returns A list of loaded hands.
         """
+        
         hand_ids = self.get_hand_ids_for_generation(generation, highest_only)
         return [self.load_hand(h) for h in hand_ids]
 
@@ -169,6 +182,9 @@ class EGHandDBaseInterface(object):
         self.cursor.execute("delete from finger;")
         self.connection.commit()
 
+    def clear_grasp_table(self):
+        self.cursor.execute("delete from grasp;")
+        self.connection.commit()
 
     def insert_gen_0(self):
         """
@@ -178,6 +194,8 @@ class EGHandDBaseInterface(object):
         self.cursor.execute("insert into hand select * from hand_gen_0;")
         self.cursor.execute("select setval('finger_finger_id_seq',(select max(finger_id) from finger))")
         self.cursor.execute("select setval('hand_hand_id_seq',(select max(hand_id) from hand))")
+        self.cursor.execute("select setval('grasp_grasp_id_seq',1)")
+        self.cursor.execute("select setval('task_task_id_seq',1)")
 
         self.connection.commit()
 
@@ -227,6 +245,10 @@ class EGHandDBaseInterface(object):
         else:
             return str(value)
 
+    def get_max_hand_gen(self):
+        self.cursor.execute("select max(generation) from hand;")
+        self.connection.commit()
+        return self.cursor.fetchone()[0][-1]
 
 
     def get_insert_command(self, table_name, data_object, keys = [], return_key = [], exclude_keys = []):
@@ -451,4 +473,10 @@ class EGHandDBaseInterface(object):
         command_str = "update task set task_outcome_id = %i, last_updater='%s' where task_id = %i"%(outcome_id, socket.gethostname(), task_id)
         self.cursor.execute(command_str)
         self.connection.commit()
+
+    def get_num_incompletes(self):
+        command_str = "select count(*) from task where task_outcome_id < 3;"
+        self.cursor.execute(command_str)
+        self.connection.commit()
+        return self.cursor.fetchone()[0]
 
