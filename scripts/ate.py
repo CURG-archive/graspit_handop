@@ -14,7 +14,7 @@ def princomp(A,numpc=0):
     @returns score - The projection of the old matrix in to the principal components space.
 
     """
-     # computing eigenvalues and eigenvectors of covariance matrix
+    # computing eigenvalues and eigenvectors of covariance matrix
     M = (A-mean(A.T,axis=1)).T # subtract the mean (along columns)
     [latent,coeff] = linalg.eig(cov(M))
     p = size(coeff,axis=1)
@@ -197,7 +197,7 @@ def weighted_ATE_hand(grasp_list, hand):
 
 
 def get_all_scores(grasp_list, hand):
-    tmh = mean_top_grasps(grasp_list, hand)
+    tmh = mean_top_grasps(grasp_list)
     if tmh < 0:
         tmh = -tmh
         #    else:
