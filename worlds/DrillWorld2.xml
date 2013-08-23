@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<world>
+	<graspableBody>
+		<filename>cgdb/arm/darpadrill.xml</filename>
+		<transform>
+			<fullTransform>(+1 +0 +0 +0)[+0 +0 +188.914]</fullTransform>
+		</transform>
+	</graspableBody>
+	<obstacle>
+		<filename>models/obstacles/zeroplane.xml</filename>
+		<transform>
+			<fullTransform>(+1 +0 +0 +0)[+0 +0 +0]</fullTransform>
+		</transform>
+	</obstacle>
+</world>
