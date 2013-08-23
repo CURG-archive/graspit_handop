@@ -89,13 +89,12 @@ void GraspPlanningTask::getHand(){
     //mHand = GraspitDBGrasp::loadHandFromDBName(QString(mRecord.handName.c_str()));
     //If that didn't work, try the eigenhand loader
     if ( !mHand )
-      {
-	EigenHandLoader * eh;
+      {	
 	eh = mDBMgr->getEigenhand(mRecord.handId);
 	if (eh){
 	  mHand = eh->loadHand(world);
 	  if (mHand){
-	    transf t = translate_transf(vec3(0,-400,0));	  
+	    transf t = translate_transf(vec3(0,-1000,0));	  
 	    mHand->setTran(t);
 	  }
 	}

@@ -161,6 +161,7 @@ bool GuidedPlannerSaver::saveGraspList( EGPlanner * finishedPlanner){
     DBGA("Synthesizing grasp: " << i);
     gpList.push_back(synthesize(const_cast<GraspPlanningState*>(finishedPlanner->getGrasp(i)), const_cast<GraspPlanningState*>(finishedPlanner->getGrasp(i+1))));
     gpList.back()->SetSource("EIGENGRASPS_TASK_1");
+    gpList.back()->SetIteration(mGeneration);
   }
 
   DBGA("Saving grasps - grasp number: " << gpList.size());
@@ -241,6 +242,7 @@ bool GuidedPlannerSaver::saveGraspList( EGPlanner * finishedPlanner){
      GraspPlanningState final(finishedPlanner->getGrasp(i));
      DBGA("Synthesizing grasp: " << i);
      gpList.push_back(synthesize(const_cast<GraspPlanningState*>(finishedPlanner->getGrasp(i)), &final, &se));
+     gpList.back()->SetIteration(mGeneration);
      //gpList.back()->SetSource(mSource.toStdString());
      //gpList.back()->SetEnergy(finishedPlanner->getGrasp(i)->getEnergy());
    }

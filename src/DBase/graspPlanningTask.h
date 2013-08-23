@@ -28,7 +28,7 @@
 #include "graspitGUI.h"
 class GraspableBody;
 class GraspPlanningState;
-
+class EigenHandLoader;
 
 //! Plans grasps for the hand and object, and stores them in the database
 /*! For now, it does its own cleanup in the sense that it will remove from 
@@ -68,6 +68,9 @@ class GraspPlanningTask : public QObject, public Task {
 
 	//! Start the existing planner
 	void startPlanner();
+
+	//! Eigenhand Loader 
+	EigenHandLoader * eh;
 private:
 	//! Save planned grasps to the database
 	bool saveGrasps(){

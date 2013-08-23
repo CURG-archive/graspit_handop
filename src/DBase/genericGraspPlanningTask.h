@@ -16,7 +16,7 @@
 #ifndef _GENERICGRASPPLANNINGTASK_H_
 #define _GENERICGRASPPLANNINGTASK_H_
 #include "graspPlanningTask.h"
-
+#include "eigenhand_db_interface.h"
 
 /*! 
   Grasp planning task with factory for creating planner for added flexibility
@@ -60,13 +60,13 @@ class GenericGraspPlanningTask:public GraspPlanningTask{
 	mStatus=ERROR;
 	return;
       }
-    mHand->findInitialContact(400);
+    mHand->findInitialContact(1000);
     //set mObject
     mObject = w->getGB(0);
     mObject->setMaterial(wood);
     
     //back the hand off the object if it is overlapped.
-    mHand->findInitialContact(10);
+    //mHand->findInitialContact(10);
     mObject->setDBModel(static_cast<GraspitDBModel *>(mRecord.model));
     
     //disable collisions between obstacles and main object
@@ -94,9 +94,10 @@ public:
    */
   virtual void start(){
     //sets mHand
-    getHand();
+    getHand();    
     if(!mHand)
       return;
+    saver.setGeneration(eh->hd->generation.back());
     //sets mObject
     getObject();	
     //get a planner from the factory

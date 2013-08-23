@@ -37,6 +37,8 @@ class Grasp {
   const Model* source_model_;
   //! The id of the grasp from the database.
   int grasp_id_;
+  //! The iteration of the planner during which this grasp was run
+  int iteration_;
   //! The source of this grasp: EGPlanner, human operator, etc.
   string source_;
   //! The name of the hand the grasp is for.
@@ -64,6 +66,7 @@ class Grasp {
   void SetFinalgraspPosition(const vector<double>& finalgraspPosition) { final_grasp_position_ = finalgraspPosition; }
   void SetContacts(const vector<double>& contacts) { contacts_ = contacts; }
   void SetParams(const vector<double>& params) { params_ = params; }
+  void SetIteration(const int iteration){iteration_ = iteration;}
 
   vector<double> GetPregraspJoints() const { return pregrasp_joints_; }
   vector<double> GetPregraspPosition() const { return pregrasp_position_; }
@@ -71,6 +74,7 @@ class Grasp {
   vector<double> GetFinalgraspPosition() const { return final_grasp_position_; }
   vector<double> GetContacts() const { return contacts_; }
   vector<double> GetParams() const { return params_; }
+
 
   string getHandName(){return hand_name_;}
 
@@ -92,6 +96,7 @@ class Grasp {
   double VolumeQuality() const { return volume_quality_; }
   double Energy() const {return energy_;}
   int GraspId() const { return grasp_id_; }
+  int Iteration() const {return iteration_;}
   //! Transform a grasp by some 4x4 transform.
   /*! Transforms are left-multiply and column major.
       This base implementation always fails. */

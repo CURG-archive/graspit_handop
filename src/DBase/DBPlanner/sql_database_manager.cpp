@@ -583,16 +583,10 @@ bool SqlDatabaseManager::SaveGrasps(const vector<Grasp*> graspList) const {
 			query_text << "}', ";
 		}
 
-		//params
+		//iteration
 		tempArray = graspList[i]->GetParams();
-		query_text << "'{";
-		if (!tempArray.empty()) {
-		  for(j = 0; j < tempArray.size() - 1; ++j){
-		    query_text << tempArray[j] << ", ";
-		  }
-		} else {
-		  query_text << "}', ";
-		}
+		query_text << graspList[i]->Iteration() << ", ";
+		
 
 		//energy
 		query_text << graspList[i]->Energy() << ", ";
@@ -796,7 +790,7 @@ bool SqlDatabaseManager::GetPCA(const Model & model, float pca[9])const{
     Table results;
     std::vector<unsigned int> fingerIDList;
     std::vector<double> palmScale;
-    int palm_scale_column, finger_id_column, finger_base_positions_column;
+    int palm_scale_column, finger_id_column, finger_base_positions_column, generation_column;
 
     //construct query text
     query_text << "SELECT * from hand where hand_id = " << eigenhandNumber;
@@ -810,8 +804,9 @@ bool SqlDatabaseManager::GetPCA(const Model & model, float pca[9])const{
     //Get columns from hand table
     if(!results.GetColumnIndex("palm_scale", &palm_scale_column) || 
        !results.GetColumnIndex("finger_id_list", &finger_id_column) || 
-       !results.GetColumnIndex("finger_base_positions", &finger_base_positions_column)) return NULL;
-
+       !results.GetColumnIndex("finger_base_positions", &finger_base_positions_column) || 
+       !results.GetColumnIndex("generation", &generation_column)) return NULL;
+    
     //Create hand descriptor
     HandDescription hd;
     hd.handID = eigenhandNumber;
@@ -820,6 +815,7 @@ bool SqlDatabaseManager::GetPCA(const Model & model, float pca[9])const{
     if (!results.GetField(palm_scale_column, 0, &hd.palmScale)) return NULL;
     if (!results.GetField(finger_id_column, 0, &hd.fingerIDList)) return NULL;
     if (!results.GetField(finger_base_positions_column, 0, &hd.fingerBasePositions)) return NULL;
+    if (!results.GetField(generation_column, 0, &hd.generation)) return NULL;
 
     if(hd.fingerBasePositions.size() != hd.fingerIDList.size()) return NULL;
 

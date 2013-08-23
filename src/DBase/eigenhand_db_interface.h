@@ -17,6 +17,7 @@ struct HandDescription
   std::vector<double> palmScale;
   std::vector<unsigned int> fingerIDList;
   std::vector<double> fingerBasePositions;
+  std::vector<unsigned int> generation;
 };
 
 
