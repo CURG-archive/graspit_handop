@@ -35,3 +35,7 @@ medium_dict = dict()
 medium_dict["128.59.15.78"] = []
 medium_dict["128.59.15.72"] = []
 medium_dict["128.59.15.62"] = []
+
+larger_dict = dict(clic_lab_dict)
+larger_dict["128.59.19.206"] = []
+larger_dict["fraser.cs.columbia.edu"] = []

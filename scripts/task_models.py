@@ -37,3 +37,10 @@ full_model_dict['wrench'] = TaskModel(18542,'harvard_wrench','worlds/WrenchWorld
 full_model_dict['coffeemug'] = TaskModel(18541,'harvard_coffeemug','worlds/CoffeemugWorld.xml',[0,0,3.5,0,-4.55,0])
 full_model_dict['bowl'] = TaskModel(18540,'harvard_bowl','worlds/BowlWorld.xml',[0,0,3.45,0,0,0])
 full_model_dict['aerosol'] = TaskModel(18539,'harvard_aersol','worlds/AerosolcanWorld.xml',[0,0,3.55,0,0,0])
+
+
+small_model_dict = dict()
+#small_model_dict['hammer'] = TaskModel(18548,'harvard_hammer','worlds/HammerWorld.xml',[0,0,3.5,0,-4.55,0])
+small_model_dict['drill'] = TaskModel(18547,'harvard_drill','worlds/DrillWorld2.xml',[0,0,24.52,.0,-2.25,0])
+#small_model_dict['doorknob'] = TaskModel(18546,'harvard_doorknob','worlds/DoorknobWorld.xml',[0,0,3.45,-.25,0,0])
+#small_model_dict['laptop'] = TaskModel(18545,'harvard_laptop','worlds/LaptopWorld.xml',[0,0,31.75,0,0,0])
