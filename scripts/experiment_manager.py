@@ -7,6 +7,8 @@ import remote_dispatcher
 import atr
 import eigenhand_genetic_algorithm
 import examine_database
+import os
+import eigenhand_db_interface
 
 class ExperimentManager(object):
     def __init__(self, num_ga_iters, num_atr_iters, task_model_list, task_prototype,
@@ -75,7 +77,7 @@ class ExperimentManager(object):
 
     def output_current_status(self):
         filename = '/var/www/eigenhand_project/results'
-        self.e_list.update(examine_database.get_e_list(self.gm))
+        self.e_list.update(examine_database.get_e_list(self.gm, [], self.eval_functor))
         score_array = examine_database.e_list_to_score_array(self.e_list)
         examine_database.plot_elist_vs_gen(score_array, filename)
 
@@ -139,12 +141,17 @@ class ExperimentManager(object):
 
     def restore_all_grasps(self):
         gen = 0
-        for gen in xrange(self.db_interface.get_max_hand_gen()):
-            try:
-                self.restore_grasps(gen)
-            except Exception as e:
-                print e
-                self.db_interface.connection.commit()
+        print 'restoring all grasps \n'
+        for gen in xrange(self.num_ga_iters * (self.num_atr_iters + 1) + 1):
+            if os.path.exists(self.get_grasp_file(gen)+'_grasp'):
+                print 'file exists %i \n'%(gen)
+                self.starting_ga_iter = gen//(self.num_atr_iters + 1)
+                try:
+                    self.restore_grasps(gen)
+                    
+                except Exception as e:
+                    print e
+                    self.db_interface.connection.commit()
                 
 
 
@@ -153,6 +160,15 @@ class ExperimentManager(object):
         self.db_interface.reset_database()
         self.restore_hands()
         self.restore_all_grasps()
+
+    def restore_to_new_dbase(self):
+        self.db_interface.prepare_empty_db(self.experiment_name)
+        self.db_interface = eigenhand_db_interface.EGHandDBaseInterface(self.experiment_name)
+        self.restore_all()
+
+    def drop_dbase(self):
+        self.db_interface.drop_database(self.experiment_name)
+        
 
     def run_experiment(self):
         """
@@ -209,3 +225,5 @@ class ExperimentManager(object):
         self.run_remote_dispatcher_tasks()
         self.backup_grasps(self.gm.generation)
         self.backup_hands()
+
+    

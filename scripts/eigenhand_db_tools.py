@@ -3,7 +3,7 @@
 
 import eigenhand_db_objects
 import copy as cp
-
+import numpy
 
 def insert_unique_finger(interface, finger, finger_list):
     """
@@ -178,3 +178,60 @@ def update_group_energies(interface, grasp_group_energy):
         interface.update_hand_energy(h)
 
     return
+
+
+def output_hands_mat(hand_list, hand_generation = -1):
+    """
+    @brief - Format of output matrix hand_id hand_gen palm_size finger_positions finger_link_lengths -- 0 for non existent fingers finger_link_ranges -- 0 for for non existent ranges parent1 parent2 -- 0 for non existent grasp_energies
+    """
+    def get_finger_descriptor(finger, min_len = 5):
+        extended_link_length_list = list(finger.link_length_list)
+        extended_link_length_list.extend([0 for i in xrange(10)])
+        
+        extended_angle_descriptor = list(finger.joint_range_list)
+        extended_angle_descriptor.extend([0 for i in xrange(20)])
+        
+        finger_descriptor = [extended_link_length_list[3], extended_link_length_list[5], extended_link_length_list[7], extended_link_length_list[9]]
+        finger_descriptor.extend(extended_angle_descriptor[2:20])
+                                 
+        return finger_descriptor
+
+
+    hand_descriptor_list = []
+    for hand in hand_list:
+        hand_descriptor = []
+        hand_descriptor.append(hand.hand_id)
+
+        if hand_generation > 0:
+            hand_descriptor.append(hand_generation)
+        else:
+            hand_descriptor.append(hand.generation[-1])
+            
+        hand_descriptor.extend(hand.finger_base_positions)
+        for finger in hand.fingers:
+            hand_descriptor.extend(get_finger_descriptor(finger))
+        extended_parents = []
+        if hand.parents == None:
+            extended_parents = [0,0]
+        else:
+            extended_parents = list(hand.parents)
+            extended_parents.append(0)
+        hand_descriptor.extend(extended_parents[0:2])
+            
+        hand_descriptor_list.append(hand_descriptor)
+    
+    return numpy.array(hand_descriptor_list)
+
+        
+def output_grasps_mat(grasp_list):
+    """
+    @brief - Format of output graspi_id hand_id grasp_generation num_grasp_joints grasp_joints padded with 0 to length 40 grasp_energy epsilon_quality
+    """
+    grasp_joint_extender = [0 for i in xrange(40)]
+    grasp_descriptor_list = []
+    for grasp in grasp_list:
+        extended_grasp_joints = list(grasp.grasp_grasp_joints)
+        extended_grasp_joints.extend(grasp_joint_extender[:(40 - len(extended_grasp_joints))])
+        grasp_descriptor = [grasp.grasp_id, grasp.hand_id, grasp.generation, len(grasp.grasp_grasp_joints)] + extended_grasp_joints + [grasp.grasp_energy, grasp.grasp_epsilon_quality]
+        grasp_descriptor_list.append(grasp_descriptor)
+    return numpy.array(grasp_descriptor_list)
