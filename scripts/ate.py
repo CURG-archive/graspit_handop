@@ -182,6 +182,8 @@ def ATE_hand(grasp_list, hand, alpha = .4, beta = .6):
     @returns a float that measures the complexity of the hand. Higher is more complex.
     """
     digit_coupling_complexity, actuator_complexity = calculate_ATE_scores(grasp_list, hand)
+    hand.energy_list.append(digit_coupling_complexity)
+    hand.energy_list.append(actuator_complexity)
     return alpha*sum(sum(digit_coupling_complexity))*beta*sum(actuator_complexity)
 
 
@@ -192,8 +194,19 @@ def weighted_ATE_hand(grasp_list, hand):
         #    else:
         #        print "hand %d mean energy > 0 "%(hand.hand_id)
         #        print tmh
-        
+    hand.energy_list.append(tmh)
     return tmh * ATE_hand(grasp_list, hand)
+
+
+def weighted_threshold_ATE_hand(grasp_list, hand, threshold = 100000):
+    new_g_list = [grasp for grasp in grasp_list if grasp.grasp_energy < threshold]
+    if len(new_g_list) == 0:
+        hand.energy_list = [1000,1000,1e10,2]
+        return 1e10
+    weight = 2 - (1.0*len(new_g_list))/len(grasp_list)
+    energy = weighted_ATE_hand(new_g_list, hand)
+    hand.energy_list.append(weight)
+    return weight*energy
 
 
 def get_all_scores(grasp_list, hand):
