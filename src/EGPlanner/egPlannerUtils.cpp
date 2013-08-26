@@ -243,6 +243,10 @@ bool GuidedPlannerSaver::saveGraspList( EGPlanner * finishedPlanner){
      DBGA("Synthesizing grasp: " << i);
      gpList.push_back(synthesize(const_cast<GraspPlanningState*>(finishedPlanner->getGrasp(i)), &final, &se));
      gpList.back()->SetIteration(mGeneration);
+     std::vector<double> params;
+     params.push_back(finishedPlanner->getGrasp(i)->getAttribute("PlanningTime"));
+     params.push_back(finishedPlanner->getGrasp(i)->getAttribute("PlanningSteps"));
+     gpList.back()->SetParams(params);
      //gpList.back()->SetSource(mSource.toStdString());
      //gpList.back()->SetEnergy(finishedPlanner->getGrasp(i)->getEnergy());
    }

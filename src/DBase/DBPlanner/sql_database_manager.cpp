@@ -583,8 +583,9 @@ bool SqlDatabaseManager::SaveGrasps(const vector<Grasp*> graspList) const {
 			query_text << "}', ";
 		}
 
-		//iteration
-		tempArray = graspList[i]->GetParams();
+		//iteration		
+
+
 		query_text << graspList[i]->Iteration() << ", ";
 		
 
@@ -598,7 +599,17 @@ bool SqlDatabaseManager::SaveGrasps(const vector<Grasp*> graspList) const {
 		query_text << graspList[i]->VolumeQuality() << ", ";
 
 		//source
-		query_text << "'" << graspList[i]->GetSource().c_str() << "')";
+		query_text << "'" << graspList[i]->GetSource().c_str() << "', ";
+		// attributes 
+		tempArray = graspList[i]->GetParams();
+		query_text << "'{'";
+		for (int i = 0; i < tempArray.size() - 1; ++i)
+		  {
+		    query_text << tempArray[i] << ",";
+		  }
+		query_text << tempArray.back() << "}', ) ";
+		
+		
 
 		std::cout << query_text.str().c_str();
 		

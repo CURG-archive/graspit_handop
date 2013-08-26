@@ -524,6 +524,8 @@ EGPlanner::addToListOfUniqueSolutions(GraspPlanningState *s, std::list<GraspPlan
 	}
 	if (add) {
 		list->push_back(s);
+		s->addAttribute("PlanningTime", getRunningTime());
+		s->addAttribute("PlanningSteps", mCurrentStep);
 	}
 	return add;
 }
