@@ -85,7 +85,7 @@ def output_results(em):
     total_score_array = None
 
     #Iterate over generations calculating the scores
-    for gen in xrange(em.db_interface.get_max_hand_gen()):
+    for gen in xrange(em.db_interface.get_max_hand_gen() + 1):
         print gen
         #Set current generation
         em.gm.generation = gen
@@ -133,7 +133,7 @@ def output_results(em):
     zf.close()  
 
     #Write current results to the web site
-    output_frontend_report(em,'weighted threshold ate with one object (drill) 50 generations', score_array)
+    output_frontend_report(em,'weighted threshold ate with one object (drill) 50 generations', total_score_array)
 
 
 
