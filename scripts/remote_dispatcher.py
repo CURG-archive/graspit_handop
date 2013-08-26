@@ -9,29 +9,33 @@ from ctypes import *
 class RemoteServer(object):
     def __init__(self, server_name, interface):
         self.server_name = server_name
-        self.filename = open("/dev/null","rw")
         self.subprocesses = []
         self.interface = interface
         self.killed_forcibly = False
-        self.kill_previous()
+        #self.kill_previous()
 
     def launch_job(self):
-        args = ["ssh", "-o","ConnectTimeout=30", self.server_name, "python", "/home/jweisz/gm/graspit_dispatcher.py"]
-        print "%s \n"%(self.server_name)
-        self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=self.filename, stderr=subprocess.STDOUT))
+        with open('/dev/null','rw') as null_file:
+            args = ["ssh", "-o","ConnectTimeout=30", self.server_name, "python", "/home/jweisz/gm/graspit_dispatcher.py"]
+            print "%s \n"%(self.server_name)
+            self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=null_file, stderr=subprocess.STDOUT))
 
-    def kill_if_busy(self):       
-        args = ["ssh", self.server_name, "python", "/home/jweisz/gm/graspit_dispatch_monitor.py"]
-        print "%s \n"%(self.server_name)
-        return subprocess.Popen(args, stdin = subprocess.PIPE, stdout=self.filename, stderr=subprocess.STDOUT)
+    def kill_if_busy(self):
+        with open('/dev/null','rw') as null_file:
+            args = ["ssh", self.server_name, "python", "/home/jweisz/gm/graspit_dispatch_monitor.py"]
+            print "%s \n"%(self.server_name)
+            return subprocess.Popen(args, stdin = subprocess.PIPE, stdout=null_file, stderr=subprocess.STDOUT)
 
     def kill_previous(self):
         args = ["ssh", "-o","ConnectTimeout=30",self.server_name, "killall", "python"]
         self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT))
-        
+            
         args = ["ssh", "-o","ConnectTimeout=30", self.server_name, "killall", "graspit"]
         self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT))
 
+    def do_all(self):        
+        args = ["ssh", "-o","ConnectTimeout=30",self.server_name, "killall", "python;", "killall","graspit;","killall","nice;", "python", "/home/jweisz/gm/graspit_dispatcher.py"]
+        self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT))
 
     def collect_subprocesses(self):
         for s in self.subprocesses:
@@ -105,8 +109,9 @@ class RemoteDispatcher(object):
         try:
             a = RemoteServer(server_name, self.interface)
             self.server_starting_dict[server_name] = a
-            a.kill_previous()
-            self.start_server(a)
+            #a.kill_previous()
+            #self.start_server(a)
+            a.do_all()
             self.server_dict[server_name] = a
         except:
             print "server :%s failed to start"%(server_name)
@@ -123,7 +128,7 @@ class RemoteDispatcher(object):
         self.file.write('started running generation %i at %s \n'%(generation,time.strftime('%c')))
         self.file.seek(0)
         self.file.flush()
-        time.sleep(5)
+        time.sleep(30)
         running_servers = []
         while running and self.interface.get_num_incompletes() > 0 and time.time() - t < max_len:
             test_dict = dict(self.server_dict)
@@ -154,12 +159,13 @@ class RemoteDispatcher(object):
                 server.kill_all_subprocesses()
             except:
                 pass
+            del server
+        
             
-            server.filename.close()
-        for thread in self.thread_list:
-            if thread.is_alive():
-                pthread = cdll.LoadLibrary("libpthread-2.10.1.so")
-                pthread.pthread_cancel(c_ulong(thread.ident))
+        #for thread in self.thread_list:
+        #    if thread.is_alive():
+        #        pthread = cdll.LoadLibrary("libpthread-2.10.1.so")
+        #        pthread.pthread_cancel(c_ulong(thread.ident))
                 
         
     def run_monitored(self, monitor_functor = []):
