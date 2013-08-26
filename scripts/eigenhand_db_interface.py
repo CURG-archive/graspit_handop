@@ -2,6 +2,7 @@ import psycopg2
 import psycopg2.extras
 import eigenhand_db_objects
 import socket
+import os
 
 #The task table outcome codes.
 TASK_READY = 1
@@ -165,6 +166,11 @@ class EGHandDBaseInterface(object):
         hand_ids = self.get_hand_ids_for_generation(generation, highest_only)
         return [self.load_hand(h) for h in hand_ids]
 
+    def load_hands_for_grasps(self, grasp_list):
+        hand_ids = set()
+        [hand_ids.add(grasp.hand_id) for grasp in grasp_list]
+        return [self.load_hand(h) for h in hand_ids]
+
 
 
     def reset_database(self):
@@ -199,6 +205,26 @@ class EGHandDBaseInterface(object):
 
         self.connection.commit()
 
+    def prepare_empty_db(self, new_db_name, old_db_name = "eigenhand_empty_schema"):
+        try:
+            self.connection.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+            self.cursor.execute("CREATE DATABASE %s TEMPLATE %s"%(new_db_name, old_db_name))
+            self.cursor.fetchall()
+        except Exception as e:
+            print e
+            pass
+        try:
+            self.connection.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_READ_COMMITTED)
+            self.connection.commit()
+        except:
+            pass
+        
+    def drop_database(self, db_name):
+        self.cursor.execute("DROP DATABASE IF EXISTS  %s;"%(db_name))
+        self.connection.commit()
+        
+
+    
     def prepare_gen_0(self):
         self.reset_database()
         self.insert_gen_0()
@@ -279,8 +305,11 @@ class EGHandDBaseInterface(object):
 
         #Remove any additional keys we want to ignore.
         for key in exclude_keys:
-            keys.remove(key)
-
+            try:
+                keys.remove(key)
+            except:
+                pass
+            
         #Remove any keys that have invalid inputs. Any values unset will end up as empty anyway.
         keys_copy = list(keys)
 
@@ -393,7 +422,7 @@ class EGHandDBaseInterface(object):
 
         @returns the index of the inserted object.
         """
-        command_str = self.get_insert_command(table_name = "hand", data_object = hand, keys = [], return_key ='hand_id', exclude_keys = ['fingers'])
+        command_str = self.get_insert_command(table_name = "hand", data_object = hand, keys = [], return_key ='hand_id', exclude_keys = ['fingers','energy_list'])
         print command_str
         self.cursor.execute(command_str)
         self.connection.commit()
