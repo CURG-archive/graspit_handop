@@ -64,6 +64,8 @@ class Hand(DBObject):
     def __init__(self, hand_id = [], hand_name = [],
                  generation = [0], finger_id_list = [],
                  palm_scale=[1,1,1], finger_base_positions = [], energy_list = [], parents = [], fingers = [] ):
+        if energy_list == None:
+            energy_list = []
         
         DBObject.__init__(self, hand_id = hand_id,
                           hand_name = hand_name,
@@ -136,7 +138,7 @@ class Finger(DBObject):
 class Grasp(DBObject):
     def __init__(self, grasp_id = [], hand_id = [], scaled_model_id = [],
                  grasp_pregrasp_joints = [], grasp_grasp_joints = [], grasp_energy = [],
-                 grasp_epsilon_quality = [], grasp_volume_quality = [], grasp_source_id = []):
+                 grasp_epsilon_quality = [], grasp_volume_quality = [], grasp_source_id = [], generation = -1):
         DBObject.__init__(self, grasp_id = grasp_id,
                           hand_id = hand_id,
                           scaled_model_id = scaled_model_id,
@@ -145,7 +147,8 @@ class Grasp(DBObject):
                           grasp_energy = grasp_energy,
                           grasp_epsilon_quality = grasp_epsilon_quality,
                           grasp_volume_quality = grasp_volume_quality,
-                          grasp_source_id = grasp_source_id)
+                          grasp_source_id = grasp_source_id,
+                          generation = generation)
 
         
     
@@ -199,3 +202,7 @@ def find_equivalent_hand(hand_list,h):
     hand id, energy list, and generation
     """
     return find_equivalent_dataobject(hand_list, h, ['hand_id', 'energy_list','hand_name','generation','fingers'])
+
+
+
+    
