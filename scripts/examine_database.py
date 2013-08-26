@@ -7,19 +7,26 @@ import ate
 
 
 
-def get_e_list(gm = [], generation_num = []):
+def get_e_list(gm = [], generation_num = [], energy_func = []):
     if not gm:
         interface = EGHandDBaseInterface()        
-        gm = GenerationManager(interface, task_model_list, generation_num, 15, 5, 4, ATE_hand)
+        gm = GenerationManager(interface, task_model_list, generation_num, 15, 5, 4, energy_func)
         gm.get_all_grasps()
 
     grasp_dict = grasp_sorting_utils.get_top_grasps_by_hand(gm.grasp_list, 10)
-    
+    energy_list = []
     e_list = dict()
     for key in grasp_dict:
+
+        hand = [h for h in gm.hands if h.hand_id == key][0]
+        hand.energy_list = []
         if not grasp_dict[key]:
-            continue
-        e_list[key] = [gm.generation] + list(ate.get_all_scores(grasp_dict[key], [h for h in gm.hands if h.hand_id == key][0]))
+            energy_list = [numpy.inf, numpy.inf, numpy.inf, numpy.inf],
+        else:
+            energy_func(grasp_dict[key], hand)
+            energy_list = hand.energy_list
+            
+        e_list[key] = [gm.generation] + energy_list
         
     return e_list
 
@@ -30,10 +37,7 @@ def get_generation_score_array(gm):
 
 def e_list_to_score_array(e_list):
     #[generation_num, hand_id, top_mean_hand_score, digit_coupling_complexity, actuator_complexity]
-    return numpy.array([[e_list[k][0], k,e_list[k][1],numpy.sum(e_list[k][2]), numpy.sum(e_list[k][3])] for k in e_list.keys()])
-
-
-
+    return numpy.array([[e_list[k][0], k,e_list[k][1],numpy.sum(e_list[k][2]), numpy.sum(e_list[k][3]), e_list[k][4]] for k in e_list.keys() if e_list[k][1] < 500 and e_list[k][4] < 2])
 
 
 def get_all_generations():
@@ -81,7 +85,7 @@ def plot_elist_vs_gen(score_array, base_filename = None):
     rescale_view()
     pylab.savefig(base_filename + '_actuator_complexity.png')
     pylab.clf()
-    final_score = score_array[:,2]* (score_array[:,3]*.4 + score_array[:,4] * .6)
+    final_score = score_array[:,4]* (score_array[:,3]*.4 + score_array[:,2] * .6 * score_array[:,5])
     pylab.plot(score_array[:,0],final_score , '.')
     plot_poly_fit(score_array[:,0],final_score)
     rescale_view()
