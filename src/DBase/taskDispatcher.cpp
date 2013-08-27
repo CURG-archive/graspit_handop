@@ -95,7 +95,7 @@ void TaskDispatcher::mainLoop()
 				DBGA("Dispatcher: error marking completed task");
 				mStatus = ERROR;
 			}
-			mDBMgr->AgeTaskStatus(mCurrentTask->getRecord().taskType,"RUNNING","TO_GO",mCurrentTask->getRecord().taskTime + 600);
+			mDBMgr->AgeTaskStatus(mCurrentTask->getRecord().taskType,"RUNNING","TO_GO",mCurrentTask->getRecord().taskTime + 1800);
 			if(mCurrentTask)
 			  delete mCurrentTask; mCurrentTask = NULL;			
 			if(getenv("GRASPIT_QUIT_ON_TASK_COMPLETE") && !strcmp(getenv("GRASPIT_QUIT_ON_TASK_COMPLETE"),"YES")){
