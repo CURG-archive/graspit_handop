@@ -138,7 +138,7 @@ class Finger(DBObject):
 class Grasp(DBObject):
     def __init__(self, grasp_id = [], hand_id = [], scaled_model_id = [],
                  grasp_pregrasp_joints = [], grasp_grasp_joints = [], grasp_energy = [],
-                 grasp_epsilon_quality = [], grasp_volume_quality = [], grasp_source_id = [], generation = -1):
+                 grasp_epsilon_quality = [], grasp_volume_quality = [], grasp_source_id = [], grasp_iteration = -1, grasp_attributes = []):
         DBObject.__init__(self, grasp_id = grasp_id,
                           hand_id = hand_id,
                           scaled_model_id = scaled_model_id,
@@ -148,7 +148,8 @@ class Grasp(DBObject):
                           grasp_epsilon_quality = grasp_epsilon_quality,
                           grasp_volume_quality = grasp_volume_quality,
                           grasp_source_id = grasp_source_id,
-                          generation = generation)
+                          grasp_iteration = grasp_iteration,
+                          grasp_attributes = grasp_attributes)
 
         
     

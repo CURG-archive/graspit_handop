@@ -225,13 +225,13 @@ def output_hands_mat(hand_list, hand_generation = -1):
         
 def output_grasps_mat(grasp_list):
     """
-    @brief - Format of output graspi_id hand_id grasp_generation num_grasp_joints grasp_joints padded with 0 to length 40 grasp_energy epsilon_quality
+    @brief - Format of output graspi_id hand_id grasp_generation num_grasp_joints grasp_joints padded with 0 to length 40 grasp_energy epsilon_quality planner_timer planner_iteration
     """
     grasp_joint_extender = [0 for i in xrange(40)]
     grasp_descriptor_list = []
     for grasp in grasp_list:
         extended_grasp_joints = list(grasp.grasp_grasp_joints)
         extended_grasp_joints.extend(grasp_joint_extender[:(40 - len(extended_grasp_joints))])
-        grasp_descriptor = [grasp.grasp_id, grasp.hand_id, grasp.generation, len(grasp.grasp_grasp_joints)] + extended_grasp_joints + [grasp.grasp_energy, grasp.grasp_epsilon_quality]
+        grasp_descriptor = [grasp.grasp_id, grasp.hand_id, grasp.generation, len(grasp.grasp_grasp_joints)] + extended_grasp_joints + [grasp.grasp_energy, grasp.grasp_epsilon_quality] + grasp.grasp_attributes
         grasp_descriptor_list.append(grasp_descriptor)
     return numpy.array(grasp_descriptor_list)
