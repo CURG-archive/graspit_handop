@@ -602,12 +602,12 @@ bool SqlDatabaseManager::SaveGrasps(const vector<Grasp*> graspList) const {
 		query_text << "'" << graspList[i]->GetSource().c_str() << "', ";
 		// attributes 
 		tempArray = graspList[i]->GetParams();
-		query_text << "'{'";
+		query_text << "'{";
 		for (int i = 0; i < tempArray.size() - 1; ++i)
 		  {
 		    query_text << tempArray[i] << ",";
 		  }
-		query_text << tempArray.back() << "}', ) ";
+		query_text << tempArray.back() << "}') ";
 		
 		
 
