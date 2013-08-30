@@ -3,6 +3,8 @@ import eigenhand_db_interface
 import eigenhand_db_tools
 import copy
 import socket
+import pylab
+import numpy
 
 def test_finger_permutes():
 	interface = eigenhand_db_interface.EGHandDBaseInterface()
@@ -69,3 +71,55 @@ def qmutate(hands):
 		hand = eigenhand_genetic_algorithm.GA_mutate(hands[i], .1)
 		hands[i] = hand
 	return hands
+
+def percentage_phalanges(generation, interface):
+	hands = interface.load_hands_for_generation(generation)
+	three = four = five = 0
+	for hand in hands:
+		for finger in hand.fingers:
+			i = len(finger.link_length_list)
+			if i is 6:
+				three += 1
+			elif i is 8:
+				four += 1
+			elif i is 10:
+				five += 1
+	total = three + four + five
+	p = lambda x: int(float(x) / total * 100)
+
+	print "Number of phalanges:"
+	print "Three: %i, %i%%\nFour: %i, %i%%\nFive: %i, %i%%\n"%(three, p(three), four, p(four), five, p(five))
+
+def pp_no_o(generation, interface):
+	hands = interface.get_hands_by_grasp_gen(generation)
+	t = f = v = 0
+	for hand in hands:
+		for finger in hand.fingers:
+			i = len(finger.link_length_list)
+			if i is 6:
+				t += 1
+			elif i is 8:
+				f += 1
+			elif i is 10:
+				v += 1
+	tot = t + f + v
+	p = lambda x: int(float(x) / tot * 100)
+	return (p(t), p(f), p(v))
+
+def plot_output(i):
+	score_list = []
+	for gen in range(301):
+		percent_1_links, percent_2_links, percent_3_links = pp_no_o(gen, i)
+	  	score_list.append([gen, percent_1_links, percent_2_links, percent_3_links])
+	  	print gen
+
+	score_mat = numpy.array(score_list)
+
+	#colors are represented by strings -- r,g,b,and k are the most common
+	# standing for red green blue and black
+
+	pylab.clf()
+	pylab.plot(score_mat[:,0],score_mat[:,1],'r')
+	pylab.plot(score_mat[:,0],score_mat[:,2],'b')
+	pylab.plot(score_mat[:,0],score_mat[:,3],'g')
+	pylab.show()

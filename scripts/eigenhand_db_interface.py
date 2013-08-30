@@ -78,6 +78,12 @@ class EGHandDBaseInterface(object):
         return h
 
 
+    def get_hands_by_grasp_gen(self, generation):
+        query_string = 'select hand_id from hand where hand_id = any(select distinct hand_id from grasp where grasp_iteration = %i)'%(generation)
+        self.cursor.execute(query_string)
+        self.connection.commit()
+
+        return [self.load_hand(int(hand_id[0])) for hand_id in self.cursor.fetchall()]
 
     def get_grasps_for_hands(self, hand_id_list):
         """
@@ -138,7 +144,7 @@ class EGHandDBaseInterface(object):
         @returns a list of all grasps planned in this generation.        """
 
         grasp_list = []
-        
+
         try:
             self.cursor.execute("SELECT * from grasp where grasp_iteration = %i"%(generation))
         except:
@@ -162,7 +168,7 @@ class EGHandDBaseInterface(object):
 
         @returns A list of loaded hands.
         """
-        
+
         hand_ids = self.get_hand_ids_for_generation(generation, highest_only)
         return [self.load_hand(h) for h in hand_ids]
 
