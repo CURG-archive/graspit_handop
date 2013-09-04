@@ -69,7 +69,7 @@ def calculate_ATE_scores(grasp_list, hand):
         
         @param grasp_list - The list of grasps to matrixify.
         """
-        return array([g.grasp_grasp_joints for g in grasp_list])*(180.0/pi)
+        return array([g.grasp_grasp_joints[1:] for g in grasp_list])*(180.0/pi)
 
     def get_indices_for_finger(hand, finger_num):
         """
