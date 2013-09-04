@@ -195,7 +195,8 @@ class ExperimentManager(object):
 
                 #Update database with new hands
                 eigenhand_db_tools.insert_unique_hand_list(new_hand_list, self.db_interface)
-
+                #[hand.generation.append(self.gm.generation + 1) for hand in self.gm.hands]
+                #[self.db_interface.update_hand_generation(hand) for hand in self.gm.hands]
                 # Get the database ready to perform jobs for the next generation
                 self.gm.next_generation()
 
@@ -212,7 +213,8 @@ class ExperimentManager(object):
 
             #Put the new hands in to the database.
             eigenhand_db_tools.insert_unique_hand_list(new_hand_list, self.db_interface)
-
+            #[hand.generation.append(self.gm.generation + 1) for hand in self.gm.hands]
+            #[self.db_interface.update_hand_generation(hand) for hand in self.gm.hands]
             #Backup old grasps and remove them from the grasp table
             self.backup_grasps(self.gm.generation)
 
