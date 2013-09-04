@@ -117,7 +117,7 @@ public:
 
     //max time set from database record
     if (mRecord.taskTime >= 0){
-      mPlanner->setMaxTime(mRecord.taskTime);
+      mPlanner->setMaxTime(mRecord.taskTime);      
     } else {
       mPlanner->setMaxTime(-1);
     }

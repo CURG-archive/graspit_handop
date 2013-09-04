@@ -248,9 +248,18 @@ bool SqlDatabaseManager::SetTaskStatus(const TaskRecord &rec, const string &stat
 	    succeeded = false;
 	  }
 	}
+	std::string param_string = "'{";
+	for(int i = 0; i < rec.params.size(); ++i)
+	  {
+	    param_string += QString::number(rec.params[i]).toStdString() + ",";
+	  }
+	param_string.erase(param_string.length() - 1,1);
+	param_string += "}'";
+	std::string query_string = "UPDATE task SET task_outcome_id=(SELECT task_outcome_id FROM task_outcome WHERE task_outcome_name='"+status+"'), task_time_stamp=NOW(), last_updater='"+QHostInfo::localHostName().toStdString().c_str()+"',parameters=" + param_string + " WHERE task_id="+id.str()+";";
 	//mark it as current status and timestamp this status
-	if (!succeeded || !database_.Query("UPDATE task SET task_outcome_id=(SELECT task_outcome_id FROM task_outcome WHERE task_outcome_name='"+status+"'), task_time_stamp=NOW(), last_updater='"+QHostInfo::localHostName().toStdString().c_str()+"' WHERE task_id="+id.str()+";", NULL)) {
-		DBGA("SqlDatabaseManager:SetTaskStatus:Failed to update task");
+	if (!succeeded || !database_.Query(query_string, NULL)) {
+	  DBGA("SqlDatabaseManager:SetTaskStatus:Failed to update task: " << query_string);
+		
 		succeeded = false;
 	}
 	if(requestTransaction && !database_.Query("COMMIT TRANSACTION;", NULL) && database_.DBClose()){

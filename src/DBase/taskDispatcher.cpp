@@ -75,8 +75,10 @@ void TaskDispatcher::mainLoop()
 	if (mCurrentTask) {
 		switch (mCurrentTask->getStatus()) {
 		case Task::RUNNING:
-			//my status should already be set to RUNNING
+		  {
+		    mDBMgr->SetTaskStatus(mCurrentTask->getRecord(), "RUNNING");
 			break;
+		  }
 		case Task::ERROR:
 			mStatus = DONE;
 			//mark the task as error in the database

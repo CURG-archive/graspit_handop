@@ -193,7 +193,7 @@ bool GuidedPlannerSaver::saveGraspList( EGPlanner * finishedPlanner){
    static_cast<SimAnnPlanner *>(mPlanner)->setModelState(ns);
    mPlanner->setEnergyType(ENERGY_CONTACT);
    mPlanner->setContactType(CONTACT_PRESET);
-   mPlanner->setMaxSteps(500000);
+   mPlanner->setMaxSteps(200000);
    mPlanner->setRepeat(false);  
    mPlanner->invalidateReset();
    return mPlanner;

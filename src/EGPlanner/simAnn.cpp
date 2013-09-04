@@ -21,6 +21,9 @@
 #include "searchState.h"
 #include "searchEnergy.h"
 
+#include <iostream>
+#include <fstream>
+
 //#define GRASPITDBG
 #include "debug.h"
 
@@ -137,9 +140,14 @@ void SimAnn::setParameters(AnnealingType type)
 
 void SimAnn::reset()
 {
-	srand( (unsigned)time(NULL) );
-	mCurrentStep = DEF_K0;
-	mT0 = DEF_T0;
+  std::ifstream randFile;
+  randFile.open("/dev/random");
+  int random_seed;
+  randFile >> random_seed;
+  srand(random_seed);
+  mCurrentStep = DEF_K0;
+  mT0 = DEF_T0;
+  randFile.close();
 }
 
 /*! The caller passes it a HandObjectState and a calculator that can be used

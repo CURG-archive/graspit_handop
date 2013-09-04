@@ -105,8 +105,12 @@ void GraspPlanningTask::getHand(){
       mStatus = ERROR;
       return;
     }
-    if(mRecord.params.size() == 6)
+    if(mRecord.params.size() >= 6)
       mHand->getGrasp()->setTaskWrench(&mRecord.params[0]);
+  }
+  if (mRecord.params.size() < 8){
+    mRecord.params.push_back(0);
+    mRecord.params.push_back(0);
   }
 
   //check for virtual contacts
@@ -342,4 +346,7 @@ bool GraspPlanningTask::saveGrasp(const GraspPlanningState *gps)
  */
 void GraspPlanningTask::plannerUpdated(){
   DBGA("Step " << mPlanner->getCurrentStep() << " of " << mPlanner->getMaxSteps() << " Running Time " << mPlanner->getRunningTime() <<"of " << mPlanner->getMaxRunningTime() );
+  mRecord.params[mRecord.params.size() - 1] = mPlanner->getCurrentStep();
+  mRecord.params[mRecord.params.size() - 2] = mPlanner->getRunningTime();
+    //mDBMgr->SetTaskStatus(mRecord,"RUNNING");
 }
