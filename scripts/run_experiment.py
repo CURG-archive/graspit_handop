@@ -31,6 +31,14 @@ def start_experiment(num_ga_iters = 50, num_atr_iters = 5, trials_per_task = 5, 
     
     return em
 
+def output_experiment(num_ga_iters = 5, num_atr_iters = 1, trials_per_task = 5, experiment_name = 'gen_0_sanity_test'):
+    interface = eigenhand_db_interface.EGHandDBaseInterface()
+    task_prototype = eigenhand_db_objects.Task(task_type_id = 4, task_time = 6000)
+    em = experiment_manager.ExperimentManager(num_ga_iters, num_atr_iters, task_models.small_model_dict,
+                                         task_prototype, trials_per_task, ate.weighted_threshold_ATE_hand, interface, experiment_name = experiment_name)
+    em.restore_to_new_dbase()
+    output_results(em)
+    
 
 def continue_experiment(num_ga_iters = 50, num_atr_iters = 5, trials_per_task = 5, experiment_name = 'default'):
     
@@ -140,7 +148,7 @@ def output_results(em):
 def output_frontend_report(em, description = '', score_array = None):
     #Write current results to the web side of things
     
-    template = open('/var/www/eigenhand_project/experiment_results_template.html')
+    template = open('/var/www/eigenhand_project/experiment_results_template.html','r')
     template_string = template.read()
     output_string = template_string%(em.experiment_name, description,
                                      em.experiment_name,
@@ -152,12 +160,13 @@ def output_frontend_report(em, description = '', score_array = None):
     output_file.write(output_string)
     template.close()
     output_file.close()
-    directory_file = open('/var/www/eigenhand_project/experiment_results.html','ra')
+    directory_file_writer = open('/var/www/eigenhand_project/experiment_results.html','a')
+    directory_file_reader = open('/var/www/eigenhand_project/experiment_results.html','r')
     new_results_string = '<a href=%s_results.html> %s </a>\n'%(em.experiment_name, em.experiment_name)
-    if directory_file.read().find(new_results_string) < 0:
-        directory_file.write(new_results_string)
-    directory_file.close()
-
+    if directory_file_reader.read().find(new_results_string) < 0:
+        directory_file_writer.write(new_results_string)
+    directory_file_writer.close()
+    directory_file_reader.close()
     if score_array is not None:
         examine_database.plot_elist_vs_gen(score_array,'/var/www/eigenhand_project/%s'%(em.experiment_name))
                             
