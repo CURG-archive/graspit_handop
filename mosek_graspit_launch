@@ -8,6 +8,7 @@ export GRASPIT_QUIT_ON_TASK_COMPLETE=NO #YES|anything else
 export DISPLAY=picard.cs.columbia.edu:0.0
 export MOSEKLM_LICENSE_FILE=/home/jweisz/graspit_handop/mosek_lib/
 
-./bin/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console
+./bin/graspit 
+#test_planner_task PLAN_EGPLANNER_SIMAN use_console
 
 echo $?
