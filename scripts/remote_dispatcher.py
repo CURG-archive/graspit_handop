@@ -121,19 +121,24 @@ class RemoteDispatcher(object):
         server.collect_subprocesses()
         server.launch_job()
             
-    def run(self, max_len = 1200):
+    def run(self, max_len = 9800):
         running = 1
         t = time.time()
         generation = self.interface.get_max_hand_gen()
         self.file.write('started running generation %i at %s \n'%(generation,time.strftime('%c')))
         self.file.seek(0)
         self.file.flush()
-        time.sleep(30)
+        time.sleep(120)
         running_servers = []
-        while running and self.interface.get_num_incompletes() > 0 and time.time() - t < max_len:
+        while running and self.interface.get_num_incompletes() > 0 and time.time() - t < max_len and self.interface.get_num_running(60):
             test_dict = dict(self.server_dict)
             running_servers = [server for server in test_dict.values() if server.is_running()]
-
+            nonrunning_servers = [server for server in test_dict.values() if server not in running_servers]
+            if self.interface.get_num_runable(30):
+                for server in nonrunning_servers:
+                    print "restarting %s"%(server.server_name)
+                    server.collect_subprocesses()
+                    server.do_all()
             if self.server_dict.values() != []:
                 running = len(running_servers)
             self.file.seek(0)
@@ -141,7 +146,7 @@ class RemoteDispatcher(object):
             self.file.write(' '.join([server.server_name for server in running_servers]) + '\n')
             self.file.truncate()
             self.file.flush()
-            time.sleep(1)
+            time.sleep(3)
         finished_string = 'Finished running generation %i. time taken %i num incompletes %i. time %s \n'%(self.interface.get_max_hand_gen(), time.time() - t,
                                                                                                  self.interface.get_num_incompletes(),
                                                                                                 time.strftime('%c'))

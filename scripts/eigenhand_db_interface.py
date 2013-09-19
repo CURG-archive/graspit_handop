@@ -515,3 +515,20 @@ class EGHandDBaseInterface(object):
         self.connection.commit()
         return self.cursor.fetchone()[0]
 
+    def get_num_unstarted(self):
+        command_str = "select count(*) from task where task_outcome_id = 1;"
+        self.cursor.execute(command_str)
+        self.connection.commit()
+        return self.cursor.fetchone()[0]
+
+    def get_num_running(self, latency_allowed):
+        command_str = "select count(*) from task where task_time_stamp + '%i seconds' > NOW();"%(latency_allowed)
+        self.cursor.execute(command_str)
+        self.connection.commit()
+        return self.cursor.fetchone()[0]
+
+    def get_num_runable(self, latency_allowed):
+        command_str = "select count(*) from task where (task_time_stamp + '%i seconds' > NOW() and task_outcome_id = 2) or task_outcome_id = 1;"%(latency_allowed)
+        self.cursor.execute(command_str)
+        self.connection.commit()
+        return self.cursor.fetchone()[0]
