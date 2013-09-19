@@ -347,23 +347,35 @@ bool GraspPlanningTask::saveGrasp(const GraspPlanningState *gps)
  */
 void GraspPlanningTask::plannerUpdated(){
   static double rate = 0;
- 
+  static double last_time = 0;
+  static double last_step = 0;
 
   DBGA("Step " << mPlanner->getCurrentStep() << " of " << mPlanner->getMaxSteps() << " Running Time " << mPlanner->getRunningTime() <<"of " << mPlanner->getMaxRunningTime() );
+
+  double diff_time = mPlanner->getRunningTime() - last_time;
+  
+
   mRecord.params[mRecord.params.size() - 1] = mPlanner->getCurrentStep();
   mRecord.params[mRecord.params.size() - 2] = mPlanner->getRunningTime();
+
    rate = 4*rate;
  
-  rate += 100/ mRecord.params[mRecord.params.size() - 1];
-  rate /= 5;
- mRecord.params[mRecord.params.size() - 3] = rate;
+   rate += diff_time / (mPlanner->getCurrentStep() - last_step);
 
-  db_planner::TaskRecord test;
-  mDBMgr->GetTaskStatus(mRecord,test);
-  if (!test.taskOutcomeName.compare("DONE")){
-    std::cout << "Some other instance finished running; Exiting";
-    exit(0);
-  }
-  
-  mDBMgr->SetTaskStatus(mRecord,"RUNNING");
+   last_step = mPlanner->getCurrentStep();
+   last_time = mPlanner->getRunningTime();
+   
+   rate /= 5;
+   
+
+   mRecord.params[mRecord.params.size() - 3] = rate;
+   
+   db_planner::TaskRecord test;
+   mDBMgr->GetTaskStatus(mRecord,test);
+   if (!test.taskOutcomeName.compare("DONE")){
+     std::cout << "Some other instance finished running; Exiting";
+     exit(0);
+   }
+   
+   mDBMgr->SetTaskStatus(mRecord,"RUNNING");
 }
