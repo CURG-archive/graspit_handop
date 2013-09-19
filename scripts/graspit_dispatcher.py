@@ -7,6 +7,16 @@ import select
 import os
 import random
 
+def make_path(path):
+    d = os.path.dirname(f)
+    if not os.path.exists(d):
+        try:
+            os.makedirs(d)
+        except:
+            pass
+
+
+
 class LocalDispatcher(object):
     def __init__(self):
         self.idle_percent = -1
@@ -14,9 +24,13 @@ class LocalDispatcher(object):
         self.num_processors = self.get_num_processors()
         self.job_list = []
         self.min_server_idle_level = 10
-        self.max_server_idle_level = 20
+        self.max_server_idle_level = 30
         self.server_name = socket.gethostname()
         self.kill_existing_graspit()
+        self.can_launch = True
+        self.job_num = 0
+        self.suspended_job_list = []
+        
         try:
             self.status_file = open('/home/jweisz/html/server_status/%s_status.html'%(socket.gethostname()),'w')
         except:
@@ -43,14 +57,21 @@ class LocalDispatcher(object):
 
     def get_num_to_launch(self):
         free_to_launch = int(floor((self.idle_percent - self.max_server_idle_level)/(100/self.num_processors)))
-    	return min(free_to_launch, self.num_processors - len(self.job_list) - 2)
+    	return min(free_to_launch, self.num_processors - len(self.job_list) - 3)
 
 
     def kill_existing_graspit(self):
         args = ["killall", "graspit"]
         p = subprocess.Popen(args, stdout=subprocess.PIPE, stdin = subprocess.PIPE, stderr=subprocess.STDOUT)
         print "killall returned %s on %s\n"%(p.communicate()[0],self.server_name)
-       
+
+    def suspend_last_job(self):
+        if len(self.job_list) == 0:
+            return False
+        job_to_suspend = self.job_list.pop()
+        job_to_suspend.suspend()
+        self.suspended_job_list.append(job_to_suspend)
+
             
     def kill_last_job(self):
         if len(self.job_list) == 0:
@@ -68,24 +89,34 @@ class LocalDispatcher(object):
             cpu_per_job = 100/self.num_processors
             num_jobs_to_kill = int(floor((self.min_server_idle_level - self.idle_percent)/cpu_per_job)) + 1
             for i in range(num_jobs_to_kill):
-                self.kill_last_job()
+                self.suspend_last_job()
+            time.sleep(10)
             self.get_idle_percent()
 
     def launch_job(self):
-        self.job_list.append(LocalJob())
+        self.job_num = self.job_num + 1
+        self.job_list.append(LocalJob(self.job_num))
         #print self.job_list[-1].subprocess.stdout.readline()
 
     def launch_job_if_legal(self):
-        if self.idle_percent > self.max_server_idle_level and len(self.job_list) < self.num_processors - 1:
-            self.launch_job()
+        if self.idle_percent > self.max_server_idle_level and len(self.job_list) < self.num_processors - 3:
+            if len(self.suspended_job_list) > 0:
+                job = self.suspended_job_list.pop(0)
+                self.job_list.append(job)
+                job.restore()
+            else:
+                self.launch_job()
             print "%f on %s \n"%(self.idle_percent,self.server_name)
             return True
         return False
+
 
     def clear_inactive_jobs(self):
         job_list = [j for j in self.job_list if j.is_running()]
         dead_list = [j for j in self.job_list if not j.is_running()]
         for dead in dead_list:
+            if dead.subprocess.returncode == 5:
+                self.can_launch = False
             del dead
         
         try:
@@ -98,6 +129,8 @@ class LocalDispatcher(object):
         self.job_list = job_list
 
     def launch_jobs_while_legal(self):
+        if not self.can_launch:
+            return
         self.get_idle_percent()
         for i in range(self.get_num_to_launch()):
             self.launch_job_if_legal()
@@ -129,18 +162,22 @@ class LocalDispatcher(object):
         print "done\n"
 
     def output_status(self, num_valid_jobs):
-        status_string = "Host: %s  Idle level: %f Num running: %i Date: %s \n"%(socket.gethostname(), self.idle_percent, num_valid_jobs, time.strftime('%c'))
+        status_string = "Host: %s  Idle level: %f Num running: %i Date: %s CanLaunch: %i\n"%(socket.gethostname(), self.idle_percent, num_valid_jobs, time.strftime('%c'), self.can_launch)
         self.status_file.seek(0)
         self.status_file.write(status_string)
         self.status_file.flush()
 
 class LocalJob(object):
-    def __init__(self):
+    def __init__(self, job_num = -1):
         self.status = []
         self.subprocess = []
         self.server_name = socket.gethostname()
         self.task_id = -1
-        self.file = open("/dev/null","rw")
+        self.file = []
+        if job_num > 0:
+            self.file = open('./' + socket.gethostname() + str(job_num), "w")
+        else:
+            self.file = open("/dev/null","rw")
         self.start()
 
     def set_env(self):
@@ -162,8 +199,9 @@ class LocalJob(object):
 
     def start(self):
         self.set_env()
-        args = "nice -n 50 /home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
-        self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=self.file)
+        #        args = "nice -n 50 /home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
+        args = "/home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
+        self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=self.file, stderr=self.file)
 
     def flush_std_out(self):
         if self.subprocess.returncode != None:
@@ -179,9 +217,27 @@ class LocalJob(object):
             return False       
         return True
 
-    def kill(self):
+
+    def suspend(self):
         if self.is_running():
             try:
+                self.subprocess.send_signal(23)
+                self.file.write("suspending process from graspit_dispatcher\n")
+            except:
+                pass
+
+    def restore(self):
+        try:
+            self.subprocess.send_signal(19)
+            self.file.write("Restoring from graspit_dispatcher\n")
+        except:
+            pass
+
+    def kill(self):
+        
+        if self.is_running():
+            try:
+                self.file.write("Killing process from graspit_dispatcher\n")
                 self.subprocess.kill()
                 #l = self.subprocess.communicate()[0]
                 while self.subprocess.poll() == None:
