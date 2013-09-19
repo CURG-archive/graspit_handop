@@ -24,6 +24,8 @@
 #include "graspit_db_grasp.h"
 #include "graspPlanningTask.h"
 #include <QApplication>
+#include <QHostInfo>
+
 #include "debug.h"
 
 //common initialization code
@@ -76,8 +78,8 @@ void TaskDispatcher::mainLoop()
 		switch (mCurrentTask->getStatus()) {
 		case Task::RUNNING:
 		  {
-		    mDBMgr->SetTaskStatus(mCurrentTask->getRecord(), "RUNNING");
-			break;
+		    
+		    break;
 		  }
 		case Task::ERROR:
 			mStatus = DONE;
@@ -90,6 +92,7 @@ void TaskDispatcher::mainLoop()
 			exit(-1);
 			break;
 		case Task::DONE:
+		  {
 			mStatus = DONE;
 			mCompletedTasks++;
 			//mark the task as completed in the database
@@ -97,14 +100,14 @@ void TaskDispatcher::mainLoop()
 				DBGA("Dispatcher: error marking completed task");
 				mStatus = ERROR;
 			}
-			mDBMgr->AgeTaskStatus(mCurrentTask->getRecord().taskType,"RUNNING","TO_GO",mCurrentTask->getRecord().taskTime + 1800);
+			mDBMgr->AgeTaskStatus(mCurrentTask->getRecord().taskType,"RUNNING","TO_GO",mCurrentTask->getRecord().taskTime + 30);
 			if(mCurrentTask)
 			  delete mCurrentTask; mCurrentTask = NULL;			
-			if(getenv("GRASPIT_QUIT_ON_TASK_COMPLETE") && !strcmp(getenv("GRASPIT_QUIT_ON_TASK_COMPLETE"),"YES")){
-			  if(mDBMgr)
-			    delete mDBMgr;
-			  QApplication::exit(3);
-			}
+			
+			if(mDBMgr)
+			  delete mDBMgr;
+			QApplication::exit(3);
+		  }
 		}
 	}
 	//if idling, attempt to start a new task
@@ -139,10 +142,13 @@ void TaskDispatcher::start()
 	}
 	db_planner::TaskRecord rec;
 	rec.taskType = mTaskID;
+
+	mDBMgr->AgeTaskStatus(rec.taskType,"RUNNING","TO_GO", 30);
+
 	if (!mDBMgr->GetNextTask(&rec,"TO_GO", "RUNNING")) {
 		DBGA("Dispatcher: error reading next task");
 		mStatus = ERROR;
-		exit(-1);
+		exit(5);
 		return;
 	}
 	DBGA("Task_ID " << rec.taskId );
@@ -150,9 +156,14 @@ void TaskDispatcher::start()
 	if (!rec.taskType) {
 		DBGA("Dispatcher: no tasks to be executed");
 		mStatus = NO_TASK;
-		exit(-1);
+		exit(5);
 		return;
 	}
+	string filename = "/home/jweisz/task_status/" + QHostInfo::localHostName().toStdString() +"task_id_" + QString::number(rec.taskId).toStdString();
+	freopen (filename.c_str(), "w",stdout);
+	freopen (filename.c_str(), "a",stderr);
+	std::cout <<" Process id:" <<  getpid() << "\n";
+
 	mCurrentTask = mFactory.getTask(this, mDBMgr,rec);
 	if (!mCurrentTask) {
 		DBGA("Dispatcher: can not understand task type: " << rec.taskType);
