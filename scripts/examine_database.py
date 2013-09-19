@@ -2,7 +2,7 @@ import numpy
 import pylab
 import grasp_sorting_utils
 import ate
-
+from eigenhand_db_interface import EGHandDBaseInterface
 
 
 
@@ -100,3 +100,29 @@ def plot_elist_vs_gen(score_array, base_filename = None):
 def plot_total_score(score_array):
     pylab.plot(score_array[:,0], score_array[:,2]*(.4*score_array[:,3] + .6*score_array[:,4]))
 
+from collections import defaultdict
+
+
+def plot_score_vs_time():
+    interface = EGHandDBaseInterface()
+    grasp_list = interface.load_grasps_for_generation(0)
+    grasp_dict = defaultdict(list)
+    [grasp_dict[grasp.hand_id].append(grasp) for grasp in grasp_list if grasp.grasp_energy < 1000]
+    pylab.clf()
+    min_dict = defaultdict(list)
+    for hand_id, grasps in grasp_dict.iteritems():
+        any_under = False
+        for grasp in grasps:
+            if grasp.grasp_energy < 1000:
+                any_under = True
+                break
+        
+        if not grasps or not any_under:
+            print hand_id
+            continue
+        
+        data = numpy.array([grasp.grasp_attributes + [grasp.grasp_energy] for grasp in grasps])
+        
+        data = data[data[:,1].argsort()]
+        pylab.plot(data[:,1], data[:,-1],'.-')
+    pylab.savefig('/var/www/eigenhand_project/time_test.png')
