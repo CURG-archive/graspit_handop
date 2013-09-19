@@ -103,7 +103,7 @@ class DatabaseConnection {
   bool isConnected() const {return connected_;};
   bool DBOpen();
   bool DBClose();
-
+  void PrintLastError();
 
 };
 

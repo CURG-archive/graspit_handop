@@ -166,17 +166,23 @@ bool SqlDatabaseManager::GetNextTask(TaskRecord *rec, const string & requestedSt
 	//for now we hard-code desired task status
 	string status(requestedStatus);
 	bool succeeded = true;
-	database_.DBOpen();
+	if(!database_.DBOpen())
+	  {
+	   std::cerr << "Database could not be opened. \n Error: ";
+	   database_.PrintLastError();
+	 }
+	std::string querystring = "START TRANSACTION ISOLATION LEVEL READ COMMITTED;";
 	//start transaction
-	if (!database_.Query("START TRANSACTION ISOLATION LEVEL READ COMMITTED;", NULL))
-		succeeded = false;
-	std::string querystring = "SELECT * FROM task JOIN scaled_model USING(scaled_model_id) JOIN hand USING(hand_id) JOIN task_outcome USING(task_outcome_id) JOIN original_model USING(original_model_id) WHERE '" +status +"'=task_outcome_name AND task_type_id = " + QString::number(rec->taskType).toStdString() + " LIMIT 1 FOR UPDATE;";
+	//if (!database_.Query("START TRANSACTION ISOLATION LEVEL READ COMMITTED;", NULL))
+	//	succeeded = false;
+	querystring += "SELECT * FROM task JOIN scaled_model USING(scaled_model_id) JOIN hand USING(hand_id) JOIN task_outcome USING(task_outcome_id) JOIN original_model USING(original_model_id) WHERE '" +status +"'=task_outcome_name AND task_type_id = " + QString::number(rec->taskType).toStdString() + " LIMIT 1 FOR UPDATE;";
 	std::cout<<querystring <<std::endl;
 	if(!succeeded || !database_.Query(querystring,&result)) {
 		//we have no way of knowing if the query is wrong, or
 		//there are simply no entries not marked "complete" in the task table
 		//we assume the latter
 		rec->taskType = 0;
+		database_.DBClose();
 		return succeeded; 
 	}
 	//get the model
@@ -217,6 +223,9 @@ bool SqlDatabaseManager::GetNextTask(TaskRecord *rec, const string & requestedSt
 	  result.GetField(param_col, 0, &(rec->params));
 	}
 
+	
+        
+
 
 	//if we have so far been successful, and the current task status is not the requested task status, change
 	//the requested task status
@@ -231,12 +240,58 @@ bool SqlDatabaseManager::GetNextTask(TaskRecord *rec, const string & requestedSt
 	return succeeded;
 }
 
+  bool SqlDatabaseManager::GetTaskStatus(const TaskRecord & rec, TaskRecord &returnedRecord)
+{
+  stringstream id;
+  Table result;
+  bool succeeded = true;
+  id << rec.taskId;
+  
+  if(!database_.QueryAndConnect("select * from task join task_outcome USING(task_outcome_id) where task_id=" + id.str() + ";", &result))
+		succeeded = false;
+
+  int hand_col, type_col, id_col, time_col, misc_col, param_col, 
+    hand_id_col, task_outcome_id_col, task_outcome_name_col;
+  
+     if (!succeeded || !result.GetColumnIndex("hand_name", &hand_col) ||
+	 !result.GetColumnIndex("task_type_id", &type_col) ||
+	 !result.GetColumnIndex("task_time", &time_col) ||
+	 !result.GetColumnIndex("task_outcome_id", &task_outcome_id_col) ||
+	 !result.GetColumnIndex("task_outcome_name", &task_outcome_id_col) ||
+	 !result.GetColumnIndex("task_id", &id_col) ||
+	 !result.GetColumnIndex("task_outcome_id", &id_col) ||
+	 !result.GetColumnIndex("task_outcome_name", &task_outcome_name_col) ||
+	 !result.GetColumnIndex("hand_id", &hand_id_col)) {
+		//std::cout << "get column failed\n";
+       succeeded = false;
+     }
+     if (! succeeded || !result.GetField(hand_col, 0, &(returnedRecord.handName)) || 
+	 !result.GetField(type_col, 0, &(returnedRecord.taskType)) || 
+	 !result.GetField(time_col, 0, &(returnedRecord.taskTime)) || 
+	 !result.GetField(id_col, 0, &(returnedRecord.taskId)) || 
+	 !result.GetField(task_outcome_id_col, 0, &(returnedRecord.taskOutcomeID)) || 
+	 !result.GetField(task_outcome_name_col, 0, &(returnedRecord.taskOutcomeName)) || 
+	 !result.GetField(hand_id_col, 0, &(returnedRecord.handId))
+	 ) {
+       //std::cout << "get record failed\n";
+       succeeded = false;
+     }
+
+    
+	if(result.GetColumnIndex("parameters", &param_col)){
+	  result.GetField(param_col, 0, &(returnedRecord.params));
+	}
+
+
+}
+
 bool SqlDatabaseManager::SetTaskStatus(const TaskRecord &rec, const string &status, const bool requestTransaction)
 {
 	Table result;
 	stringstream id;
 	id << rec.taskId;
 	bool succeeded = true;
+	
 	//start transaction
 	if (requestTransaction){
 	  database_.DBOpen();
@@ -262,9 +317,12 @@ bool SqlDatabaseManager::SetTaskStatus(const TaskRecord &rec, const string &stat
 		
 		succeeded = false;
 	}
-	if(requestTransaction && !database_.Query("COMMIT TRANSACTION;", NULL) && database_.DBClose()){
+	if(requestTransaction){
+	  if(!database_.Query("COMMIT TRANSACTION;", NULL) && database_.DBClose()){
 		DBGA("Failed to release lock on commit on task_id");
 		succeeded = false;
+	  }
+	database_.DBClose();
 	}
 	return succeeded;
 }
@@ -275,19 +333,21 @@ bool SqlDatabaseManager::AgeTaskStatus(const int &tType, const string &currentSt
 	
 	bool succeeded = true;
 	//start transaction
-	if (!database_.QueryAndConnect("START TRANSACTION ISOLATION LEVEL READ COMMITTED", NULL))
+	database_.DBOpen();
+	if (!database_.Query("START TRANSACTION ISOLATION LEVEL READ COMMITTED", NULL))
 		succeeded = false;
 	//Get all matching types in database
 	string queryString = "UPDATE task SET task_outcome_id=(SELECT task_outcome_id FROM task_outcome where task_outcome_name='" +ageToStatus +"'), task_time_stamp = NOW(), last_updater='"+QHostInfo::localHostName().toStdString().c_str()+" :Aged' WHERE task_type_id=" + QString::number(tType).toStdString() + " AND task_outcome_id=(SELECT task_outcome_id FROM task_outcome WHERE task_outcome_name='"+currentStatus +"') AND (task_time_stamp + '" + QString::number(expirationTime).toStdString() +" seconds') < NOW();";
 	DBGA(queryString);
-	     if (!succeeded || !database_.QueryAndConnect(queryString, NULL)) {
+	     if (!succeeded || !database_.Query(queryString, NULL)) {
 		DBGA("Nothing was aged out");	
 		succeeded = false;
 	}
-	if(!database_.QueryAndConnect("COMMIT TRANSACTION;", NULL)){
+	if(!database_.Query("COMMIT TRANSACTION;", NULL)){
 		DBGA("Failed to release lock on commit on task_id");
 		succeeded = false;
 	}
+	database_.DBClose();
 	return succeeded;
 }
 

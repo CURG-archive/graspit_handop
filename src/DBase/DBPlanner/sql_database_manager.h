@@ -137,6 +137,9 @@ class SqlDatabaseManager : public DatabaseManager {
 
   //! Returns a list of hand names with the structure HandName_handID
   virtual bool HandList(std::vector<string> & handNameList) const;
+  
+  virtual bool GetTaskStatus(const TaskRecord & rec, TaskRecord & returnedRecord);
+
 };
 
 }  // end namespace db_planner
