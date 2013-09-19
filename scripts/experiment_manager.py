@@ -13,7 +13,7 @@ import eigenhand_db_interface
 class ExperimentManager(object):
     def __init__(self, num_ga_iters, num_atr_iters, task_model_list, task_prototype,
                  trials_per_task, eval_functor, db_interface, start_ga_iter = 0,
-                 server_dict = server_list.larger_dict, experiment_name = "default"):
+                 server_dict = server_list.clic_lab_dict, experiment_name = "default"):
         """
         @param num_ga_iters - The number of genetic algorithm generations to run
         @param num_atr_iters - The number of ATR iterations to run for each GA generation
