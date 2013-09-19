@@ -108,7 +108,8 @@ void GraspPlanningTask::getHand(){
     if(mRecord.params.size() >= 6)
       mHand->getGrasp()->setTaskWrench(&mRecord.params[0]);
   }
-  if (mRecord.params.size() < 8){
+  if (mRecord.params.size() < 9){
+    mRecord.params.push_back(0);
     mRecord.params.push_back(0);
     mRecord.params.push_back(0);
   }
@@ -345,8 +346,24 @@ bool GraspPlanningTask::saveGrasp(const GraspPlanningState *gps)
   As the planner updates, alert the user to the current status of the planner.
  */
 void GraspPlanningTask::plannerUpdated(){
+  static double rate = 0;
+ 
+
   DBGA("Step " << mPlanner->getCurrentStep() << " of " << mPlanner->getMaxSteps() << " Running Time " << mPlanner->getRunningTime() <<"of " << mPlanner->getMaxRunningTime() );
   mRecord.params[mRecord.params.size() - 1] = mPlanner->getCurrentStep();
   mRecord.params[mRecord.params.size() - 2] = mPlanner->getRunningTime();
-    //mDBMgr->SetTaskStatus(mRecord,"RUNNING");
+   rate = 4*rate;
+ 
+  rate += 100/ mRecord.params[mRecord.params.size() - 1];
+  rate /= 5;
+ mRecord.params[mRecord.params.size() - 3] = rate;
+
+  db_planner::TaskRecord test;
+  mDBMgr->GetTaskStatus(mRecord,test);
+  if (!test.taskOutcomeName.compare("DONE")){
+    std::cout << "Some other instance finished running; Exiting";
+    exit(0);
+  }
+  
+  mDBMgr->SetTaskStatus(mRecord,"RUNNING");
 }
