@@ -350,7 +350,7 @@ void GraspPlanningTask::plannerUpdated(){
   static double last_time = 0;
   static double last_step = 0;
 
-  DBGA("Step " << mPlanner->getCurrentStep() << " of " << mPlanner->getMaxSteps() << " Running Time " << mPlanner->getRunningTime() <<"of " << mPlanner->getMaxRunningTime() );
+ 
 
   double diff_time = mPlanner->getRunningTime() - last_time;
   
@@ -376,6 +376,6 @@ void GraspPlanningTask::plannerUpdated(){
      std::cout << "Some other instance finished running; Exiting";
      exit(0);
    }
-   
+   DBGA("Step " << mPlanner->getCurrentStep() << " of " << mPlanner->getMaxSteps() << " Running Time " << mPlanner->getRunningTime() <<"of " << mPlanner->getMaxRunningTime() <<" Rate: " << rate);  
    mDBMgr->SetTaskStatus(mRecord,"RUNNING");
 }
