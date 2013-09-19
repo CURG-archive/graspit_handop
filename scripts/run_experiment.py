@@ -11,10 +11,10 @@ import numpy
 import os
 import pdb
 
-def start_experiment(num_ga_iters = 50, num_atr_iters = 5, trials_per_task = 5, experiment_name = 'eigenhand_ate_threshold_3_object'):
+def start_experiment(num_ga_iters = 10, num_atr_iters = 1, trials_per_task = 5, experiment_name = 'medium_planning_5_object'):
     interface = eigenhand_db_interface.EGHandDBaseInterface()
 
-    task_prototype = eigenhand_db_objects.Task(task_type_id = 4, task_time = 60)
+    task_prototype = eigenhand_db_objects.Task(task_type_id = 4, task_time = -1)
     em = experiment_manager.ExperimentManager(num_ga_iters, num_atr_iters, task_models.small_model_dict,
                                          task_prototype, trials_per_task, ate.weighted_threshold_ATE_hand, interface, experiment_name = experiment_name)
     
@@ -56,7 +56,7 @@ def continue_experiment(num_ga_iters = 50, num_atr_iters = 5, trials_per_task = 
     em.restore_all()
 
 
-def restore_experiment(num_ga_iters = 50, num_atr_iters = 5, trials_per_task = 5, experiment_name = 'eigenhand_ate_threshold'):
+def restore_experiment(num_ga_iters = 50, num_atr_iters = 5, trials_per_task = 5, experiment_name ='medium_planning_5_object'):
     interface = eigenhand_db_interface.EGHandDBaseInterface()
 
     task_prototype = eigenhand_db_objects.Task(task_type_id = 4, task_time = 60)
@@ -66,7 +66,7 @@ def restore_experiment(num_ga_iters = 50, num_atr_iters = 5, trials_per_task = 5
 
 
 
-def test_output_results(num_ga_iters = 50, num_atr_iters = 5, trials_per_task = 5, experiment_name = 'eigenhand_ate_threshold'):
+def test_output_results(num_ga_iters = 10, num_atr_iters = 1, trials_per_task = 5, experiment_name = 'eigenhand_ate_threshold'):
     interface = eigenhand_db_interface.EGHandDBaseInterface(experiment_name)
 
     task_prototype = eigenhand_db_objects.Task(task_type_id = 4, task_time = 60)
@@ -141,7 +141,7 @@ def output_results(em):
     zf.close()  
 
     #Write current results to the web site
-    output_frontend_report(em,'weighted threshold ate with one object (drill) 50 generations', total_score_array)
+    output_frontend_report(em,'5 object 100000 steps 5 tasks/object 1 atr/gen 10 gen, ', total_score_array)
 
 
 
@@ -162,7 +162,7 @@ def output_frontend_report(em, description = '', score_array = None):
     output_file.close()
     directory_file_writer = open('/var/www/eigenhand_project/experiment_results.html','a')
     directory_file_reader = open('/var/www/eigenhand_project/experiment_results.html','r')
-    new_results_string = '<a href=%s_results.html> %s </a>\n'%(em.experiment_name, em.experiment_name)
+    new_results_string = '<a href=%s_results.html> %s </a><p>\n'%(em.experiment_name, em.experiment_name)
     if directory_file_reader.read().find(new_results_string) < 0:
         directory_file_writer.write(new_results_string)
     directory_file_writer.close()
