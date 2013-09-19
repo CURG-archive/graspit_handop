@@ -119,6 +119,11 @@ bool DatabaseConnection::Query(const string& sql, Table* table) const {
     }
   }
 
+  void DatabaseConnection::PrintLastError()
+  {
+    cerr << db_.lastError().text().latin1() << std::endl;
+  }
+
   bool DatabaseConnection::DBOpen(){
    return  db_.open();
   }
