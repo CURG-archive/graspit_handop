@@ -41,6 +41,9 @@ struct TaskRecord {
   int taskTime;
   string misc;
   std::vector<double> params;
+  int taskOutcomeID;
+  string taskOutcomeName;
+
 };
 
 }
