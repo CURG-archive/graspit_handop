@@ -31,7 +31,7 @@ class GenericGraspPlanningTask:public GraspPlanningTask{
 
   GraspSaver saver;
 
-  bool saveGrasps(){return saver.saveGraspList(mPlanner);}; //! Save the grasps from the current planner
+  bool saveGrasps(){return saver.saveGraspList(mPlanner, &mRecord);}; //! Save the grasps from the current planner
 
   //!Load the existing object
   /*!
