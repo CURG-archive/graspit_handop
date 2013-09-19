@@ -76,7 +76,7 @@ namespace egPlannerUtils{
     : mDBMgr(*dbm), mTaskNum(taskNum), mSource(source){};
     void setGeneration(int generation){mGeneration = generation;}
     //! Save a list of grasps from an EGPlanner to the database 
-    virtual bool saveGraspList(EGPlanner * finishedPlanner) = 0;
+    virtual bool saveGraspList(EGPlanner * finishedPlanner, db_planner::TaskRecord * rec) = 0;
   };
   
   
@@ -88,7 +88,7 @@ namespace egPlannerUtils{
     : PlannerSaver(dbm, taskNum, source){};
      
     //! Save a list of grasps from an EGPlanner to the database 
-    virtual bool saveGraspList(EGPlanner * finishedPlanner);
+    virtual bool saveGraspList(EGPlanner * finishedPlanner, db_planner::TaskRecord * rec = NULL);
   };
 
 
@@ -99,7 +99,7 @@ namespace egPlannerUtils{
     : PlannerSaver(dbm, taskNum, source){};
     
     //! Save a list of grasps from an EGPlanner to the database 
-    virtual bool saveGraspList(EGPlanner * finishedPlanner);
+    virtual bool saveGraspList(EGPlanner * finishedPlanner, db_planner::TaskRecord * rec = NULL);
   };
 
 

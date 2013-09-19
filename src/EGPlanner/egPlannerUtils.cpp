@@ -149,7 +149,7 @@ namespace egPlannerUtils
    *  robustly find the contacts and final energy. 
    *  Pregrasps occur as every other grasp in the grasp list.
    */
-bool GuidedPlannerSaver::saveGraspList( EGPlanner * finishedPlanner){
+  bool GuidedPlannerSaver::saveGraspList( EGPlanner * finishedPlanner, db_planner::TaskRecord * rec){
   // set default return value - any failure will short circuit the rest of the loop
   // and exit with false.
   bool retVal = true;	
@@ -193,7 +193,7 @@ bool GuidedPlannerSaver::saveGraspList( EGPlanner * finishedPlanner){
    static_cast<SimAnnPlanner *>(mPlanner)->setModelState(ns);
    mPlanner->setEnergyType(ENERGY_CONTACT);
    mPlanner->setContactType(CONTACT_PRESET);
-   mPlanner->setMaxSteps(200000);
+   mPlanner->setMaxSteps(90000);
    mPlanner->setRepeat(false);  
    mPlanner->invalidateReset();
    return mPlanner;
@@ -227,7 +227,7 @@ bool GuidedPlannerSaver::saveGraspList( EGPlanner * finishedPlanner){
  /*!
   * Saves a list of grasp planning states from an EGPlanner to the database
   */
- bool SimAnPlannerSaver::saveGraspList(EGPlanner * finishedPlanner)
+  bool SimAnPlannerSaver::saveGraspList(EGPlanner * finishedPlanner, db_planner::TaskRecord * rec)
  {
    DBGA("Saving" << finishedPlanner->getListSize() << "Grasps "  );
    bool retVal = true;	
@@ -249,9 +249,17 @@ bool GuidedPlannerSaver::saveGraspList( EGPlanner * finishedPlanner){
      gpList.back()->SetParams(params);
      //gpList.back()->SetSource(mSource.toStdString());
      //gpList.back()->SetEnergy(finishedPlanner->getGrasp(i)->getEnergy());
+     mDBMgr.SetTaskStatus(*rec,"RUNNING");
    }
    DBGA("Grasp list generated");
-   
+  
+   db_planner::TaskRecord test;
+   mDBMgr.GetTaskStatus(*rec,test);
+   if (!test.taskOutcomeName.compare("DONE")){
+     std::cout << "Some other instance finished running; Exiting";
+     exit(0);
+   }
+
    if(!mDBMgr.SaveGrasps(gpList)){
      DBGA("Failed to Save Grasps");
      retVal = false;
