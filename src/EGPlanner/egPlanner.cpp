@@ -16,7 +16,7 @@
 
 #include <Inventor/sensors/SoIdleSensor.h>
 #include <QApplication>
-
+#include <climits>
 #include "egPlanner.h"
 #include "searchState.h"
 #include "searchEnergy.h"
@@ -29,6 +29,8 @@
 #include "gloveInterface.h" //for glove input
 #include "eigenGrasp.h" //for glove input
 #include "collisionInterface.h"
+
+
 
 //#define GRASPITDBG
 #include "debug.h"
@@ -289,10 +291,50 @@ void EGPlanner::threadLoop()
 }
 
 
+double my_clock(struct rusage & r_usage)
+{
+  
+  struct rusage r_usage_end;
+  if( getrusage(RUSAGE_SELF, &r_usage_end) == -1 )
+    return -1;
+  // resource metrics at beginning
+  struct timeval ru_utime_beg = r_usage.ru_utime; // user time
+  struct timeval ru_stime_beg = r_usage.ru_stime; // sys time
+  
+  // resource metrics at this moment
+  struct timeval ru_utime_end = r_usage_end.ru_utime;
+  struct timeval ru_stime_end = r_usage_end.ru_stime;
+  __time_t tv_sec_u = ru_utime_end.tv_sec - ru_utime_beg.tv_sec; /* Seconds */
+  __suseconds_t tv_usec_u = ru_utime_end.tv_usec - ru_utime_beg.tv_usec; /* Microseconds.(long)*/
+
+  __time_t tv_sec_s = ru_stime_end.tv_sec - ru_stime_beg.tv_sec; /* Seconds */
+  __suseconds_t tv_usec_s = ru_stime_end.tv_usec - ru_stime_beg.tv_usec; /* Microseconds.(long)*/
+
+  __time_t total_tv_sec = tv_sec_u + tv_sec_s;
+  __suseconds_t total_tv_usec = tv_usec_u + tv_usec_s;
+  double total_sec = total_tv_sec + total_tv_usec * 1.e-6;
+  return total_sec; 
+}
+
+
+
 double
 EGPlanner::getRunningTime()
 {
-	if (isActive()) return mRunningTime + (double)(clock() - mStartTime) / CLOCKS_PER_SEC;
+	if (isActive())
+	  {
+	    return my_clock(r_usage) - mStartTime + mRunningTime;
+	    /*	    double total_clock_time = mRunningTime + clock_time;
+	    if (total_clock_time < mRunningTime ){
+	      mRunningTime += INT_MAX/CLOCKS_PER_SEC;
+	      total_clock_time = mRunningTime + (double)(clock_time - mStartTime) / CLOCKS_PER_SEC;
+	    }
+	    mRunningTime = clock_time;
+	    return clock_time;
+	  
+	    */
+	    
+	  }  
 	else return mRunningTime;
 }
 
@@ -347,7 +389,8 @@ EGPlanner::startPlanner()
 	}
 	PROF_RESET_ALL;
 	PROF_START_TIMER(EG_PLANNER);
-	mStartTime = clock();
+	getrusage(RUSAGE_SELF, &r_usage);
+	mStartTime = my_clock(r_usage);
 	setState( RUNNING );
 }
 

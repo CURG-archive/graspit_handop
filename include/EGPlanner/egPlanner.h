@@ -27,6 +27,7 @@
 #include <QObject>
 
 #include "search.h"
+#include <sys/resource.h>
 
 class Hand;
 class Body;
@@ -220,5 +221,7 @@ public:
 
 	//! Set the stream for outputting stats and info
 	void setStatStream(std::ostream *out) const;
+	struct rusage r_usage;
+
 };
 #endif
