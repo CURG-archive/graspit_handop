@@ -360,7 +360,7 @@ void GraspPlanningTask::plannerUpdated(){
 
    rate = 4*rate;
  
-   rate += diff_time / (mPlanner->getCurrentStep() - last_step);
+   rate += (mPlanner->getCurrentStep() - last_step)/diff_time;
 
    last_step = mPlanner->getCurrentStep();
    last_time = mPlanner->getRunningTime();
