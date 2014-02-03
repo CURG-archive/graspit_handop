@@ -1,35 +1,19 @@
-clic_lab_dict = dict()
-clic_lab_dict["128.59.15.74"] = []
-#clic_lab_dict["128.59.15.75"] = []
-clic_lab_dict["128.59.15.71"] = []
-clic_lab_dict["128.59.15.68"] = []
-clic_lab_dict["128.59.15.73"] = []
-clic_lab_dict["128.59.15.51"] = []
-clic_lab_dict["128.59.15.69"] = []
-clic_lab_dict["128.59.15.80"] = []
-clic_lab_dict["128.59.15.57"] = []
-clic_lab_dict["128.59.15.85"] = []
-clic_lab_dict["128.59.15.55"] = []
-clic_lab_dict["128.59.15.76"] = []
-clic_lab_dict["128.59.15.50"] = []
-clic_lab_dict["128.59.15.53"] = []
-clic_lab_dict["128.59.15.77"] = []
-clic_lab_dict["128.59.15.70"] = []
-clic_lab_dict["128.59.15.79"] = []
-clic_lab_dict["128.59.15.63"] = []
-clic_lab_dict["128.59.15.48"] = []
-#clic_lab_dict["128.59.15.83"] = []
-clic_lab_dict["128.59.15.56"] = []
-clic_lab_dict["128.59.15.54"] = []
-clic_lab_dict["128.59.15.58"] = []
-clic_lab_dict["128.59.15.59"] = []
-clic_lab_dict["128.59.15.49"] = []
-clic_lab_dict["128.59.15.52"] = []
-clic_lab_dict["128.59.15.84"] = []
-#clic_lab_dict["128.59.15.78"] = []
-clic_lab_dict["128.59.15.72"] = []
-clic_lab_dict["128.59.15.62"] = []
+import socket
 
+clic_lab_name_list = ["algiers","amman","ankara","athens","baghdad",
+"beijing","beirut","berlin","bern","brasilia","brussels","bucharest","budapest",
+"cairo","canberra","copenhagen","damascus","delhi","dhaka","helsinki","islamabad",
+"jerusalem","kathmandu","lima","lisbon","luxembourg","minsk","ottawa","paris",
+"prague","pretoria","seoul","tehran","tokyo","tripoli","vienna","warsaw"]
+
+clic_lab_dict = dict()
+for server_name in clic_lab_name_list:
+  try:
+    server_ip = socket.gethostbyname("%s.clic.cs.columbia.edu"%server_name)
+    print "%s (%s) is online."%(server_name,server_ip)
+    clic_lab_dict[server_ip] = []
+  except socket.error:
+    print "%s is not online."%server_name
 
 medium_dict = dict()           
 medium_dict["128.59.15.78"] = []
