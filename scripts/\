@@ -175,7 +175,7 @@ class LocalJob(object):
         self.task_id = -1
         self.log_file = []
         if job_num > 0:
-            self.log_file = open('./server_logs/' + socket.gethostname(), "a+")
+            self.log_file = open('./server_logs/' + socket.gethostname(), "a")
         else:
             self.log_file = open("/dev/null","rw")
         self.start()
@@ -204,7 +204,7 @@ class LocalJob(object):
         #        args = "nice -n 50 /home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
         args = "/home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
         self.log("Starting process from graspit_dispatcher")
-        self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=self.log_file, stderr=self.log_file)
+        self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=self.log_file, stderr=self.file)
 
     def flush_std_out(self):
         if self.subprocess.returncode != None:
@@ -263,7 +263,6 @@ class LocalJob(object):
         s = subprocess.Popen(args,  stdout = subprocess.PIPE, stderr = subprocess.STDOUT, stdin = subprocess.PIPE)
         s.wait()
 
-    '''This maybe doesn't make a large amount of sense. Look into later'''
     def get_task_id(self):
         if self.task_id > 0:
             return True
