@@ -173,11 +173,11 @@ class LocalJob(object):
         self.subprocess = []
         self.server_name = socket.gethostname()
         self.task_id = -1
-        self.file = []
+        self.log_file = []
         if job_num > 0:
-            self.file = open('./' + socket.gethostname() + str(job_num), "w")
+            self.log_file = open('./server_logs/' + socket.gethostname(), "a")
         else:
-            self.file = open("/dev/null","rw")
+            self.log_file = open("/dev/null","rw")
         self.start()
 
     def set_env(self):
@@ -195,13 +195,16 @@ class LocalJob(object):
         os.putenv("HAND_MODEL_ROOT_FTP_URL","ftp://anonymous@tonga.cs.columbia.edu/")
         os.putenv("GRASPIT_QUIT_ON_TASK_COMPLETE","YES")
         
-
+    def log(self,message):
+        timestamp = datetime.datetime.now().isoformat()
+        self.log_file.write("%s task %s: %s\n"%(timestamp,self.task_id,message))
 
     def start(self):
         self.set_env()
         #        args = "nice -n 50 /home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
         args = "/home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
-        self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=self.file, stderr=self.file)
+        self.log("Starting process from graspit_dispatcher")
+        self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=self.log_file, stderr=self.log_file)
 
     def flush_std_out(self):
         if self.subprocess.returncode != None:
@@ -222,14 +225,14 @@ class LocalJob(object):
         if self.is_running():
             try:
                 self.subprocess.send_signal(23)
-                self.file.write("suspending process from graspit_dispatcher\n")
+                self.log("Suspending process from graspit_dispatcher")
             except:
                 pass
 
     def restore(self):
         try:
             self.subprocess.send_signal(19)
-            self.file.write("Restoring from graspit_dispatcher\n")
+            self.log("Restoring from graspit_dispatcher")
         except:
             pass
 
@@ -237,7 +240,7 @@ class LocalJob(object):
         
         if self.is_running():
             try:
-                self.file.write("Killing process from graspit_dispatcher\n")
+                self.log("Killing process from graspit_dispatcher")
                 self.subprocess.kill()
                 #l = self.subprocess.communicate()[0]
                 while self.subprocess.poll() == None:
@@ -260,6 +263,7 @@ class LocalJob(object):
         s = subprocess.Popen(args,  stdout = subprocess.PIPE, stderr = subprocess.STDOUT, stdin = subprocess.PIPE)
         s.wait()
 
+    '''This maybe doesn't make a large amount of sense. Look into later'''
     def get_task_id(self):
         if self.task_id > 0:
             return True
