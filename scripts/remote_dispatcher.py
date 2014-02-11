@@ -16,7 +16,7 @@ class RemoteServer(object):
 
     def launch_job(self):
         with open('/dev/null','rw') as null_file:
-            args = ["ssh", "-o","ConnectTimeout=30", self.server_name, "run_dispatcher.sh"]
+            args = ["ssh", "-o","ConnectTimeout=30", self.server_name, "./gm/run_dispatcher.sh"]
             print "%s \n"%(self.server_name)
             self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=null_file, stderr=subprocess.STDOUT))
 
@@ -34,7 +34,7 @@ class RemoteServer(object):
         self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT))
 
     def do_all(self):        
-        args = ["ssh", "-o","ConnectTimeout=30",self.server_name, "killall", "python;", "killall","graspit;","killall","nice;", "python", "/home/jweisz/gm/graspit_dispatcher.py"]
+        args = ["ssh", "-o","ConnectTimeout=30",self.server_name, "killall", "python;", "killall","graspit;","killall","nice;", "./gm/run/dispatcher.sh"]
         self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT))
 
     def collect_subprocesses(self):
