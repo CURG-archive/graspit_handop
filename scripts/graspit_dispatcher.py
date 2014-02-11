@@ -173,6 +173,7 @@ class LocalJob(object):
         self.subprocess = []
         self.server_name = socket.gethostname()
         self.task_id = -1
+        self.job_num = job_num
         self.log_file = []
         if job_num > 0:
             self.log_file = open('./server_logs/' + socket.gethostname(), "a+")
@@ -197,7 +198,7 @@ class LocalJob(object):
         
     def log(self,message):
         timestamp = datetime.datetime.now().isoformat()
-        self.log_file.write("%s task %s: %s\n"%(timestamp,self.task_id,message))
+        self.log_file.write("%s task %s: %s\n"%(timestamp,self.job_num,message))
 
     def start(self):
         self.set_env()
