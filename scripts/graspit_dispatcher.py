@@ -6,6 +6,10 @@ from numpy import *
 import select
 import os
 import random
+import datetime
+
+import psycopg2
+import psycopg2.extras
 
 def make_path(path):
     d = os.path.dirname(f)
@@ -30,6 +34,8 @@ class LocalDispatcher(object):
         self.can_launch = True
         self.job_num = 0
         self.suspended_job_list = []
+        self.connection = psycopg2.connect("dbname='eigenhanddb' user='postgres' password='roboticslab' host='tonga.cs.columbia.edu'")
+        self.cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
         try:
             self.status_file = open('/home/jweisz/html/server_status/%s_status.html'%(socket.gethostname()),'w')
@@ -95,7 +101,7 @@ class LocalDispatcher(object):
 
     def launch_job(self):
         self.job_num = self.job_num + 1
-        self.job_list.append(LocalJob(self.job_num))
+        self.job_list.append(LocalJob(self.job_num,self.cursor))
         #print self.job_list[-1].subprocess.stdout.readline()
 
     def launch_job_if_legal(self):
@@ -167,13 +173,14 @@ class LocalDispatcher(object):
         self.status_file.write(status_string)
         self.status_file.flush()
 
-class LocalJob(object):
+class LocalJob(object,dbcursor):
     def __init__(self, job_num = -1):
         self.status = []
         self.subprocess = []
         self.server_name = socket.gethostname()
         self.task_id = -1
         self.job_num = job_num
+        self.dbcursor = dbcursor
         self.log_file = []
         if job_num > 0:
             self.log_file = open('./server_logs/' + socket.gethostname(), "a+")
@@ -260,9 +267,7 @@ class LocalJob(object):
 
 
     def reset_job(self, job_id):
-        args = ["ssh", "tonga.cs.columbia.edu", "export PGPASSWORD=roboticslab; psql -c 'update task set task_outcome_id = 1, last_updater=%s where task_id = %i' -U postgres -d eigenhanddb -h tonga.cs.columbia.edu;"%(job_id, self.server_name)]
-        s = subprocess.Popen(args,  stdout = subprocess.PIPE, stderr = subprocess.STDOUT, stdin = subprocess.PIPE)
-        s.wait()
+        self.dbcursor.execute("UPDATE task SET task_outcome_id = 1, last_updater=%s WHERE task_id = %i"%(job_id, self.server_name));
 
     '''This maybe doesn't make a large amount of sense. Look into later'''
     def get_task_id(self):
