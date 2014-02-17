@@ -26,17 +26,20 @@ def make_path(path):
 
 class LocalDispatcher(object):
     def __init__(self):
-        self.idle_percent = -1
-        self.get_idle_percent()
-        self.num_processors = self.get_num_processors()
-        self.job_list = []
+        self.kill_existing_graspit()
+
         self.min_server_idle_level = 10
         self.max_server_idle_level = 30
-        self.server_name = socket.gethostname()
-        self.kill_existing_graspit()
-        self.can_launch = True
+        self.idle_percent = self.get_idle_percent()
+        self.num_processors = self.get_num_processors()
+
         self.job_num = 0
+        self.job_list = []
         self.suspended_job_list = []
+
+        self.server_name = socket.gethostname()
+        self.ip_addr = socket.gethostbyname(self.server_name)
+        self.can_launch = True
         self.connection = psycopg2.connect("dbname='eigenhanddb' user='postgres' password='roboticslab' host='tonga.cs.columbia.edu'")
         self.cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
@@ -46,10 +49,12 @@ class LocalDispatcher(object):
             self.status_file = open('/dev/null','w')
             
     def get_num_processors(self):
-        return self.num_processors = psutil.NUM_CPUS
+        self.num_processors = psutil.NUM_CPUS
+        return self.num_processors
 
     def get_idle_percent(self):
-        return self.idle_percent = 100.0 - psutil.get_cpu_percent()
+        self.idle_percent = 100.0 - psutil.get_cpu_percent()
+        return self.idle_percent
 
     def get_num_to_launch(self):
         free_to_launch = int(floor((self.idle_percent - self.max_server_idle_level)/(100/self.num_processors)))
@@ -133,21 +138,20 @@ class LocalDispatcher(object):
         
 
     def get_task_ids(self):
-        for j in self. job_list:
+        for j in self.job_list:
             j.get_task_id()
 
     def run_server(self):
-        self.launch_jobs_while_legal()
-        time.sleep(10)
-        #self.get_task_ids()
-        valid_jobs = [j for j in self.job_list if j.is_running()]
-        if len(valid_jobs) == 0:
-            print "no valid jobs on server %s\n"%(self.server_name)
-            return False
-        self.output_status(len(valid_jobs))
+        #Clear out any problems
         self.kill_jobs_while_busy()
         self.clear_inactive_jobs()
+        #Launch new jobs
+        self.launch_jobs_while_legal()
+        #Update the sql server
+        self.update_status()
+        time.sleep(10)
         return True
+
 
     def run_loop(self):
         while(self.run_server()):
@@ -156,6 +160,19 @@ class LocalDispatcher(object):
 	self.status_file.write('Host: %s finished\n'%(socket.gethostname()))
 	self.status_file.close()
         print "done\n"
+
+    def update_status(self):
+        valid_jobs = [j for j in self.job_list if j.is_running()]
+        if len(valid_jobs) == 0:
+            print "no valid jobs on server %s\n"%(self.server_name)
+
+        self.get_idle_percent()
+
+        self.cursor.execute("DELETE FROM servers WHERE server_name = '%s';"%(self.server_name))
+        self.cursor.execute("INSERT INTO servers (server_name,ip_addr,idle_percent,num_processors,running_jobs,paused_jobs) VALUES ('%s','%s','%s','%s','%s','%s');"%(self.server_name,self.ip_addr,self.idle_percent,self.num_processors,len(valid_jobs),self.num_jobs-len(valid_jobs)))
+        self.connection.commit()        
+
+	self.output_status(len(valid_jobs))
 
     def output_status(self, num_valid_jobs):
         status_string = "Host: %s  Idle level: %f Num running: %i Date: %s CanLaunch: %i\n"%(socket.gethostname(), self.idle_percent, num_valid_jobs, time.strftime('%c'), self.can_launch)
