@@ -1,15 +1,18 @@
 #! /usr/bin/env python
+import os
+import select
+import random
+import time
+import datetime
+
 import subprocess
 import socket
-import time
+
 from numpy import *
-import select
-import os
-import random
-import datetime
 
 import psycopg2
 import psycopg2.extras
+import psutil
 
 def make_path(path):
     d = os.path.dirname(f)
@@ -43,23 +46,10 @@ class LocalDispatcher(object):
             self.status_file = open('/dev/null','w')
             
     def get_num_processors(self):
-        args = ["cat /proc/cpuinfo | grep processor | wc -l"]
-        s = subprocess.Popen(args, stdout=subprocess.PIPE, stdin = subprocess.PIPE, stderr=subprocess.STDOUT, shell = True)
-        return int(s.stdout.readline())
+        return self.num_processors = psutil.NUM_CPUS
 
     def get_idle_percent(self):
-        args = ["mpstat 1 1 | awk '{print $12}'"]
-        s = subprocess.Popen(args, stdout=subprocess.PIPE, stdin = subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        r = ''
-        while 1:
-            r = s.stdout.readline()
-            try:
-                self.idle_percent =  float(r)        
-                return
-            except:
-                pass
-
-        
+        return self.idle_percent = 100.0 - psutil.get_cpu_percent()
 
     def get_num_to_launch(self):
         free_to_launch = int(floor((self.idle_percent - self.max_server_idle_level)/(100/self.num_processors)))
