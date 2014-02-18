@@ -180,7 +180,7 @@ class LocalDispatcher(object):
         self.status_file.write(status_string)
         self.status_file.flush()
 
-class LocalJob(object,dbcursor):
+class LocalJob(object):
     def __init__(self, job_num = -1):
         self.status = []
         self.subprocess = []
