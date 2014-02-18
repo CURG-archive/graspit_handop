@@ -26,6 +26,9 @@ def make_path(path):
 
 class LocalDispatcher(object):
     def __init__(self):
+        self.server_name = socket.gethostname()
+        self.ip_addr = socket.gethostbyname(self.server_name)
+
         self.kill_existing_graspit()
 
         self.min_server_idle_level = 10
@@ -37,11 +40,9 @@ class LocalDispatcher(object):
         self.job_list = []
         self.suspended_job_list = []
 
-        self.server_name = socket.gethostname()
-        self.ip_addr = socket.gethostbyname(self.server_name)
         self.can_launch = True
         self.connection = psycopg2.connect("dbname='eigenhanddb' user='postgres' password='roboticslab' host='tonga.cs.columbia.edu'")
-        self.cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        self.cursor = self.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
         try:
             self.status_file = open('/home/jweisz/html/server_status/%s_status.html'%(socket.gethostname()),'w')
@@ -53,7 +54,7 @@ class LocalDispatcher(object):
         return self.num_processors
 
     def get_idle_percent(self):
-        self.idle_percent = 100.0 - psutil.get_cpu_percent()
+        self.idle_percent = 100.0 - psutil.cpu_percent()
         return self.idle_percent
 
     def get_num_to_launch(self):
@@ -163,8 +164,6 @@ class LocalDispatcher(object):
 
     def update_status(self):
         valid_jobs = [j for j in self.job_list if j.is_running()]
-        if len(valid_jobs) == 0:
-            print "no valid jobs on server %s\n"%(self.server_name)
 
         self.get_idle_percent()
 
@@ -181,7 +180,7 @@ class LocalDispatcher(object):
         self.status_file.flush()
 
 class LocalJob(object):
-    def __init__(self, job_num = -1):
+    def __init__(self, job_num = -1, dbcursor=None):
         self.status = []
         self.subprocess = []
         self.server_name = socket.gethostname()
