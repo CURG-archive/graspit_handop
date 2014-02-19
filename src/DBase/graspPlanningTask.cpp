@@ -32,7 +32,7 @@
 #include "graspit_db_grasp.h"
 #include "graspit_db_model.h"
 #include "grasp.h"
-
+#include "exitReturnCodes.h"
 #include "debug.h"
 
 
@@ -102,6 +102,7 @@ void GraspPlanningTask::getHand(){
 
     if ( !mHand || !mDBMgr->setHand(mHand)) {
       DBGA("Failed to load hand");
+      exit(FAILED_TO_LOAD_HAND);
       mStatus = ERROR;
       return;
     }
@@ -115,8 +116,9 @@ void GraspPlanningTask::getHand(){
   }
 
   //check for virtual contacts
-  if (mHand->getNumVirtualContacts()==0) {
+  if (mHand->getNumVirtualContacts()==0) {    
     DBGA("Specified hand does not have virtual contacts defined");
+    exit(FAILED_TO_LOAD_VIRTUAL_CONTACTS);
     mStatus = ERROR;
     return;
   }
@@ -165,6 +167,7 @@ void GraspPlanningTask::getObject(){
     //attempt repair
     DBGA("Grasp Planning Task: failed to load model");
     mStatus = ERROR;
+    exit(FAILED_TO_LOAD_OBJECT);
     return;
   }
   

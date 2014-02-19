@@ -24,6 +24,7 @@
 #include "debug.h"
 #include "guidedPlanner.h"
 #include "DBase/DBPlanner/db_manager.h"
+#include "exitReturnCodes.h"
 
 namespace egPlannerUtils
 {
@@ -257,7 +258,7 @@ namespace egPlannerUtils
    mDBMgr.GetTaskStatus(*rec,test);
    if (!test.taskOutcomeName.compare("DONE")){
      std::cout << "Some other instance finished running; Exiting";
-     exit(0);
+     exit(JOB_ALREADY_COMPLETED);
    }
 
    if(!mDBMgr.SaveGrasps(gpList)){

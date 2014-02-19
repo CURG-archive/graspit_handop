@@ -19,6 +19,7 @@
 #include "graspAnalyzingTask.h"
 #include "harvardHandPlanningTask.h"
 #include "DBase/genericGraspPlanningTask.h"
+#include "exitReturnCodes.h"
 
 bool compareGraspQM(db_planner::Grasp* g1, db_planner::Grasp* g2)
 {
@@ -363,7 +364,7 @@ void GraspPlanningService::plan_from_tasks(){
 	if(!mDBMgr->isConnected()){
 	  //for now this error is fatal, quit.
 	  DBGA("GraspPlanningService: Fatal error.  Not able to connect to CGDB");
-	  exit(1);
+	  exit(FAILED_TO_CONNECT_TO_DBASE);
 	}else{
 	  	  DBGA("Grasp planning service was able to connect");
 	}
@@ -381,7 +382,7 @@ void GraspPlanningService::plan_from_tasks(){
 	}
 	if (task_type_id < 0){
 		DBGA("Couldn't find task name");
-		return;
+		exit(WRONG_JOB_TYPE);
 	}
 	TaskFactory * tf(NULL);
 	//make the appropriate type of task factory for the task
@@ -407,7 +408,7 @@ void GraspPlanningService::plan_from_tasks(){
 	  //it failed and exit with an exit code
 	  //FIXME exit codes
 	  DBGA("GraspPlanningService: Fatal error.  Task Dispatcher not able to connect to CGDB");
-	  exit(1);
+	  exit(FAILED_TO_CONNECT_TO_DBASE);
 	}
 	/*otherwise, aknowledge that we have connected and 
 	*started
