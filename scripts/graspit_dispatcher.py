@@ -1,11 +1,18 @@
 #! /usr/bin/env python
+import os
+import select
+import random
+import time
+import datetime
+
 import subprocess
 import socket
-import time
+
 from numpy import *
-import select
-import os
-import random
+
+import psycopg2
+import psycopg2.extras
+import psutil
 
 def make_path(path):
     d = os.path.dirname(f)
@@ -19,17 +26,23 @@ def make_path(path):
 
 class LocalDispatcher(object):
     def __init__(self):
-        self.idle_percent = -1
-        self.get_idle_percent()
-        self.num_processors = self.get_num_processors()
-        self.job_list = []
+        self.server_name = socket.gethostname()
+        self.ip_addr = socket.gethostbyname(self.server_name)
+
+        self.kill_existing_graspit()
+
         self.min_server_idle_level = 10
         self.max_server_idle_level = 30
-        self.server_name = socket.gethostname()
-        self.kill_existing_graspit()
-        self.can_launch = True
+        self.idle_percent = self.get_idle_percent()
+        self.num_processors = self.get_num_processors()
+
         self.job_num = 0
+        self.job_list = []
         self.suspended_job_list = []
+
+        self.can_launch = True
+        self.connection = psycopg2.connect("dbname='eigenhanddb' user='postgres' password='roboticslab' host='tonga.cs.columbia.edu'")
+        self.cursor = self.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
         try:
             self.status_file = open('/home/jweisz/html/server_status/%s_status.html'%(socket.gethostname()),'w')
@@ -37,23 +50,12 @@ class LocalDispatcher(object):
             self.status_file = open('/dev/null','w')
             
     def get_num_processors(self):
-        args = ["cat /proc/cpuinfo | grep processor | wc -l"]
-        s = subprocess.Popen(args, stdout=subprocess.PIPE, stdin = subprocess.PIPE, stderr=subprocess.STDOUT, shell = True)
-        return int(s.stdout.readline())
+        self.num_processors = psutil.NUM_CPUS
+        return self.num_processors
 
     def get_idle_percent(self):
-        args = ["mpstat 1 1 | awk '{print $12}'"]
-        s = subprocess.Popen(args, stdout=subprocess.PIPE, stdin = subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        r = ''
-        while 1:
-            r = s.stdout.readline()
-            try:
-                self.idle_percent =  float(r)        
-                return
-            except:
-                pass
-
-        
+        self.idle_percent = 100.0 - psutil.cpu_percent()
+        return self.idle_percent
 
     def get_num_to_launch(self):
         free_to_launch = int(floor((self.idle_percent - self.max_server_idle_level)/(100/self.num_processors)))
@@ -95,7 +97,7 @@ class LocalDispatcher(object):
 
     def launch_job(self):
         self.job_num = self.job_num + 1
-        self.job_list.append(LocalJob(self.job_num))
+        self.job_list.append(LocalJob(self.job_num,self.cursor))
         #print self.job_list[-1].subprocess.stdout.readline()
 
     def launch_job_if_legal(self):
@@ -137,21 +139,20 @@ class LocalDispatcher(object):
         
 
     def get_task_ids(self):
-        for j in self. job_list:
+        for j in self.job_list:
             j.get_task_id()
 
     def run_server(self):
-        self.launch_jobs_while_legal()
-        time.sleep(10)
-        #self.get_task_ids()
-        valid_jobs = [j for j in self.job_list if j.is_running()]
-        if len(valid_jobs) == 0:
-            print "no valid jobs on server %s\n"%(self.server_name)
-            return False
-        self.output_status(len(valid_jobs))
+        #Clear out any problems
         self.kill_jobs_while_busy()
         self.clear_inactive_jobs()
+        #Launch new jobs
+        self.launch_jobs_while_legal()
+        #Update the sql server
+        self.update_status()
+        time.sleep(10)
         return True
+
 
     def run_loop(self):
         while(self.run_server()):
@@ -161,6 +162,17 @@ class LocalDispatcher(object):
 	self.status_file.close()
         print "done\n"
 
+    def update_status(self):
+        valid_jobs = [j for j in self.job_list if j.is_running()]
+
+        self.get_idle_percent()
+
+        self.cursor.execute("DELETE FROM servers WHERE server_name = '%s';"%(self.server_name))
+        self.cursor.execute("INSERT INTO servers (server_name,ip_addr,idle_percent,num_processors,running_jobs,paused_jobs) VALUES ('%s','%s','%s','%s','%s','%s');"%(self.server_name,self.ip_addr,self.idle_percent,self.num_processors,len(valid_jobs),self.num_jobs-len(valid_jobs)))
+        self.connection.commit()        
+
+	self.output_status(len(valid_jobs))
+
     def output_status(self, num_valid_jobs):
         status_string = "Host: %s  Idle level: %f Num running: %i Date: %s CanLaunch: %i\n"%(socket.gethostname(), self.idle_percent, num_valid_jobs, time.strftime('%c'), self.can_launch)
         self.status_file.seek(0)
@@ -168,16 +180,18 @@ class LocalDispatcher(object):
         self.status_file.flush()
 
 class LocalJob(object):
-    def __init__(self, job_num = -1):
+    def __init__(self, job_num = -1, dbcursor=None):
         self.status = []
         self.subprocess = []
         self.server_name = socket.gethostname()
         self.task_id = -1
-        self.file = []
+        self.job_num = job_num
+        self.dbcursor = dbcursor
+        self.log_file = []
         if job_num > 0:
-            self.file = open('./' + socket.gethostname() + str(job_num), "w")
+            self.log_file = open('./server_logs/' + socket.gethostname(), "a+")
         else:
-            self.file = open("/dev/null","rw")
+            self.log_file = open("/dev/null","rw")
         self.start()
 
     def set_env(self):
@@ -195,13 +209,16 @@ class LocalJob(object):
         os.putenv("HAND_MODEL_ROOT_FTP_URL","ftp://anonymous@tonga.cs.columbia.edu/")
         os.putenv("GRASPIT_QUIT_ON_TASK_COMPLETE","YES")
         
-
+    def log(self,message):
+        timestamp = datetime.datetime.now().isoformat()
+        self.log_file.write("%s task %s: %s\n"%(timestamp,self.job_num,message))
 
     def start(self):
         self.set_env()
         #        args = "nice -n 50 /home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
         args = "/home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
-        self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=self.file, stderr=self.file)
+        self.log("Starting process from graspit_dispatcher")
+        self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=self.log_file, stderr=self.log_file)
 
     def flush_std_out(self):
         if self.subprocess.returncode != None:
@@ -222,14 +239,14 @@ class LocalJob(object):
         if self.is_running():
             try:
                 self.subprocess.send_signal(23)
-                self.file.write("suspending process from graspit_dispatcher\n")
+                self.log("Suspending process from graspit_dispatcher")
             except:
                 pass
 
     def restore(self):
         try:
             self.subprocess.send_signal(19)
-            self.file.write("Restoring from graspit_dispatcher\n")
+            self.log("Restoring from graspit_dispatcher")
         except:
             pass
 
@@ -237,7 +254,7 @@ class LocalJob(object):
         
         if self.is_running():
             try:
-                self.file.write("Killing process from graspit_dispatcher\n")
+                self.log("Killing process from graspit_dispatcher")
                 self.subprocess.kill()
                 #l = self.subprocess.communicate()[0]
                 while self.subprocess.poll() == None:
@@ -256,10 +273,9 @@ class LocalJob(object):
 
 
     def reset_job(self, job_id):
-        args = ["ssh", "tonga.cs.columbia.edu", "export PGPASSWORD=roboticslab; psql -c 'update task set task_outcome_id = 1, last_updater=%s where task_id = %i' -U postgres -d eigenhanddb -h tonga.cs.columbia.edu;"%(job_id, self.server_name)]
-        s = subprocess.Popen(args,  stdout = subprocess.PIPE, stderr = subprocess.STDOUT, stdin = subprocess.PIPE)
-        s.wait()
+        self.dbcursor.execute("UPDATE task SET task_outcome_id = 1, last_updater=%s WHERE task_id = %i"%(job_id, self.server_name));
 
+    '''This maybe doesn't make a large amount of sense. Look into later'''
     def get_task_id(self):
         if self.task_id > 0:
             return True
