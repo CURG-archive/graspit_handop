@@ -19,6 +19,7 @@ class ExperimentManager(object):
         @param num_atr_iters - The number of ATR iterations to run for each GA generation
         @param task_model_list - A list of TaskModels used to set up the database planner
         @param task_prototype - A prototype Task object that defines the trial specification(i.e. length and type)
+        @param trials_per_task - The number of planning jobs to run for each object/hand pair per planning iteration. Results from each should look fairly unique.
         @param eval_functor - The function to use when evaluating hand fitness in the genetic algorithm
         @param db_interface - The database interface to use. Assumed to be initialized with a starting set of 0th generation hands
         @param starting_ga_iter - The generation to start from.

@@ -195,13 +195,13 @@ class LocalJob(object):
         self.start()
 
     def set_env(self):
-        display_num = random.randint(0,3)
+        display_num = random.randint(1,4)
         os.putenv("MOSEKLM_LICENSE_FILE","/home/jweisz/gm/mosek_lib")
         os.putenv("LD_LIBRARY_PATH","/home/jweisz/gm/mosek_lib/")
         os.putenv("GRASPIT","/home/jweisz/gm/")
         os.putenv("GRASPIT_WAIT_DISPLAY_LEN","0")
         os.putenv("GRASPIT_QUIT_ON_TASK_COMPLETE","YES")
-        server_name = "picard.cs.columbia.edu:%i.0"%(display_num)
+        server_name = "darcy.cs.columbia.edu:%i.0"%(display_num)
         print server_name
         os.putenv("DISPLAY",server_name)
         os.putenv("CGDB_MODEL_ROOT","/home/jweisz/cgdb2")

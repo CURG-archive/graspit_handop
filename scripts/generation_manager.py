@@ -80,7 +80,7 @@ class GenerationManager (object):
         """
         @brief Test if the current generation has finished running
         """
-        self.task_list = self.interface.get_data_obj_by_index_list(Task, "task", "hand_id", self.hand_id_list)
+        self.task_list = self.interface.get_data_obj_by_index_list(eigenhand_db_objects.Task, "task", "hand_id", self.hand_id_list)
         return not len([t for t in self.task_list if t.task_outcome_id  < 3])
 
     def start_generation(self):
