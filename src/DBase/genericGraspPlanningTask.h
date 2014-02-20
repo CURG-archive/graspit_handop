@@ -17,6 +17,7 @@
 #define _GENERICGRASPPLANNINGTASK_H_
 #include "graspPlanningTask.h"
 #include "eigenhand_db_interface.h"
+#include "exitReturnCodes.h"
 
 /*! 
   Grasp planning task with factory for creating planner for added flexibility
@@ -52,13 +53,13 @@ class GenericGraspPlanningTask:public GraspPlanningTask{
       {
 	DBGA("harvardHandPlanningTask:: Failed to load world: " << mRecord.misc <<"\n");
 	mStatus=ERROR;
-	return;
+	exit(FAILED_TO_LOAD_WORLD);
       }
     if (w->getNumGB() != 1)
       {
 	DBGA("harvardHandPlanningTask:: Graspable body number = : " << w->getNumGB() <<"  Fatal Error \n");
 	mStatus=ERROR;
-	return;
+	exit(NO_OBJECT_IN_WORLD);
       }
     mHand->findInitialContact(1000);
     //set mObject
@@ -142,7 +143,8 @@ public:
       //stop the planner
       mPlanner->stopPlanner();
       //and quit
-      return;
+      exit(FAILED_TO_SAVE_GRASPS);
+	   //return;
     }
     //everything went ok, mark everything as finished, and return. 
     mStatus = DONE;

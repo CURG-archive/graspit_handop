@@ -25,7 +25,7 @@ def kill_job_on_server(server_name, process_id):
 
     """
     
-    args = ["ssh", server_name, "pkill %i"%(process_id)]
+    args = ["ssh", "-o", "PasswordAuthentication=no", server_name, "pkill %i"%(process_id)]
     subprocess.Popen(args)
     print "killed job %i on %s"%(process_id, server_name)
     return
@@ -33,7 +33,7 @@ def kill_job_on_server(server_name, process_id):
 
 def test_servers():
     for server in server_dict:
-        p = subprocess.Popen(['ssh',server,'touch me'])
+        p = subprocess.Popen(['ssh', "-o", "PasswordAuthentication=no",server,'touch me'])
         while p.returncode == None:
             p.poll()
         print "%s, %i"%(server, p.returncode)

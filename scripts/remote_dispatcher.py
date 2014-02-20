@@ -22,15 +22,15 @@ class RemoteServer(object):
 
     def kill_if_busy(self):
         with open('/dev/null','rw') as null_file:
-            args = ["ssh", self.server_name, "python", "/home/jweisz/gm/graspit_dispatch_monitor.py"]
+            args = ["ssh", "-o","PasswordAuthentication=no", self.server_name, "python", "/home/jweisz/gm/graspit_dispatch_monitor.py"]
             print "%s \n"%(self.server_name)
             return subprocess.Popen(args, stdin = subprocess.PIPE, stdout=null_file, stderr=subprocess.STDOUT)
 
     def kill_previous(self):
-        args = ["ssh", "-o","ConnectTimeout=30",self.server_name, "killall", "python"]
+        args = ["ssh", "-o","PasswordAuthentication=no", "-o","ConnectTimeout=30",self.server_name, "killall", "python"]
         self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT))
             
-        args = ["ssh", "-o","ConnectTimeout=30", self.server_name, "killall", "graspit"]
+        args = ["ssh", "-o","PasswordAuthentication=no", "-o","ConnectTimeout=30", self.server_name, "killall", "graspit"]
         self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT))
 
     def do_all(self):        

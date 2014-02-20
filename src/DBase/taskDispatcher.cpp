@@ -27,6 +27,7 @@
 #include <QHostInfo>
 
 #include "debug.h"
+#include "exitReturnCodes.h"
 
 //common initialization code
 inline void TaskDispatcher::init(){
@@ -156,7 +157,7 @@ void TaskDispatcher::start()
 	if (!rec.taskType) {
 		DBGA("Dispatcher: no tasks to be executed");
 		mStatus = NO_TASK;
-		exit(5);
+		exit(NO_JOBS);
 		return;
 	}
 	string filename = "/home/jweisz/task_status/" + QHostInfo::localHostName().toStdString() +"task_id_" + QString::number(rec.taskId).toStdString();

@@ -12,11 +12,11 @@ class Server(object):
         
         
     def launch_idle_query(self):
-        args = ["ssh", self.server_name, "mpstat 1 1| awk '{print $12}'"]
+        args = ["ssh", "-o", "PasswordAuthentication=no", self.server_name, "mpstat 1 1| awk '{print $12}'"]
         self.query_state_subprocess = subprocess.Popen(args, stdout=subprocess.PIPE)
 
     def get_num_processors(self):
-        args = ["ssh" , self.server_name, "cat /proc/cpuinfo | grep processor | wc -l"]
+        args = ["ssh" , "-o", "PasswordAuthentication=no", self.server_name, "cat /proc/cpuinfo | grep processor | wc -l"]
         s = subprocess.Popen(args, stdout=subprocess.PIPE)
         i = get_output(s)
         return int(i)
@@ -147,7 +147,7 @@ class Job(object):
         self.start()
 
     def start(self):
-        args = ["ssh", self.server_name, "cd gm; ./launch_nice"]
+        args = ["ssh",  "-o", "PasswordAuthentication=no",self.server_name, "cd gm; ./launch_nice"]
         self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     def flush_std_out(self):

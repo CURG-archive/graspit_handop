@@ -187,7 +187,7 @@ SimAnn::iterate(GraspPlanningState *currentState, SearchEnergy *energyCalculator
 		//we have failed to compute a legal neighbor. 
 		//weather the SimAnn should advance a step and cool down the temperature even when it fails to compute a 
 		//legal neighbor is debatable. Might be more interactive (especially for the online planner) if it does.
-		//mCurrentStep += 1;
+		mCurrentStep += 1;
 		return FAIL;
 	}
 
