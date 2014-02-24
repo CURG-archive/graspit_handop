@@ -248,10 +248,10 @@ class LocalJob(object):
             self.dispatcher.can_launch = (self.exit_code != 5) #I/O IS IMPORTANT
 
             self.log("Process finished with return code %i"%self.exit_code)
-            self.dispatcher.cursor.execute("UPDATE jobs (exit_code,end_time,last_updated) VALUES (%s,now(),now()) WHERE server_name = %s AND job_lid = %s AND server_pid = %s;",[self.exit_code,self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
+            self.dispatcher.cursor.execute("UPDATE jobs SET exit_code = %s, end_time = now(),last_updated = now() WHERE server_name = %s AND job_lid = %s AND server_pid = %s;",[self.exit_code,self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
             self.dispatcher.connection.commit()        
         else:
-            self.dispatcher.cursor.execute("UPDATE jobs (last_updated) VALUES (now()) WHERE server_name = %s AND job_lid = %s AND server_pid = %s;",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
+            self.dispatcher.cursor.execute("UPDATE jobs SET last_updated = now() WHERE server_name = %s AND job_lid = %s AND server_pid = %s;",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
             self.dispatcher.connection.commit()        
 
     def is_running(self):
