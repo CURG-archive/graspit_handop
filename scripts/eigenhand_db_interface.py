@@ -193,6 +193,12 @@ class EGHandDBaseInterface(object):
         self.connection.commit()
         self.cursor.execute("delete from finger;")
         self.connection.commit()
+        self.cursor.execute("delete from servers;")
+        self.connection.commit()
+        self.cursor.execute("delete from jobs;")
+        self.connection.commit()
+        self.cursor.execute("delete from logs;")
+        self.connection.commit()
 
     def clear_grasp_table(self):
         self.cursor.execute("delete from grasp;")
