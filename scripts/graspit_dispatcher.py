@@ -101,7 +101,7 @@ class LocalDispatcher(object):
     def launch_job(self):
         job_lid = len(self.job_list) + 1
         #If newer jobs go near the front, we can suspend the newer ones easier
-        self.job_list[:0] = [LocalJob(self,self.job_lid)]
+        self.job_list[:0] = [LocalJob(self,job_lid)]
 
     def launch_job_if_legal(self):
         if self.idle_percent > self.max_server_idle_level and len(self.job_list) < self.num_processors - 3:
