@@ -222,7 +222,7 @@ class LocalJob(object):
 
     def log(self,message):
         timestamp = datetime.datetime.now().isoformat()
-        self.log_file.write("%s task %s: %s\n"%(timestamp,self.job_lid,message))
+        self.log_file.write("%s local job %s: %s\n"%(timestamp,self.job_lid,message))
         self.dispatcher.cursor.execute("INSERT INTO log(server_name, message) VALUES('%s','task %i: %s')",[self.dispatcher.server_name,self.job_lid,message])
         self.connection.commit()        
 
