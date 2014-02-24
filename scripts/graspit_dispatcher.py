@@ -159,8 +159,8 @@ class LocalDispatcher(object):
             j.poll()
 
     def update_status(self):
-        num_running = len(j for j in self.job_list if j.is_running())
-        num_paused = len(j for j in self.job_list if j.is_suspended())
+        num_running = len([j for j in self.job_list if j.is_running()])
+        num_paused = len([j for j in self.job_list if j.is_suspended()])
 
         self.get_idle_percent()
 
