@@ -3,6 +3,7 @@ import psycopg2.extras
 import eigenhand_db_objects
 import socket
 import os
+import pdb
 
 #The task table outcome codes.
 TASK_READY = 1
@@ -185,8 +186,11 @@ class EGHandDBaseInterface(object):
 
         Assumes that the starting set of hands is all hands with an id below 313.
         """
-        self.cursor.execute("delete from task;")
-        self.connection.commit()
+        try:
+             self.cursor.execute("delete from task;")
+             self.connection.commit()
+        except Exception as e:
+             pdb.set_trace()
         self.cursor.execute("delete from grasp;")
         self.connection.commit()
         self.cursor.execute("delete from hand;")
