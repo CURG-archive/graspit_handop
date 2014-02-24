@@ -172,6 +172,7 @@ class LocalDispatcher(object):
 
     def output_status(self, num_valid_jobs):
         status_string = "Host: %s  Idle level: %f Num running: %i Date: %s CanLaunch: %i\n"%(socket.gethostname(), self.idle_percent, num_valid_jobs, time.strftime('%c'), self.can_launch)
+        print status_string
         self.status_file.seek(0)
         self.status_file.write(status_string)
         self.status_file.flush()
@@ -217,11 +218,13 @@ class LocalJob(object):
         self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         self.dispatcher.cursor.execute("INSERT INTO jobs (server_name, job_lid, last_updated) VALUES('%s',%i,now())",[self.dispatcher.server_name,self.job_lid])
+        self.connection.commit()        
 
     def log(self,message):
         timestamp = datetime.datetime.now().isoformat()
         self.log_file.write("%s task %s: %s\n"%(timestamp,self.job_lid,message))
         self.dispatcher.cursor.execute("INSERT INTO log(server_name, message) VALUES('%s','task %i: %s')",[self.dispatcher.server_name,self.job_lid,message])
+        self.connection.commit()        
 
     def poll(self):
         #There is never a reason to update a done job
@@ -245,8 +248,10 @@ class LocalJob(object):
 
             self.log("Process finished with return code %i"%self.exit_code)
             self.dispatcher.cursor.execute("UPDATE jobs (exit_code,end_time,last_updated) VALUES (%i,now(),now()) WHERE server_name = '%s', job_lid = %i;",[self.exit_code,self.dispatcher.server_name,self.job_lid])
+            self.connection.commit()        
         else:
             self.dispatcher.cursor.execute("UPDATE jobs (last_updated) VALUES (now()) WHERE server_name = '%s', job_lid = %i;",[self.dispatcher.server_name,self.job_lid])
+            self.connection.commit()        
 
     def is_running(self):
         return self.status == 1
@@ -295,6 +300,7 @@ class LocalJob(object):
     '''So...this isn't ever called. Huh.'''
     def reset_job(self, job_id):
         self.dispatcher.cursor.execute("UPDATE task SET task_outcome_id = 1, last_updater=%s WHERE task_id = %i",[job_id,self.server_name]);
+        self.connection.commit()        
 
     '''This maybe doesn't make a large amount of sense. Look into later'''
     def get_task_id(self):
