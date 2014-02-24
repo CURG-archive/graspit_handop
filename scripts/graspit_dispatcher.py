@@ -218,13 +218,13 @@ class LocalJob(object):
         self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         self.dispatcher.cursor.execute("INSERT INTO jobs (server_name, job_lid, last_updated) VALUES(%s,%s,now())",[self.dispatcher.server_name,self.job_lid])
-        self.connection.commit()        
+        self.dispatcher.connection.commit()        
 
     def log(self,message):
         timestamp = datetime.datetime.now().isoformat()
         self.log_file.write("%s local job %s: %s\n"%(timestamp,self.job_lid,message))
         self.dispatcher.cursor.execute("INSERT INTO log(server_name, log_message) VALUES(%s,%s)",[self.dispatcher.server_name,'task %i: %s'%(self.job_lid,message)])
-        self.connection.commit()        
+        self.dispatcher.connection.commit()        
 
     def poll(self):
         #There is never a reason to update a done job
@@ -248,10 +248,10 @@ class LocalJob(object):
 
             self.log("Process finished with return code %i"%self.exit_code)
             self.dispatcher.cursor.execute("UPDATE jobs (exit_code,end_time,last_updated) VALUES (%s,now(),now()) WHERE server_name = %s, job_lid = %s;",[self.exit_code,self.dispatcher.server_name,self.job_lid])
-            self.connection.commit()        
+            self.dispatcher.connection.commit()        
         else:
             self.dispatcher.cursor.execute("UPDATE jobs (last_updated) VALUES (now()) WHERE server_name = %s, job_lid = %s;",[self.dispatcher.server_name,self.job_lid])
-            self.connection.commit()        
+            self.dispatcher.connection.commit()        
 
     def is_running(self):
         return self.status == 1
@@ -300,7 +300,7 @@ class LocalJob(object):
     '''So...this isn't ever called. Huh.'''
     def reset_job(self, job_id):
         self.dispatcher.cursor.execute("UPDATE task SET task_outcome_id = 1, last_updater=%s WHERE task_id = %s",[job_id,self.server_name]);
-        self.connection.commit()        
+        self.dispatcher.connection.commit()        
 
     '''This maybe doesn't make a large amount of sense. Look into later'''
     def get_task_id(self):
