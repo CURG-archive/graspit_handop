@@ -165,7 +165,7 @@ class LocalDispatcher(object):
 
         self.get_idle_percent()
 
-        self.cursor.execute("DELETE FROM servers WHERE server_name = %s, server_pid = %s;",(self.server_name))
+        self.cursor.execute("DELETE FROM servers WHERE server_name = %s, server_pid = %s;",(self.server_name,self.server_pid))
         self.cursor.execute("INSERT INTO servers (server_name,server_pid,ip_addr,idle_percent,num_processors,running_jobs,paused_jobs) VALUES (%s,%s,%s,%s,%s,%s,%s);",(self.server_name,self.server_pid,self.ip_addr,self.idle_percent,self.num_processors,num_running,num_paused))
         self.connection.commit()        
 
