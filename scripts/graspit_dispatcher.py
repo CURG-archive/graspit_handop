@@ -218,7 +218,7 @@ class LocalJob(object):
         self.log("Starting process from graspit_dispatcher")
         self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        self.dispatcher.cursor.execute("INSERT INTO jobs (server_name, job_lid, server_pid, last_updated) VALUES(%s,%s,now())",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_name])
+        self.dispatcher.cursor.execute("INSERT INTO jobs (server_name, job_lid, server_pid, last_updated) VALUES(%s,%s,%s,now())",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_name])
         self.dispatcher.connection.commit()        
 
     def log(self,message):
