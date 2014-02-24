@@ -132,8 +132,6 @@ class EGHandDBaseInterface(object):
         rows = self.cursor.fetchall()
         return [row[0] for row in rows]
 
-
-
     def load_grasps_for_generation(self, generation, highest_only = False):
         """
         @brief Get all grasps produced in this generation, for all hands in this generation.
@@ -192,15 +190,10 @@ class EGHandDBaseInterface(object):
         except Exception as e:
              pdb.set_trace()
         self.cursor.execute("delete from grasp;")
-        self.connection.commit()
         self.cursor.execute("delete from hand;")
-        self.connection.commit()
         self.cursor.execute("delete from finger;")
-        self.connection.commit()
         self.cursor.execute("delete from servers;")
-        self.connection.commit()
         self.cursor.execute("delete from jobs;")
-        self.connection.commit()
         self.cursor.execute("delete from logs;")
         self.connection.commit()
 
@@ -214,17 +207,17 @@ class EGHandDBaseInterface(object):
         """
         self.cursor.execute("insert into finger select * from finger_gen_0;")
         self.cursor.execute("insert into hand select * from hand_gen_0;")
-        self.cursor.execute("select setval('finger_finger_id_seq',(select max(finger_id) from finger))")
-        self.cursor.execute("select setval('hand_hand_id_seq',(select max(hand_id) from hand))")
-        self.cursor.execute("select setval('grasp_grasp_id_seq',1)")
-        self.cursor.execute("select setval('task_task_id_seq',1)")
+        self.cursor.execute("select setval('finger_finger_id_seq',(select max(finger_id) from finger));")
+        self.cursor.execute("select setval('hand_hand_id_seq',(select max(hand_id) from hand));")
+        self.cursor.execute("select setval('grasp_grasp_id_seq',1);")
+        self.cursor.execute("select setval('task_task_id_seq',1);")
 
         self.connection.commit()
 
     def prepare_empty_db(self, new_db_name, old_db_name = "eigenhand_empty_schema"):
         try:
             self.connection.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-            self.cursor.execute("CREATE DATABASE %s TEMPLATE %s"%(new_db_name, old_db_name))
+            self.cursor.execute("CREATE DATABASE %s TEMPLATE %s;"%(new_db_name, old_db_name))
             self.cursor.fetchall()
         except Exception as e:
             print e
@@ -238,9 +231,7 @@ class EGHandDBaseInterface(object):
     def drop_database(self, db_name):
         self.cursor.execute("DROP DATABASE IF EXISTS  %s;"%(db_name))
         self.connection.commit()
-        
 
-    
     def prepare_gen_0(self):
         self.reset_database()
         self.insert_gen_0()
