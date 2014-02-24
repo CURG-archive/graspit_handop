@@ -165,7 +165,7 @@ class LocalDispatcher(object):
 
         self.get_idle_percent()
 
-        self.cursor.execute("DELETE FROM servers WHERE server_name = %s, server_pid = %s;",(self.server_name,self.server_pid))
+        self.cursor.execute("DELETE FROM servers WHERE server_name = %s AND server_pid = %s;",(self.server_name,self.server_pid))
         self.cursor.execute("INSERT INTO servers (server_name,server_pid,ip_addr,idle_percent,num_processors,running_jobs,paused_jobs) VALUES (%s,%s,%s,%s,%s,%s,%s);",(self.server_name,self.server_pid,self.ip_addr,self.idle_percent,self.num_processors,num_running,num_paused))
         self.connection.commit()        
 
@@ -248,10 +248,10 @@ class LocalJob(object):
             self.dispatcher.can_launch = (self.exit_code != 5) #I/O IS IMPORTANT
 
             self.log("Process finished with return code %i"%self.exit_code)
-            self.dispatcher.cursor.execute("UPDATE jobs (exit_code,end_time,last_updated) VALUES (%s,now(),now()) WHERE server_name = %s, job_lid = %s, server_pid = %s;",[self.exit_code,self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
+            self.dispatcher.cursor.execute("UPDATE jobs (exit_code,end_time,last_updated) VALUES (%s,now(),now()) WHERE server_name = %s AND job_lid = %s AND server_pid = %s;",[self.exit_code,self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
             self.dispatcher.connection.commit()        
         else:
-            self.dispatcher.cursor.execute("UPDATE jobs (last_updated) VALUES (now()) WHERE server_name = %s, job_lid = %s, server_pid = %s;",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
+            self.dispatcher.cursor.execute("UPDATE jobs (last_updated) VALUES (now()) WHERE server_name = %s AND job_lid = %s AND server_pid = %s;",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
             self.dispatcher.connection.commit()        
 
     def is_running(self):
