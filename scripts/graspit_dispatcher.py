@@ -90,7 +90,7 @@ class LocalDispatcher(object):
 
     def restore_job(self):
         try:
-            job_to_restore = next(job for job in self.job_list if LocalJob.is_suspended(job))
+            job_to_restore = next(job for job in self.job_list.reverse() if LocalJob.is_suspended(job))
             job_to_restore.restore()
         except StopIteration:
             return False 
