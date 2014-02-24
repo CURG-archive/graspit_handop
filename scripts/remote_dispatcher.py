@@ -16,7 +16,7 @@ class RemoteServer(object):
 
     def launch_job(self):
         with open('/dev/null','rw') as null_file:
-            args = ["ssh", "-o","ConnectTimeout=30", self.server_name, "./gm/run_dispatcher.sh"]
+            args = ["ssh", "-o","ConnectTimeout=30", self.server_name, "/home/jweisz/gm/run_dispatcher.sh"]
             print "%s \n"%(self.server_name)
             self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=null_file, stderr=subprocess.STDOUT))
 
