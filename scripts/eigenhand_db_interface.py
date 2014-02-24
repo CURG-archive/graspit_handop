@@ -184,17 +184,13 @@ class EGHandDBaseInterface(object):
 
         Assumes that the starting set of hands is all hands with an id below 313.
         """
-        try:
-             self.cursor.execute("delete from task;")
-             self.connection.commit()
-        except Exception as e:
-             pdb.set_trace()
+        self.cursor.execute("delete from task;")
         self.cursor.execute("delete from grasp;")
         self.cursor.execute("delete from hand;")
         self.cursor.execute("delete from finger;")
         self.cursor.execute("delete from servers;")
         self.cursor.execute("delete from jobs;")
-        self.cursor.execute("delete from logs;")
+        self.cursor.execute("delete from log;")
         self.connection.commit()
 
     def clear_grasp_table(self):
