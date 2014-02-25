@@ -47,7 +47,12 @@ class LocalDispatcher(object):
         self.cursor = self.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
         try:
-            self.status_file = open('/home/jweisz/html/server_status/%s_status.html'%(socket.gethostname()),'w')
+            os.makedirs("/home/jweisz/html/graspit_handop/%s/%s_jobs"%(self.server_name,self.server_pid))
+        except OSError:
+            pass
+
+        try:
+            self.status_file = open('/home/jweisz/html/graspit_handop/%s/server_status'%(socket.gethostname()),'w')
         except:
             self.status_file = open('/dev/null','w')
             
@@ -167,9 +172,8 @@ class LocalDispatcher(object):
 
         self.cursor.execute("DELETE FROM servers WHERE server_name = %s AND server_pid = %s;",(self.server_name,self.server_pid))
         self.cursor.execute("INSERT INTO servers (server_name,server_pid,ip_addr,idle_percent,num_processors,running_jobs,paused_jobs) VALUES (%s,%s,%s,%s,%s,%s,%s);",(self.server_name,self.server_pid,self.ip_addr,self.idle_percent,self.num_processors,num_running,num_paused))
-        self.connection.commit()        
-
-	self.output_status(num_running)
+        self.connection.commit()
+        self.output_status(num_running)
 
     def output_status(self, num_valid_jobs):
         status_string = "Host: %s  Idle level: %f Num running: %i Date: %s CanLaunch: %i\n"%(socket.gethostname(), self.idle_percent, num_valid_jobs, time.strftime('%c'), self.can_launch)
@@ -190,7 +194,7 @@ class LocalJob(object):
 
         self.log_file = []
         if job_lid > 0:
-            self.log_file = open('./server_logs/' + self.dispatcher.server_name, "a+")
+            self.log_file = open('/home/jweisz/html/graspit_handop/%s/%s_jobs/%s'%(self.dispatcher.server_name,self.dispatcher.server_pid,self.job_lid), "a+")
         else:
             self.log_file = open("/dev/null","rw")
 
@@ -216,14 +220,14 @@ class LocalJob(object):
         #        args = "nice -n 50 /home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
         args = "/home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
         self.log("Starting process from graspit_dispatcher")
-        self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=self.log_file, stderr=self.log_file)
 
         self.dispatcher.cursor.execute("INSERT INTO jobs (server_name, job_lid, server_pid, last_updated) VALUES(%s,%s,%s,now())",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
         self.dispatcher.connection.commit()        
 
     def log(self,message):
         timestamp = datetime.datetime.now().isoformat()
-        self.log_file.write("%s local job %s: %s\n"%(timestamp,self.job_lid,message))
+        self.dispatcher.status_file.write("%s local job %s: %s\n"%(timestamp,self.job_lid,message))
         self.dispatcher.cursor.execute("INSERT INTO log(server_name, log_message) VALUES(%s,%s)",[self.dispatcher.server_name,'task %i: %s'%(self.job_lid,message)])
         self.dispatcher.connection.commit()        
 
