@@ -165,13 +165,20 @@ class LocalDispatcher(object):
             j.poll()
 
     def update_status(self):
-        num_running = len([j for j in self.job_list if j.is_running()])
-        num_paused = len([j for j in self.job_list if j.is_suspended()])
+        num_running = 0
+        num_paused = 0
+        num_killed = 0
+        num_finished = 0
+        for j in self.job_list
+            num_running += j.is_running()
+            num_paused += j.is_suspended()
+            num_killed += j.is_dead()
+            num_finished += j.is_done()
 
         self.get_idle_percent()
 
         self.cursor.execute("DELETE FROM servers WHERE server_name = %s AND server_pid = %s;",(self.server_name,self.server_pid))
-        self.cursor.execute("INSERT INTO servers (server_name,server_pid,ip_addr,idle_percent,num_processors,running_jobs,paused_jobs) VALUES (%s,%s,%s,%s,%s,%s,%s);",(self.server_name,self.server_pid,self.ip_addr,self.idle_percent,self.num_processors,num_running,num_paused))
+        self.cursor.execute("INSERT INTO servers (server_name,server_pid,ip_addr,idle_percent,num_processors,running_jobs,paused_jobs,killed_jobs,finished_jobs) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s);",(self.server_name,self.server_pid,self.ip_addr,self.idle_percent,self.num_processors,num_running,num_paused,num_killed,num_finished))
         self.connection.commit()
         self.output_status(num_running)
 
