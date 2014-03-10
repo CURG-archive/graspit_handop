@@ -231,12 +231,14 @@ class LocalJob(object):
         if(self.is_done()):
             return
 
+        '''
         #Find out what it's been up to
         out, err = self.subprocess.communicate()
         if out is not None:
             self.log(out + " (graspit output)")
         if err is not None:
             self.log(err + " (graspit error)")
+        '''
 
         #Find out if it's exited out
         self.subprocess.poll()
