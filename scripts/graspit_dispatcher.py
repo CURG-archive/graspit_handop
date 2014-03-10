@@ -110,7 +110,8 @@ class LocalDispatcher(object):
         self.job_list[:0] = [LocalJob(self,job_lid)]
 
     def launch_job_if_legal(self):
-        if self.idle_percent > self.max_server_idle_level and len(self.job_list) < self.num_processors - 3:
+        num_alive = len([j for j in self.job_list if not j.is_done() or not j.is_dead()])
+        if self.idle_percent > self.max_server_idle_level and num_alive< self.num_processors - 3:
             if not self.restore_job():
                 #I don't love the happy go lucky happening here, fix in a bit
                 self.launch_job()
