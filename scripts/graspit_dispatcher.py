@@ -64,11 +64,6 @@ class LocalDispatcher(object):
         self.idle_percent = 100.0 - psutil.cpu_percent()
         return self.idle_percent
 
-    def get_num_to_launch(self):
-        free_to_launch = int(floor((self.idle_percent - self.max_server_idle_level)/(100/self.num_processors)))
-    	return min(free_to_launch, self.num_processors - len(self.job_list) - 3)
-
-
     def kill_existing_graspit(self):
         args = ["killall", "graspit"]
         p = subprocess.Popen(args, stdout=subprocess.PIPE, stdin = subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -115,7 +110,6 @@ class LocalDispatcher(object):
             if not self.restore_job():
                 #I don't love the happy go lucky happening here, fix in a bit
                 self.launch_job()
-            print "%f on %s \n"%(self.idle_percent,self.server_name)
             return True
         return False
 
@@ -123,19 +117,15 @@ class LocalDispatcher(object):
         if not self.can_launch:
             return
         self.get_idle_percent()
-        for i in range(self.get_num_to_launch()):
-            self.launch_job_if_legal()
+        self.launch_job_if_legal()
 
     def suspend_jobs_while_busy(self):
         self.get_idle_percent()
-        while self.idle_percent < self.min_server_idle_level:
+        if self.idle_percent < self.min_server_idle_level:
             cpu_per_job = 100/self.num_processors
             num_jobs_to_suspend = int(floor((self.min_server_idle_level - self.idle_percent)/cpu_per_job)) + 1
             for i in range(num_jobs_to_suspend):
                 self.suspend_last_job()
-            time.sleep(10)
-            self.get_idle_percent()
-
         
     def get_task_ids(self):
         for j in self.job_list:
@@ -170,7 +160,7 @@ class LocalDispatcher(object):
         num_paused = 0
         num_killed = 0
         num_finished = 0
-        for j in self.job_list
+        for j in self.job_list:
             num_running += j.is_running()
             num_paused += j.is_suspended()
             num_killed += j.is_dead()
@@ -181,14 +171,11 @@ class LocalDispatcher(object):
         self.cursor.execute("DELETE FROM servers WHERE server_name = %s AND server_pid = %s;",(self.server_name,self.server_pid))
         self.cursor.execute("INSERT INTO servers (server_name,server_pid,ip_addr,idle_percent,num_processors,running_jobs,paused_jobs,killed_jobs,finished_jobs) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s);",(self.server_name,self.server_pid,self.ip_addr,self.idle_percent,self.num_processors,num_running,num_paused,num_killed,num_finished))
         self.connection.commit()
-        self.output_status(num_running)
 
-    def output_status(self, num_valid_jobs):
-        status_string = "Host: %s  Idle level: %f Num running: %i Date: %s CanLaunch: %i\n"%(socket.gethostname(), self.idle_percent, num_valid_jobs, time.strftime('%c'), self.can_launch)
+        status_string = "Host: %s  Idle level: %f Num running: %i Date: %s CanLaunch: %i\n"%(socket.gethostname(), self.idle_percent, num_running, time.strftime('%c'), self.can_launch)
         print status_string
-        self.status_file.seek(0)
+
         self.status_file.write(status_string)
-        self.status_file.flush()
 
 class LocalJob(object):
     def __init__(self, dispatcher, job_lid = -1):
