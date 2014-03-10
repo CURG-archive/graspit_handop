@@ -41,6 +41,7 @@ class LocalDispatcher(object):
         self.running_job_list = []
         self.suspended_job_list = []
         self.completed_job_list = []
+        self.num_running_jobs = 0
 
         self.can_launch = True
         self.connection = psycopg2.connect("dbname='eigenhanddb' user='postgres' password='roboticslab' host='tonga.cs.columbia.edu'")
@@ -98,34 +99,35 @@ class LocalDispatcher(object):
 
         return True
         
+    def balance_jobs(self):
+        self.get_idle_percent()
+
+        if self.idle_percent > self.max_server_idle_level and self.num_running_jobs < self.num_processors - 3:
+            self.launch_jobs()
+        elif self.idle_percent < self.min_server_idle_level:
+            self.suspend_jobs()
 
     def launch_job(self):
         job_lid = len(self.job_list) + 1
         #If newer jobs go near the front, we can suspend the newer ones easier
         self.job_list[:0] = [LocalJob(self,job_lid)]
 
-    def launch_job_if_legal(self):
-        num_alive = len([j for j in self.job_list if not j.is_done() or not j.is_dead()])
-        if self.idle_percent > self.max_server_idle_level and num_alive< self.num_processors - 3:
+    def launch_jobs(self):
+        if not self.can_launch:
+            return
+
+        num_jobs_to_launch = 1 + int((self.idle_percent - self.max_server_idle_level)/cpu_per_job)
+        num_jobs_to_launch = min(num_jobs_to_launch, self.num_processors - 3 - self.num_running_jobs)
+        for i in range(num_jobs_to_launch):
             if not self.restore_job():
                 #I don't love the happy go lucky happening here, fix in a bit
                 self.launch_job()
-            return True
-        return False
 
-    def launch_jobs_while_legal(self):
-        if not self.can_launch:
-            return
-        self.get_idle_percent()
-        self.launch_job_if_legal()
-
-    def suspend_jobs_while_busy(self):
-        self.get_idle_percent()
-        if self.idle_percent < self.min_server_idle_level:
-            cpu_per_job = 100/self.num_processors
-            num_jobs_to_suspend = int(floor((self.min_server_idle_level - self.idle_percent)/cpu_per_job)) + 1
-            for i in range(num_jobs_to_suspend):
-                self.suspend_last_job()
+    def suspend_jobs(self):
+        cpu_per_job = 100/self.num_processors
+        num_jobs_to_suspend = int(floor((self.min_server_idle_level - self.idle_percent)/cpu_per_job)) + 1
+        for i in range(num_jobs_to_suspend):
+            self.suspend_last_job()
         
     def get_task_ids(self):
         for j in self.job_list:
@@ -134,9 +136,7 @@ class LocalDispatcher(object):
     def run_server(self):
         self.update_jobs()
         #Clear out any problems
-        self.suspend_jobs_while_busy()
-        #Launch new jobs
-        self.launch_jobs_while_legal()
+        self.balance_jobs()
         #Update the sql server
         self.update_status()
         return True
@@ -215,6 +215,7 @@ class LocalJob(object):
         #        args = "nice -n 50 /home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
         args = "/home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
         self.log("Starting process from graspit_dispatcher")
+        self.dispatcher.num_running_jobs += 1
         self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=self.log_file, stderr=self.log_file)
 
         self.dispatcher.cursor.execute("INSERT INTO jobs (server_name, job_lid, server_pid, last_updated) VALUES(%s,%s,%s,now())",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
@@ -244,6 +245,7 @@ class LocalJob(object):
         self.subprocess.poll()
         if self.subprocess.returncode is not None:
             self.status = 4
+            self.dispatcher.num_running_jobs -= 1
             self.exit_code = self.subprocess.returncode
 
             self.dispatcher.can_launch = (self.exit_code != 5) #I/O IS IMPORTANT
@@ -272,15 +274,18 @@ class LocalJob(object):
             self.subprocess.send_signal(23)
             self.log("Suspending process from graspit_dispatcher")
             self.status = 2
+            self.dispatcher.num_running_jobs -= 1
         except:
             pass
 
     def restore(self):
-	try:
-	    self.subprocess.send_signal(19)
-	    self.log("Restoring from graspit_dispatcher")
-	except:
-	    pass
+        try:
+            self.subprocess.send_signal(19)
+            self.log("Restoring from graspit_dispatcher")
+            self.status = 1
+            self.dispatcher.num_running_jobs += 1
+        except:
+            pass
 
     def kill(self):
         try:
@@ -290,6 +295,8 @@ class LocalJob(object):
                 pass
 
             del self.subprocess
+            self.status = 3
+            self.dispatcher.num_running_jobs -= 1
         except:
             pass
             
