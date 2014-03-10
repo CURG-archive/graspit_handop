@@ -34,7 +34,7 @@ class RemoteServer(object):
         self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT))
 
     def do_all(self):        
-        args = ["ssh", "-o","ConnectTimeout=30",self.server_name, "killall", "python;", "killall","graspit;","killall","nice;", "/home/jweisz/gm/run/dispatcher.sh"]
+        args = ["ssh", "-o","ConnectTimeout=30",self.server_name, "killall", "python;", "killall","graspit;","killall","nice;", "/home/jweisz/gm/run_dispatcher.sh"]
         self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT))
 
     def collect_subprocesses(self):
