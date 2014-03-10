@@ -83,7 +83,6 @@ void TaskDispatcher::mainLoop()
 		    break;
 		  }
 		case Task::ERROR:
-			mStatus = DONE;
 			//mark the task as error in the database
 			if (!mDBMgr->SetTaskStatus(mCurrentTask->getRecord(),"ERROR")) {
 				DBGA("Dispatcher: error marking completed task");
@@ -94,8 +93,6 @@ void TaskDispatcher::mainLoop()
 			break;
 		case Task::DONE:
 		  {
-			mStatus = DONE;
-			mCompletedTasks++;
 			//mark the task as completed in the database
 			if (!mDBMgr->SetTaskStatus(mCurrentTask->getRecord(),"COMPLETED")) {
 				DBGA("Dispatcher: error marking completed task");
@@ -107,17 +104,9 @@ void TaskDispatcher::mainLoop()
 			
 			if(mDBMgr)
 			  delete mDBMgr;
-			QApplication::exit(3);
+			exit(0);
 		  }
 		}
-	}
-	//if idling, attempt to start a new task
-	if (mStatus == DONE) {
-		start();
-	}
-	//if still idling, exit
-	if (mStatus != RUNNING) {
-	  exit(0);
 	}
 }
 
