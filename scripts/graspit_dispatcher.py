@@ -116,6 +116,7 @@ class LocalDispatcher(object):
         if not self.can_launch:
             return
 
+        cpu_per_job = 100/self.num_processors
         num_jobs_to_launch = 1 + int((self.idle_percent - self.max_server_idle_level)/cpu_per_job)
         num_jobs_to_launch = min(num_jobs_to_launch, self.num_processors - 3 - self.num_running_jobs)
         for i in range(num_jobs_to_launch):
