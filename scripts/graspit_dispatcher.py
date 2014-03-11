@@ -37,10 +37,6 @@ class LocalDispatcher(object):
         self.idle_percent = self.get_idle_percent()
         self.num_processors = self.get_num_processors()
 
-        #No point in running on less than 3 processors
-        if self.num_processors <= 3:
-            return
-
         self.job_list = []
         self.running_job_list = []
         self.suspended_job_list = []
@@ -146,6 +142,10 @@ class LocalDispatcher(object):
         return self.update_status()
 
     def run_loop(self):
+        #No point in running on less than 3 processors
+        if self.num_processors <= 3:
+            return
+
         while(self.run_server()):
             #Sleep, sweet dispatcher
             time.sleep(10)
