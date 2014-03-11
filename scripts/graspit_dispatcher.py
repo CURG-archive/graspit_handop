@@ -139,17 +139,14 @@ class LocalDispatcher(object):
         #Clear out any problems
         self.balance_jobs()
         #Update the sql server
-        self.update_status()
-        return True
-
+        return self.update_status()
 
     def run_loop(self):
         while(self.run_server()):
             #Sleep, sweet dispatcher
             time.sleep(10)
-	self.status_file.seek(0)
-	self.status_file.write('Host: %s finished\n'%(socket.gethostname()))
-	self.status_file.close()
+        self.status_file.write('Host: %s finished\n'%(socket.gethostname()))
+        self.status_file.close()
         print "done\n"
 
     def update_jobs(self):
@@ -157,6 +154,7 @@ class LocalDispatcher(object):
             j.poll()
 
     def update_status(self):
+        #Get 
         num_running = 0
         num_paused = 0
         num_killed = 0
@@ -167,16 +165,25 @@ class LocalDispatcher(object):
             num_killed += j.is_dead()
             num_finished += j.is_done()
 
+
+        self.num_running_jobs = num_running
         self.get_idle_percent()
 
+        #Update server entries
         self.cursor.execute("DELETE FROM servers WHERE server_name = %s AND server_pid = %s;",(self.server_name,self.server_pid))
         self.cursor.execute("INSERT INTO servers (server_name,server_pid,ip_addr,idle_percent,num_processors,running_jobs,paused_jobs,killed_jobs,finished_jobs) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s);",(self.server_name,self.server_pid,self.ip_addr,self.idle_percent,self.num_processors,num_running,num_paused,num_killed,num_finished))
         self.connection.commit()
 
-        status_string = "Host: %s  Idle level: %f Num running: %i Date: %s CanLaunch: %i\n"%(socket.gethostname(), self.idle_percent, num_running, time.strftime('%c'), self.can_launch)
+        #Find out if there is still stuff to do
+        self.cursor.execute("SELECT COUNT(*) FROM task WHERE task_outcome_id <> 3;")
+        num_tasks_left = self.cursor.fetchone()[0]
+        self.connection.commit()
+
+        status_string = "Host: %s  Idle level: %f Num running: %i Date: %s CanLaunch: %i Tasks Left: %i\n"%(socket.gethostname(), self.idle_percent, num_running, time.strftime('%c'), self.can_launch, num_tasks_left)
         print status_string
 
         self.status_file.write(status_string)
+        return num_tasks_left
 
 class LocalJob(object):
     def __init__(self, dispatcher, job_lid = -1):
@@ -216,7 +223,6 @@ class LocalJob(object):
         #        args = "nice -n 50 /home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
         args = "/home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
         self.log("Starting process from graspit_dispatcher")
-        self.dispatcher.num_running_jobs += 1
         self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=self.log_file, stderr=self.log_file)
 
         self.dispatcher.cursor.execute("INSERT INTO jobs (server_name, job_lid, server_pid, last_updated) VALUES(%s,%s,%s,now())",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
@@ -246,7 +252,6 @@ class LocalJob(object):
         self.subprocess.poll()
         if self.subprocess.returncode is not None:
             self.status = 4
-            self.dispatcher.num_running_jobs -= 1
             self.exit_code = self.subprocess.returncode
 
             self.dispatcher.can_launch = (self.exit_code != 5) #I/O IS IMPORTANT
@@ -275,7 +280,6 @@ class LocalJob(object):
             self.subprocess.send_signal(23)
             self.log("Suspending process from graspit_dispatcher")
             self.status = 2
-            self.dispatcher.num_running_jobs -= 1
         except:
             pass
 
@@ -284,7 +288,6 @@ class LocalJob(object):
             self.subprocess.send_signal(19)
             self.log("Restoring from graspit_dispatcher")
             self.status = 1
-            self.dispatcher.num_running_jobs += 1
         except:
             pass
 
@@ -297,7 +300,6 @@ class LocalJob(object):
 
             del self.subprocess
             self.status = 3
-            self.dispatcher.num_running_jobs -= 1
         except:
             pass
             
