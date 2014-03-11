@@ -147,6 +147,8 @@ class LocalDispatcher(object):
             time.sleep(10)
         self.status_file.write('Host: %s finished\n'%(socket.gethostname()))
         self.status_file.close()
+        self.cursor.close()
+        self.connection.close()
         print "done\n"
 
     def update_jobs(self):
