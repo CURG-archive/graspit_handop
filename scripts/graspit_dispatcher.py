@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 import os
+import sys
 import select
 import random
 import time
@@ -187,6 +188,9 @@ class LocalDispatcher(object):
 
         status_string = "Host: %s  Idle level: %f Num running: %i Date: %s CanLaunch: %i Tasks Left: %i\n"%(socket.gethostname(), self.idle_percent, num_running, time.strftime('%c'), self.can_launch, num_tasks_left)
         print status_string
+
+        #Flushing for subprocess.communicate
+        sys.stdout.flush()
 
         self.status_file.write(status_string)
         return num_tasks_left
