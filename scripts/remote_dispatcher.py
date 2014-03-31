@@ -159,7 +159,8 @@ class RemoteDispatcher(object):
             for server_data in nonrunning_server_data:
                 print "Restarting %s (%s)"%(server_data['server_name'],server_data['ip_addr'])
                 server = self.server_dict[server_data['ip_addr']]
-                server.collect_subprocesses()
+                #Don't care that much what they have to say
+                #server.collect_subprocesses()
 
                 #Don't want to just keep restarting a bad server
                 if server.restart_count < 10:
