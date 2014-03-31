@@ -166,7 +166,6 @@ class RemoteDispatcher(object):
 
             self.file.seek(0)
             self.file.write('Generation %i, Running processes %i jobs %i %s \n'%(generation, num_running, self.interface.get_num_incompletes(), time.strftime('%c')))
-            self.file.write(' '.join([server.server_name for server in running_servers]) + '\n')
             self.file.truncate()
             self.file.flush()
 
