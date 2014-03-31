@@ -184,18 +184,21 @@ class ExperimentManager(object):
         self.run_remote_dispatcher_tasks()
 
         #Run through a bunch of iterations
-        num_total_iters = (self.num_ga_iters-self.starting_ga_iter)*self.num_atr_iters
+        iters_per_generation = self.num_atr_itrs + 1
+        num_total_iters = (self.num_ga_iters-self.starting_ga_iter)*iters_per_generation
+
         for iter_num in xrange(num_total_iters):
             #Get the resulting grasps for the latest generation of hands
             grasp_list = self.gm.get_all_grasps()
             self.output_current_status()
 
             #Pull out our generation numbers
-            atr_gen_num = (iter_num)%(self.num_atr_iters+1)
-            ga_gen_num = iter_num//(self.num_atr_iters+1) + self.starting_ga_iter
+            atr_gen_num = (iter_num)%(iters_per_generation)
+            ga_gen_num = iter_num//(iters_per_generation) + self.starting_ga_iter
+            ga_loop = (iter_num+1)%(iters_per_generation)==0
 
             #Every num_atr_iters+1th iteration is a genetic swap
-            if atr_gen_num != self.num_atr_iters + 1:
+            if not ga_loop:
                 #Run atr on the existing hand for the latest generation of grasps
                 new_hand_list = atr.ATR_generation(grasp_list, self.gm.hands)
             else:
