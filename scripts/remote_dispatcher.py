@@ -151,12 +151,13 @@ class RemoteDispatcher(object):
 
         time.sleep(120)
 
+        num_running = self.interface.get_num_running(60)
         while self.interface.get_num_incompletes() > 0 and time.time() - t < max_len and self.interface.get_num_running(60):
 
             nonrunning_server_data = self.interface.get_dead_servers(60)
-            num_running = len(self.server_dict) - len(nonrunning_server_data)
+            num_running = self.interface.get_num_running(60)
             for server_data in nonrunning_server_data:
-                print "Restarting %s"%(server_data['server_name'])
+                print "Restarting %s (%s)"%(server_data['server_name'],server_data['ip_addr'])
                 server = self.server_dict[server_data['ip_addr']]
                 server.collect_subprocesses()
 
