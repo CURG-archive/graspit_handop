@@ -195,7 +195,7 @@ class ExperimentManager(object):
             ga_gen_num = iter_num//(self.num_atr_iters+1) + self.starting_ga_iter
 
             #Every num_atr_iters+1th iteration is a genetic swap
-            if atr_gen_num == self.num_atr_iters + 1:
+            if atr_gen_num != self.num_atr_iters + 1:
                 #Run atr on the existing hand for the latest generation of grasps
                 new_hand_list = atr.ATR_generation(grasp_list, self.gm.hands)
             else:
