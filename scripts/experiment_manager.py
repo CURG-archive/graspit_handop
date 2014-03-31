@@ -192,7 +192,7 @@ class ExperimentManager(object):
 
             #Pull out our generation numbers
             atr_gen_num = (iter_num)%(self.num_atr_iters+1)
-            ga_gen_num = iter_num//(self.num_atr_iters+1)
+            ga_gen_num = iter_num//(self.num_atr_iters+1) + self.starting_ga_iter
 
             #Every num_atr_iters+1th iteration is a genetic swap
             if atr_gen_num == self.num_atr_iters + 1:
