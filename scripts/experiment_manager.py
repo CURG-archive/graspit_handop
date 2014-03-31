@@ -38,8 +38,7 @@ class ExperimentManager(object):
         self.server_dict = server_dict
         self.experiment_name = experiment_name
         self.e_list = dict()
-        self.rd = remote_dispatcher.RemoteDispatcher(self.server_dict, self.db_interface)
-        #self.score_array = numpy.array([4,0])
+        self.rd = []       #self.score_array = numpy.array([4,0])
         
 
 
@@ -179,53 +178,44 @@ class ExperimentManager(object):
         self.gm = initialize_generation_manager()
         self.gm.start_generation()
 
+        #Build the new remote dispatcher and connect all the servers
+        self.rd = remote_dispatcher.RemoteDispatcher(self.server_dict, self.db_interface)
+        self.run_remote_dispatcher_tasks()
 
-
-        for ga_gen_num in range(self.starting_ga_iter, self.num_ga_iters):
-            for atr_gen_num in range(self.num_atr_iters):
-                #Doing ATR
-                #Run the planning jobs
-                self.run_remote_dispatcher_tasks()
-
-                #Get the resulting grasps for the latest generation of hands
-                grasp_list = self.gm.get_all_grasps()
-                self.output_current_status()
-                #Run atr on the existing hand for the latest generation of grasps
-                new_hand_list = atr.ATR_generation(grasp_list, self.gm.hands)
-
-                #Update database with new hands
-                eigenhand_db_tools.insert_unique_hand_list(new_hand_list, self.db_interface)
-                #[hand.generation.append(self.gm.generation + 1) for hand in self.gm.hands]
-                #[self.db_interface.update_hand_generation(hand) for hand in self.gm.hands]
-                # Get the database ready to perform jobs for the next generation
-                self.gm.next_generation()
-
-            #DOING GA
-
-            #run the planning jobs
-            self.run_remote_dispatcher_tasks()
+        #Run through a bunch of iterations
+        num_total_iters = (self.num_ga_iters-self.starting_ga_iter)*self.num_atr_iters
+        for iter_num in xrange(num_total_iters):
             #Get the resulting grasps for the latest generation of hands
             grasp_list = self.gm.get_all_grasps()
             self.output_current_status()
-            #Generate new hands based on these grasps, scaling the variance of the mutations down linearly as the
-            #generations progress.
-            new_hand_list = eigenhand_genetic_algorithm.GA_generation(grasp_list, self.gm.hands, self.eval_functor, .5-.4/self.num_ga_iters*ga_gen_num)
+
+            #Pull out our generation numbers
+            atr_gen_num = (iter_num)%(self.num_atr_iters+1)
+            ga_gen_num = iter_num//(self.num_atr_iters+1)
+
+            #Every num_atr_iters+1th iteration is a genetic swap
+            if atr_gen_num == self.num_atr_iters + 1:
+                #Run atr on the existing hand for the latest generation of grasps
+                new_hand_list = atr.ATR_generation(grasp_list, self.gm.hands)
+            else:
+                #Generate new hands based on these grasps, scaling the variance of the mutations down linearly as the
+                #generations progress.
+                new_hand_list = eigenhand_genetic_algorithm.GA_generation(grasp_list, self.gm.hands, self.eval_functor, .5-.4/self.num_ga_iters*ga_gen_num)
 
             #Put the new hands in to the database.
             eigenhand_db_tools.insert_unique_hand_list(new_hand_list, self.db_interface)
-            #[hand.generation.append(self.gm.generation + 1) for hand in self.gm.hands]
-            #[self.db_interface.update_hand_generation(hand) for hand in self.gm.hands]
+
             #Backup old grasps and remove them from the grasp table
             self.backup_grasps(self.gm.generation)
 
             #Run the planner to get grasps for the last set of hands
             self.gm.next_generation()
 
-            
+            #Run the planning jobs
+            self.run_remote_dispatcher_tasks()
 
-        #Plan grasps for the final set of hands.
-        self.run_remote_dispatcher_tasks()
+
         self.backup_grasps(self.gm.generation)
         self.backup_hands()
 
-    
+        self.rd.kill_all_servers()
