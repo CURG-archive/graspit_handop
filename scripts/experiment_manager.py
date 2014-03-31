@@ -184,7 +184,7 @@ class ExperimentManager(object):
         self.run_remote_dispatcher_tasks()
 
         #Run through a bunch of iterations
-        iters_per_generation = self.num_atr_itrs + 1
+        iters_per_generation = self.num_atr_iters + 1
         num_total_iters = (self.num_ga_iters-self.starting_ga_iter)*iters_per_generation
 
         for iter_num in xrange(num_total_iters):
