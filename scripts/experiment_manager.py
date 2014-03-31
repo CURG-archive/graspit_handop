@@ -180,6 +180,7 @@ class ExperimentManager(object):
 
         #Build the new remote dispatcher and connect all the servers
         self.rd = remote_dispatcher.RemoteDispatcher(self.server_dict, self.db_interface)
+        self.rd.init_all_servers()
         self.run_remote_dispatcher_tasks()
 
         #Run through a bunch of iterations
