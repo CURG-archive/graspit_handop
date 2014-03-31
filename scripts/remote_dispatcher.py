@@ -84,18 +84,16 @@ class RemoteServer(object):
 
 import pdb
 class RemoteDispatcher(object):
-    def __init__(self, server_name_dict, interface):
+    def __init__(self, interface):
         self.server_dict = dict()
         self.server_starting_dict = dict()
         self.interface = interface
         self.thread_list = []
-        print "server name dict"
-        print server_name_dict.keys()
         
         self.file = open('/var/www/eigenhand_project/running_jobs.shtml','w')
 
-    def init_all_servers(self):
-        for server in self.server_name_dict:
+    def init_all_servers(self, server_name_dict):
+        for server in server_name_dict:
             self.thread_list.append(threading.Thread(target = self.init_server, args=(server,)))
             self.thread_list[-1].start()
         print "waiting for threads to join"
