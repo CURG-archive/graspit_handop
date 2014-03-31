@@ -1,4 +1,9 @@
 import numpy
+
+#No display to use
+import matplotlib
+matplotlib.use('Agg')
+
 import pylab
 import grasp_sorting_utils
 import ate
