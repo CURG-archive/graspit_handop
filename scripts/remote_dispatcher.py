@@ -155,8 +155,8 @@ class RemoteDispatcher(object):
 
             nonrunning_server_data = self.interface.get_dead_servers(60)
             for server_data in nonrunning_server_data:
-                print "Restarting %s"%(server_data.server_name)
-                server = self.servers[server_data.ip_addr]
+                print "Restarting %s"%(server_data['server_name'])
+                server = self.servers[server_data['ip_addr']]
                 server.collect_subprocesses()
 
                 #Don't want to just keep restarting a bad server
