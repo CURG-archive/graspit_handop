@@ -175,7 +175,7 @@ class ExperimentManager(object):
         of ATR.
         """
         #initialize new generation manager to configure the database to start running.
-        self.gm = initialize_generation_manager()
+        self.gm = self.initialize_generation_manager()
         self.gm.start_generation()
 
         #Build the new remote dispatcher and connect all the servers
