@@ -38,6 +38,7 @@ class ExperimentManager(object):
         self.server_dict = server_dict
         self.experiment_name = experiment_name
         self.e_list = dict()
+        self.rd = remote_dispatcher.RemoteDispatcher(self.server_dict, self.db_interface)
         #self.score_array = numpy.array([4,0])
         
 
@@ -69,11 +70,11 @@ class ExperimentManager(object):
         """
         @brief Create the generation manager that will be used in this experiment
         """
-        self.gm = generation_manager.GenerationManager(self.db_interface, self.task_model_list,
-                                                       self.starting_ga_iter*self.get_generations_per_ga_iter(),
-                                                       self.task_prototype.task_time, self.trials_per_task,
-                                                       self.task_prototype.task_type_id,
-                                                       self.eval_functor)
+        return generation_manager.GenerationManager(self.db_interface, self.task_model_list,
+                                                    self.starting_ga_iter*self.get_generations_per_ga_iter(),
+                                                    self.task_prototype.task_time, self.trials_per_task,
+                                                    self.task_prototype.task_type_id,
+                                                    self.eval_functor)
 
 
     def output_current_status(self):
@@ -94,14 +95,12 @@ class ExperimentManager(object):
         #Test if there are jobs available to do.
         job_num = eigenhand_db_tools.get_num_unlaunched_jobs(self.db_interface)
 
-        #Try to launch a new remote dispatcher as long as there are unfinished jobs
+        #Try to run a new remote dispatcher loop as long as there are unfinished jobs
         while job_num > 2:
             print r
             r += 1
-            rd = remote_dispatcher.RemoteDispatcher(self.server_dict, self.db_interface)
-            #Blocks until all of the remote dispatcher's jobs have terminated, closing all of the connections
-            #to remote machines.
-            rd.run()
+            #Blocks until time runs out or all jobs are finished.
+            self.rd.run()
             #Reset any incomplete jobs. These are essentially jobs that we have lost connection with and cannot be
             #relied upon to terminate.
             self.db_interface.reset_incompletes()
@@ -177,7 +176,7 @@ class ExperimentManager(object):
         of ATR.
         """
         #initialize new generation manager to configure the database to start running.
-        self.initialize_generation_manager()
+        self.gm = initialize_generation_manager()
         self.gm.start_generation()
 
 
