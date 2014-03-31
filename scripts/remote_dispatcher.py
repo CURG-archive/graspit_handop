@@ -12,6 +12,7 @@ class RemoteServer(object):
         self.subprocesses = []
         self.interface = interface
         self.killed_forcibly = False
+        self.restart_count = -1
         #self.kill_previous()
 
     def launch_job(self):
@@ -19,6 +20,8 @@ class RemoteServer(object):
             args = ["ssh", "-o","ConnectTimeout=30", self.server_name, "/home/jweisz/gm/run_dispatcher.sh"]
             print "%s \n"%(self.server_name)
             self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=null_file, stderr=subprocess.STDOUT))
+            self.restart_count += 1
+
 
     def kill_if_busy(self):
         with open('/dev/null','rw') as null_file:
@@ -36,8 +39,11 @@ class RemoteServer(object):
     def do_all(self):        
         args = ["ssh", "-o","ConnectTimeout=30",self.server_name, "killall", "python;", "killall","graspit;","killall","nice;", "/home/jweisz/gm/run_dispatcher.sh"]
         self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT))
+        self.restart_count += 1
 
     def collect_subprocesses(self):
+        """While it is theoretically possible to have more than one subprocess
+        we never have a case where this occurs in the code"""
         for s in self.subprocesses:
             s.communicate()
         self.subprocesses = []
@@ -73,7 +79,8 @@ class RemoteServer(object):
         while self.mark_failed_task() != '':
             continue
                 
-           
+    def __str__(self):
+        return ("%s: %s"%(self.server_name,"running" if self.is_running() else "dead"))
 
 import pdb
 class RemoteDispatcher(object):
@@ -84,15 +91,17 @@ class RemoteDispatcher(object):
         self.thread_list = []
         print "server name dict"
         print server_name_dict.keys()
-        for server in server_name_dict:
+        
+        self.file = open('/var/www/eigenhand_project/running_jobs.shtml','w')
+
+    def init_all_servers(self):
+        for server in self.server_name_dict:
             self.thread_list.append(threading.Thread(target = self.init_server, args=(server,)))
             self.thread_list[-1].start()
         print "waiting for threads to join"
         #for thread in thread_list:
         #    thread.join()
         print "Threads joined"
-        
-        self.file = open('/var/www/eigenhand_project/running_jobs.shtml','w')
 
     def init_server(self, server_name):
         """
@@ -116,62 +125,62 @@ class RemoteDispatcher(object):
         except:
             print "server :%s failed to start"%(server_name)
         
-
-    def start_server(self, server):
-        server.collect_subprocesses()
-        server.launch_job()
-            
-    def run(self, max_len = 9800):
-        running = 1
-        t = time.time()
-        generation = self.interface.get_max_hand_gen()
-        self.file.write('started running generation %i at %s \n'%(generation,time.strftime('%c')))
-        self.file.seek(0)
-        self.file.flush()
-        time.sleep(120)
-        running_servers = []
-        while running and self.interface.get_num_incompletes() > 0 and time.time() - t < max_len and self.interface.get_num_running(60):
-            test_dict = dict(self.server_dict)
-            running_servers = [server for server in test_dict.values() if server.is_running()]
-            nonrunning_servers = [server for server in test_dict.values() if server not in running_servers]
-            if self.interface.get_num_runable(30):
-                for server in nonrunning_servers:
-                    print "restarting %s"%(server.server_name)
-                    server.collect_subprocesses()
-                    server.do_all()
-            if self.server_dict.values() != []:
-                running = len(running_servers)
-            self.file.seek(0)
-            self.file.write('Generation %i, Running processes %i jobs %i %s \n'%(generation, running, self.interface.get_num_incompletes(), time.strftime('%c')))
-            self.file.write(' '.join([server.server_name for server in running_servers]) + '\n')
-            self.file.truncate()
-            self.file.flush()
-            time.sleep(3)
-        finished_string = 'Finished running generation %i. time taken %i num incompletes %i. time %s \n'%(self.interface.get_max_hand_gen(), time.time() - t,
-                                                                                                 self.interface.get_num_incompletes(),
-                                                                                                time.strftime('%c'))
-        print finished_string
-        if running_servers:
-            print running_servers
-        
-        self.file.seek(0)
-        self.file.write(finished_string)
-        self.file.truncate()
-        self.file.flush()
-        self.file.close()
+    def kill_all_servers(self):
         for server in self.server_starting_dict.values():
             try:
                 server.kill_all_subprocesses()
             except:
                 pass
             del server
-        
-            
         #for thread in self.thread_list:
         #    if thread.is_alive():
         #        pthread = cdll.LoadLibrary("libpthread-2.10.1.so")
         #        pthread.pthread_cancel(c_ulong(thread.ident))
-                
+
+        self.file.close()
+
+    def start_server(self, server):
+        server.collect_subprocesses()
+        server.launch_job()
+            
+    def run(self, max_len = 9800):
+        t = time.time()
+        generation = self.interface.get_max_hand_gen()
+
+        self.file.write('Started running generation %i at %s \n'%(generation,time.strftime('%c')))
+        self.file.seek(0)
+        self.file.flush()
+
+        time.sleep(120)
+
+        while self.interface.get_num_incompletes() > 0 and time.time() - t < max_len and self.interface.get_num_running(60):
+
+            nonrunning_server_data = self.interface.get_dead_servers(60)
+            for server_data in nonrunning_server_data:
+                print "Restarting %s"%(server_data.server_name)
+                server = self.servers[server_data.ip_addr]
+                server.collect_subprocesses()
+
+                #Don't want to just keep restarting a bad server
+                if server.restart_count < 10:
+                    server.do_all()
+
+            self.file.seek(0)
+            self.file.write('Generation %i, Running processes %i jobs %i %s \n'%(generation, running, self.interface.get_num_incompletes(), time.strftime('%c')))
+            self.file.write(' '.join([server.server_name for server in running_servers]) + '\n')
+            self.file.truncate()
+            self.file.flush()
+
+            time.sleep(10)
+        finished_string = 'Finished running generation %i. time taken %i num incompletes %i. time %s \n'%(self.interface.get_max_hand_gen(), time.time() - t,
+                                                                                                 self.interface.get_num_incompletes(),
+                                                                                                time.strftime('%c'))
+        print finished_string
+        
+        self.file.seek(0)
+        self.file.write(finished_string)
+        self.file.truncate()
+        self.file.flush()
         
     def run_monitored(self, monitor_functor = []):
         running = 1
