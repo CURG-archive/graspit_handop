@@ -193,7 +193,7 @@ class LocalDispatcher(object):
         sys.stdout.flush()
 
         self.status_file.write(status_string)
-        return num_tasks_left
+        return True
 
 class LocalJob(object):
     def __init__(self, dispatcher, job_lid = -1):
