@@ -157,7 +157,7 @@ class RemoteDispatcher(object):
             nonrunning_server_data = self.interface.get_dead_servers(60)
             num_running = self.interface.get_num_running(60)
             for server_data in nonrunning_server_data:
-                print "Restarting %s (%s)"%(server_data['server_name'],server_data['ip_addr'])
+                print "Restarting %s (%s); Time: %s"%(server_data['server_name'],server_data['ip_addr'],time.strftime("%a, %b %d, %Y %H:%M:%S"))
                 server = self.server_dict[server_data['ip_addr']]
                 #Don't care that much what they have to say
                 #server.collect_subprocesses()
@@ -171,7 +171,7 @@ class RemoteDispatcher(object):
             self.file.truncate()
             self.file.flush()
 
-            time.sleep(10)
+            time.sleep(20)
         finished_string = 'Finished running generation %i. time taken %i num incompletes %i. time %s \n'%(self.interface.get_max_hand_gen(), time.time() - t,
                                                                                                  self.interface.get_num_incompletes(),
                                                                                                 time.strftime('%c'))
