@@ -426,7 +426,6 @@ class EGHandDBaseInterface(object):
         @returns the index of the inserted object.
         """
         command_str = self.get_insert_command(table_name = "hand", data_object = hand, keys = [], return_key ='hand_id', exclude_keys = ['fingers','energy_list'])
-        print command_str
         self.cursor.execute(command_str)
         self.connection.commit()
         return self.cursor.fetchall()[0]
