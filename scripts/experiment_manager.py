@@ -96,7 +96,7 @@ class ExperimentManager(object):
 
         #Try to run a new remote dispatcher loop as long as there are unfinished jobs
         while job_num > 2:
-            print r
+            print "Starting Dispatcher Assignment Loop %s"%r
             r += 1
             #Blocks until time runs out or all jobs are finished.
             self.rd.run()
