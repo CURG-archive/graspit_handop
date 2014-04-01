@@ -224,6 +224,21 @@ def GA_mutate(hand, rel_stdev):
     new_hand = cp.deepcopy(hand)
 
 
+    """mutate palm"""
+    palm_mutation_probability = .25
+    palm_size_max = 1.25
+    palm_size_min = .75
+    palm_size_increment = .25
+    palm_mutation_dev = (palm_size_max - palm_size_min) * rel_stdev
+    palm_size = hand.palm_scale[0]
+
+    if rnd.random() < palm_mutation_probability:
+        palm_size = mutate_item(hand.palm_scale[0], palm_mutation_dev, palm_size_increment, palm_size_min, palm_size_max)
+
+    #Small palms demand wider angles
+    if palm_size < 1:
+        fineger_position_change_min += finger_position_increment
+
     """mutate finger position around the base"""
     finger_position_mutation_probability = .25
 
@@ -281,17 +296,6 @@ def GA_mutate(hand, rel_stdev):
             phalange_index = rnd.randint(1, num_phalanges)
             new_finger = split_phalange(finger, phalange_index)
             hand.fingers[i] = new_finger
-
-    """mutate palm"""
-    palm_mutation_probability = .25
-    palm_size_max = 1.25
-    palm_size_min = .75
-    palm_size_increment = .25
-    palm_mutation_dev = (palm_size_max - palm_size_min) * rel_stdev
-    palm_size = hand.palm_scale[0]
-
-    if rnd.random() < palm_mutation_probability:
-        palm_size = mutate_item(hand.palm_scale[0], palm_mutation_dev, palm_size_increment, palm_size_min, palm_size_max)
 
 
     #Set up the new palm scale vector
