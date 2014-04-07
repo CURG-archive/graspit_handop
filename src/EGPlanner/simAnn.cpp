@@ -163,27 +163,38 @@ SimAnn::iterate(GraspPlanningState *currentState, SearchEnergy *energyCalculator
 	double T = cooling(mT0, YC, mCurrentStep, YDIMS);
 
 	//attempt to compute a neighbor of the current state
-	GraspPlanningState* newState;
+	GraspPlanningState* newState,newBisectState;
 	double energy; bool legal = false;
-	int attempts = 0; int maxAttempts = 10; int bisects = 0; int maxBisects = 4;
+	int attempts = 0; int maxAttempts = 10; int bisects = 0; int maxBisects = 0;
 	DBGP("Ngbr gen loop");
 	//determine the accesibility by the parent robot r
 	bool accessible;
 	while (!legal && attempts <= maxAttempts) {
 		newState = stateNeighbor(currentState, T * NBR_ADJ, targetState);
-        do{
-		    DBGP("Analyze state...");
-		    energyCalculator->analyzeState( legal, energy, newState );
-		    DBGP("Analysis done.");
-		    if(parentRobot)
-			    accessible = energyCalculator->analyzeAccessibility(parentRobot, newState);
-		    else
-			    accessible = true;
-		    if (!legal || !accessible) delete newState;
-        }while (!legal && bisects <= maxBisects){
-            newState = bisectState(currentState, newState);
+
+        DBGP("Analyze state...");
+        energyCalculator->analyzeState( legal, energy, newState );
+        DBGP("Analysis done.");
+        if(parentRobot)
+            accessible = energyCalculator->analyzeAccessibility(parentRobot, newState);
+        else
+            accessible = true;
+
+        newBisectState = newState;
+        while (!legal && bisects < maxBisects){
+            newBisectState = bisectState(currentState, newBisectState);
+            DBGP("Analyze state...");
+            energyCalculator->analyzeState( legal, energy, newBisectState );
+            DBGP("Analysis done.");
+            if(parentRobot)
+                accessible = energyCalculator->analyzeAccessibility(parentRobot, newBisectState);
+            else
+                accessible = true;
+            if (!legal || !accessible) delete newBisectState;
             bisects++;
         }
+
+        if (!legal || !accessible) delete newState;
 		attempts++;
 	}
 
