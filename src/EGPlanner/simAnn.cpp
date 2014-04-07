@@ -165,20 +165,25 @@ SimAnn::iterate(GraspPlanningState *currentState, SearchEnergy *energyCalculator
 	//attempt to compute a neighbor of the current state
 	GraspPlanningState* newState;
 	double energy; bool legal = false;
-	int attempts = 0; int maxAttempts = 10;
+	int attempts = 0; int maxAttempts = 10; int bisects = 0; int maxBisects = 4;
 	DBGP("Ngbr gen loop");
 	//determine the accesibility by the parent robot r
 	bool accessible;
 	while (!legal && attempts <= maxAttempts) {
 		newState = stateNeighbor(currentState, T * NBR_ADJ, targetState);
-		DBGP("Analyze state...");
-		energyCalculator->analyzeState( legal, energy, newState );
-		DBGP("Analysis done.");
-		if(parentRobot)
-			accessible = energyCalculator->analyzeAccessibility(parentRobot, newState);
-		else
-			accessible = true;
-		if (!legal || !accessible) delete newState;
+        do{
+		    DBGP("Analyze state...");
+		    energyCalculator->analyzeState( legal, energy, newState );
+		    DBGP("Analysis done.");
+		    if(parentRobot)
+			    accessible = energyCalculator->analyzeAccessibility(parentRobot, newState);
+		    else
+			    accessible = true;
+		    if (!legal || !accessible) delete newState;
+        }while (!legal && bisects <= maxBisects){
+            newState = bisectState(currentState, newState);
+            bisects++;
+        }
 		attempts++;
 	}
 
@@ -293,6 +298,27 @@ SimAnn::variableNeighbor(VariableSet *set, double T, VariableSet *target)
 		if (loop > 10) DBGA("Neighbor gen loops: " << loop);
 		var->setValue(v);
 	}
+}
+
+/* Generate a state with parameters averaged between the new and old states */
+GraspPlanningState* SimAnn::bisectState(GraspPlanningState *s, GraspPlanningState *t)
+{
+	GraspPlanningState *sn = new GraspPlanningState(s);
+    if(!sn->getBaseFixed())
+        bisectVariable(sn->getPosition(),t->getPosition());
+    bisectVariable(sn->getPosture(),target = t->getPosture());
+    return sn;
+}
+
+void
+SimAnn::bisectVariable(VariableSet *set, VariableSet *target){
+    double v;
+    SearchVariable *var;
+    for (int i=0; i<set->getNumVariables(); i++) {
+        var = set->getVariable(i);
+        v = (target->getVariable(i)->getValue() + current_var->getValue())/2
+        var->setValue(v);
+    }
 }
 
 /* ------------------- SCHEDULING FUNCTIONS -------------------------*/
