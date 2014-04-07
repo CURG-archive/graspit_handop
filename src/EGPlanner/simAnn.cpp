@@ -141,7 +141,7 @@ void SimAnn::setParameters(AnnealingType type)
 void SimAnn::reset()
 {
   std::ifstream randFile;
-  randFile.open("/dev/random");
+  randFile.open("/dev/urandom");
   int random_seed;
   randFile >> random_seed;
   srand(random_seed);
