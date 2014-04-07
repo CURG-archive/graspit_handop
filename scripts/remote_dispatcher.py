@@ -157,14 +157,14 @@ class RemoteDispatcher(object):
             nonrunning_server_data = self.interface.get_dead_servers(60)
             num_running = self.interface.get_num_running(60)
             for server_data in nonrunning_server_data:
-                print "Restarting %s (%s); Time: %s"%(server_data['server_name'],server_data['ip_addr'],time.strftime("%a, %b %d, %Y %H:%M:%S"))
-                server = self.server_dict[server_data['ip_addr']]
-                #Don't care that much what they have to say
-                #server.collect_subprocesses()
-
-                #Don't want to just keep restarting a bad server
-                if server.restart_count < 10:
-                    server.do_all()
+                try:
+                    print "Restarting %s (%s); Time: %s"%(server_data['server_name'],server_data['ip_addr'],time.strftime("%a, %b %d, %Y %H:%M:%S"))
+                    server = self.server_dict[server_data['ip_addr']]
+                    #Don't want to just keep restarting a bad server
+                    if server.restart_count < 10:
+                        server.do_all()
+                except KeyError:
+                    print "Key Error on %s; Time: %s"%(server_data['ip_addr'],time.strftime("%a, %b %d, %Y %H:%M:%S"))
 
             self.file.seek(0)
             self.file.write('Generation %i, Running processes %i jobs %i %s \n'%(generation, num_running, self.interface.get_num_incompletes(), time.strftime('%c')))
