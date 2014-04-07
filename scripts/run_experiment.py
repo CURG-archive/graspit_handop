@@ -11,7 +11,7 @@ import numpy
 import os
 import pdb
 
-def start_experiment(num_ga_iters = 1, num_atr_iters = 1, trials_per_task = 5, experiment_name = 'issue_25_test2'):
+def start_experiment(num_ga_iters = 3, num_atr_iters = 5, trials_per_task = 5, experiment_name = 'full_run'):
     interface = eigenhand_db_interface.EGHandDBaseInterface()
 
     task_prototype = eigenhand_db_objects.Task(task_type_id = 4, task_time = -1)
@@ -82,7 +82,7 @@ def output_results(em):
         os.remove('/tmp/' + filename)
     experiment_name = em.experiment_name
         
-    em.initialize_generation_manager()
+    self.em.gm = em.initialize_generation_manager()
 
     #Open a zip file to put results in
     zip_file_name = '/var/www/eigenhand_project/' + experiment_name + '_csv.zip'
