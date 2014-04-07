@@ -163,7 +163,7 @@ SimAnn::iterate(GraspPlanningState *currentState, SearchEnergy *energyCalculator
 	double T = cooling(mT0, YC, mCurrentStep, YDIMS);
 
 	//attempt to compute a neighbor of the current state
-	GraspPlanningState* newState,newBisectState;
+	GraspPlanningState *newState, *newBisectState;
 	double energy; bool legal = false;
 	int attempts = 0; int maxAttempts = 10; int bisects = 0; int maxBisects = 0;
 	DBGP("Ngbr gen loop");
