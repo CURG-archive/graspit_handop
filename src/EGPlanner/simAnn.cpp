@@ -317,7 +317,7 @@ GraspPlanningState* SimAnn::bisectState(GraspPlanningState *s, GraspPlanningStat
 	GraspPlanningState *sn = new GraspPlanningState(s);
     if(!sn->getBaseFixed())
         bisectVariable(sn->getPosition(),t->getPosition());
-    bisectVariable(sn->getPosture(),target = t->getPosture());
+    bisectVariable(sn->getPosture(),t->getPosture());
     return sn;
 }
 
