@@ -327,7 +327,7 @@ SimAnn::bisectVariable(VariableSet *set, VariableSet *target){
     SearchVariable *var;
     for (int i=0; i<set->getNumVariables(); i++) {
         var = set->getVariable(i);
-        v = (target->getVariable(i)->getValue() + current_var->getValue())/2
+        v = (target->getVariable(i)->getValue() + var->getValue())/2;
         var->setValue(v);
     }
 }
