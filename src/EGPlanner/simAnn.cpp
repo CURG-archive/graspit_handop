@@ -141,7 +141,7 @@ void SimAnn::setParameters(AnnealingType type)
 void SimAnn::reset()
 {
   std::ifstream randFile;
-  randFile.open("/dev/random");
+  randFile.open("/dev/urandom");
   int random_seed;
   randFile >> random_seed;
   srand(random_seed);
@@ -163,27 +163,38 @@ SimAnn::iterate(GraspPlanningState *currentState, SearchEnergy *energyCalculator
 	double T = cooling(mT0, YC, mCurrentStep, YDIMS);
 
 	//attempt to compute a neighbor of the current state
-	GraspPlanningState* newState;
+	GraspPlanningState *newState, *newBisectState;
 	double energy; bool legal = false;
-	int attempts = 0; int maxAttempts = 10; int bisects = 0; int maxBisects = 4;
+	int attempts = 0; int maxAttempts = 10; int bisects = 0; int maxBisects = 0;
 	DBGP("Ngbr gen loop");
 	//determine the accesibility by the parent robot r
 	bool accessible;
 	while (!legal && attempts <= maxAttempts) {
 		newState = stateNeighbor(currentState, T * NBR_ADJ, targetState);
-        do{
-		    DBGP("Analyze state...");
-		    energyCalculator->analyzeState( legal, energy, newState );
-		    DBGP("Analysis done.");
-		    if(parentRobot)
-			    accessible = energyCalculator->analyzeAccessibility(parentRobot, newState);
-		    else
-			    accessible = true;
-		    if (!legal || !accessible) delete newState;
-        }while (!legal && bisects <= maxBisects){
-            newState = bisectState(currentState, newState);
+
+        DBGP("Analyze state...");
+        energyCalculator->analyzeState( legal, energy, newState );
+        DBGP("Analysis done.");
+        if(parentRobot)
+            accessible = energyCalculator->analyzeAccessibility(parentRobot, newState);
+        else
+            accessible = true;
+
+        newBisectState = newState;
+        while (!legal && bisects < maxBisects){
+            newBisectState = bisectState(currentState, newBisectState);
+            DBGP("Analyze state...");
+            energyCalculator->analyzeState( legal, energy, newBisectState );
+            DBGP("Analysis done.");
+            if(parentRobot)
+                accessible = energyCalculator->analyzeAccessibility(parentRobot, newBisectState);
+            else
+                accessible = true;
+            if (!legal || !accessible) delete newBisectState;
             bisects++;
         }
+
+        if (!legal || !accessible) delete newState;
 		attempts++;
 	}
 
@@ -306,7 +317,7 @@ GraspPlanningState* SimAnn::bisectState(GraspPlanningState *s, GraspPlanningStat
 	GraspPlanningState *sn = new GraspPlanningState(s);
     if(!sn->getBaseFixed())
         bisectVariable(sn->getPosition(),t->getPosition());
-    bisectVariable(sn->getPosture(),target = t->getPosture());
+    bisectVariable(sn->getPosture(),t->getPosture());
     return sn;
 }
 
@@ -316,7 +327,7 @@ SimAnn::bisectVariable(VariableSet *set, VariableSet *target){
     SearchVariable *var;
     for (int i=0; i<set->getNumVariables(); i++) {
         var = set->getVariable(i);
-        v = (target->getVariable(i)->getValue() + current_var->getValue())/2
+        v = (target->getVariable(i)->getValue() + var->getValue())/2;
         var->setValue(v);
     }
 }

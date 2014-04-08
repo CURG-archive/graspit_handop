@@ -86,6 +86,11 @@ private:
 	GraspPlanningState* stateNeighbor(GraspPlanningState *s, double T, GraspPlanningState *t = NULL);
 	//! Computes the neighbor of one individual variable
 	void variableNeighbor(VariableSet *set, double T, VariableSet *target = NULL);
+
+    //! Creates an average state/variable from two diverse states/sets
+    GraspPlanningState* bisectState(GraspPlanningState *s, GraspPlanningState *t);
+    void bisectVariable(VariableSet *set, VariableSet *target);
+
 	double neighborDistribution(double T);
 	double neighborInverse(double T, double y);
 	//! Generates neighbors according to a desired value, or "input", along each dimension
