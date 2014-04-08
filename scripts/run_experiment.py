@@ -40,9 +40,9 @@ def output_experiment(num_ga_iters = 5, num_atr_iters = 1, trials_per_task = 5, 
     output_results(em)
     
 
-def continue_experiment(num_ga_iters = 50, num_atr_iters = 5, trials_per_task = 5, experiment_name = 'default'):
+def continue_experiment(num_ga_iters = 10, num_atr_iters = 5, trials_per_task = 5, experiment_name = 'ten_ga_run'):
     
-    task_prototype = eigenhand_db_objects.Task(task_type_id = 4, task_time = 60)
+    task_prototype = eigenhand_db_objects.Task(task_type_id = 4, task_time = -1)
     em = experiment_manager.ExperimentManager(num_ga_iters, num_atr_iters, task_models.small_model_dict,
                                          task_prototype, trials_per_task, ate.weighted_threshold_ATE_hand, [], experiment_name = experiment_name)
 
