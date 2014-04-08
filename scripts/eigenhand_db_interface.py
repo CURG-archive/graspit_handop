@@ -530,7 +530,7 @@ class EGHandDBaseInterface(object):
         return self.cursor.fetchone()[0]
 
     def get_dead_servers(self, latency_allowed):
-        command_str = "select * from servers where last_update + '%i seconds' < NOW();"%(latency_allowed)
+        command_str = "select server_name, ip_addr, max(last_update) from servers where last_update + '%i seconds' < NOW() group by server_name, ip_addr;"%(latency_allowed)
         self.cursor.execute(command_str)
         self.connection.commit()
         return self.cursor.fetchall()
