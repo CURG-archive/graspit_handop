@@ -237,7 +237,7 @@ def GA_mutate(hand, rel_stdev):
 
     #Small palms demand wider angles
     if palm_size < 1:
-        fineger_position_change_min += finger_position_increment
+        finger_position_change_min += finger_position_increment
 
     """mutate finger position around the base"""
     finger_position_mutation_probability = .25
