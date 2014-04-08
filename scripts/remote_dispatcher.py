@@ -34,7 +34,8 @@ class RemoteServer(object):
         proc = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         proc.communicate()
 
-        self.subprocess.communicate()
+        if self.subprocess:
+            self.subprocess.communicate()
             
         args = ["ssh", "-o","PasswordAuthentication=no", "-o","ConnectTimeout=30", self.server_name, "killall", "graspit"]
         proc = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -45,7 +46,8 @@ class RemoteServer(object):
         proc = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         proc.communicate()
 
-        self.subprocess.communicate()
+        if self.subprocess:
+            self.subprocess.communicate()
 
         args = ["ssh", "-o","ConnectTimeout=30",self.server_name, "/home/jweisz/gm/run_dispatcher.sh"]
         self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
