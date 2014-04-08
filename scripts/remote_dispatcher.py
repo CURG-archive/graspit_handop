@@ -15,7 +15,7 @@ class RemoteServer(object):
         self.interface = interface
         self.killed_forcibly = False
         self.restart_count = -1
-        self.ssh_start_args = ["ssh", "-o","PasswordAuthentication=no", "-o","ConnectTimeout=30",server_name,"nohup"]
+        self.ssh_start_args = ["ssh", "-o", "ForwardX11=no", "-o","PasswordAuthentication=no", "-o","ConnectTimeout=30",server_name,"nohup"]
         self.ssh_end_args = [">/dev/null", "2>/home/jweisz/html/errors", "</dev/null", "&"]
 
     def wrap_ssh_args(self,args):
@@ -23,12 +23,12 @@ class RemoteServer(object):
 
     def launch_job(self):
         args = self.wrap_ssh_args(["/home/jweisz/gm/run_dispatcher.sh"])
-        subprocess.Popen(args).wait()
+        subprocess.Popen(args)
         self.restart_count += 1
 
     def kill_client(self):
         args = self.wrap_ssh_args(["killall", "python", "graspit"])
-        subprocess.Popen(args).wait()
+        subprocess.Popen(args)
 
     def do_all(self):        
         self.kill_client()
