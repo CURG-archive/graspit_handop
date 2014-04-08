@@ -161,8 +161,9 @@ class RemoteDispatcher(object):
                     print "Restarting %s (%s); Time: %s"%(server_data['server_name'],server_data['ip_addr'],time.strftime("%a, %b %d, %Y %H:%M:%S"))
                     server = self.server_dict[server_data['ip_addr']]
                     #Don't want to just keep restarting a bad server
-                    if server.restart_count < 10:
-                        server.do_all()
+                    #if server.restart_count < 10:
+                    #But maybe we do
+                    server.do_all()
                 except KeyError:
                     print "Key Error on %s; Time: %s"%(server_data['ip_addr'],time.strftime("%a, %b %d, %Y %H:%M:%S"))
 
