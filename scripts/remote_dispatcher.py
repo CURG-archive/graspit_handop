@@ -27,7 +27,7 @@ class RemoteServer(object):
         subprocess.Popen(args)
         self.restart_count += 1
 
-    def kill_local(self):
+    def kill_client(self):
         args = self.wrap_ssh_args(["killall", "python", "graspit"])
         subprocess.Popen(args)
 
