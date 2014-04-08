@@ -9,7 +9,7 @@ from ctypes import *
 class RemoteServer(object):
     def __init__(self, server_name, interface):
         self.server_name = server_name
-        self.subprocesses = []
+        self.subprocess = []
         self.interface = interface
         self.killed_forcibly = False
         self.restart_count = -1
@@ -19,7 +19,7 @@ class RemoteServer(object):
         with open('/dev/null','rw') as null_file:
             args = ["ssh", "-o","ConnectTimeout=30", self.server_name, "/home/jweisz/gm/run_dispatcher.sh"]
             print "%s \n"%(self.server_name)
-            self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=null_file, stderr=subprocess.STDOUT))
+            self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=null_file, stderr=subprocess.STDOUT)
             self.restart_count += 1
 
 
@@ -31,14 +31,24 @@ class RemoteServer(object):
 
     def kill_previous(self):
         args = ["ssh", "-o","PasswordAuthentication=no", "-o","ConnectTimeout=30",self.server_name, "killall", "python"]
-        self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT))
+        subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        subprocess.communicate()
+
+        self.subprocess.communicate()
             
         args = ["ssh", "-o","PasswordAuthentication=no", "-o","ConnectTimeout=30", self.server_name, "killall", "graspit"]
-        self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT))
+        subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        subprocess.communicate()
 
     def do_all(self):        
-        args = ["ssh", "-o","ConnectTimeout=30",self.server_name, "killall", "python;", "killall","graspit;","killall","nice;", "/home/jweisz/gm/run_dispatcher.sh"]
-        self.subprocesses.append(subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT))
+        args = ["ssh", "-o","ConnectTimeout=30",self.server_name, "killall", "python;", "killall","graspit;","killall","nice;"]
+        subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        subprocess.communicate()
+
+        self.subprocess.communicate()
+
+        args = ["ssh", "-o","ConnectTimeout=30",self.server_name, "/home/jweisz/gm/run_dispatcher.sh"]
+        self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         self.restart_count += 1
 
     def collect_subprocesses(self):
@@ -154,7 +164,7 @@ class RemoteDispatcher(object):
         num_running = self.interface.get_num_running(60)
         while self.interface.get_num_incompletes() > 0 and time.time() - t < max_len and self.interface.get_num_running(60):
 
-            nonrunning_server_data = self.interface.get_dead_servers(60)
+            nonrunning_server_data = self.interface.get_dead_servers(180)
             num_running = self.interface.get_num_running(60)
             for server_data in nonrunning_server_data:
                 try:
