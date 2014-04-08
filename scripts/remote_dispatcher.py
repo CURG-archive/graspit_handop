@@ -31,19 +31,19 @@ class RemoteServer(object):
 
     def kill_previous(self):
         args = ["ssh", "-o","PasswordAuthentication=no", "-o","ConnectTimeout=30",self.server_name, "killall", "python"]
-        subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        subprocess.communicate()
+        proc = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        proc.communicate()
 
         self.subprocess.communicate()
             
         args = ["ssh", "-o","PasswordAuthentication=no", "-o","ConnectTimeout=30", self.server_name, "killall", "graspit"]
-        subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        subprocess.communicate()
+        proc = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        proc.communicate()
 
     def do_all(self):        
         args = ["ssh", "-o","ConnectTimeout=30",self.server_name, "killall", "python;", "killall","graspit;","killall","nice;"]
-        subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        subprocess.communicate()
+        proc = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        proc.communicate()
 
         self.subprocess.communicate()
 
@@ -131,7 +131,7 @@ class RemoteDispatcher(object):
             a.do_all()
             self.server_dict[server_name] = a
         except:
-            print "server :%s failed to start"%(server_name)
+            print "Server %s failed to start"%(server_name)
         
     def kill_all_servers(self):
         for server in self.server_starting_dict.values():
