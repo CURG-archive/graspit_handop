@@ -164,7 +164,7 @@ class RemoteDispatcher(object):
         num_running = self.interface.get_num_running(60)
         while self.interface.get_num_incompletes() > 0 and time.time() - t < max_len and self.interface.get_num_running(60):
 
-            nonrunning_server_data = self.interface.get_dead_servers(60)
+            nonrunning_server_data = self.interface.get_dead_servers(180)
             num_running = self.interface.get_num_running(60)
             for server_data in nonrunning_server_data:
                 try:
