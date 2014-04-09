@@ -23,12 +23,12 @@ class RemoteServer(object):
 
     def launch_job(self):
         args = self.wrap_ssh_args(["/home/jweisz/gm/run_dispatcher.sh"])
-        subprocess.Popen(args)
+        subprocess.Popen(args).wait()
         self.dead_count = 0
 
     def kill_client(self):
         args = self.wrap_ssh_args(["killall", "python", "graspit"])
-        subprocess.Popen(args)
+        subprocess.Popen(args).wait()
 
     def do_all(self):        
         self.kill_client()
