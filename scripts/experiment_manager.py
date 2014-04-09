@@ -108,10 +108,10 @@ class ExperimentManager(object):
         print "done.  Time %f \n"%(time.time() - t)
 
     def backup_results(self):
-        self.db_interface.incremental_backup(generation=self.gm.generation)
+        self.db_interface.incremental_backup(experiment_name=self.config.name,generation=self.gm.generation)
 
     def restore_results(self, generation=0):
-        self.db_interface.incremental_restore(generation=self.gm.generation)
+        self.db_interface.incremental_restore(experiment_name=self.config.name,generation=self.gm.generation)
     
     def restore_all(self):
         self.db_interface.reset_database()
@@ -168,7 +168,7 @@ class ExperimentManager(object):
 
             #Backup results and then remove everything from the grasp table
             self.backup_results
-            self.clear_tables(['grasp'])
+            self.clear_tables(['grasp','job'])
 
             #Run the planner to get grasps for the last set of hands
             self.gm.next_generation()
