@@ -16,19 +16,19 @@ class RemoteServer(object):
         self.killed_forcibly = False
         self.dead_count = 0
         self.ssh_start_args = ["ssh", "-o", "ForwardX11=no", "-o","PasswordAuthentication=no", "-o","ConnectTimeout=30",server_name,"nohup"]
-        self.ssh_end_args = [">/dev/null", "2>/home/jweisz/html/errors", "</dev/null", "&"]
+        self.ssh_end_args = [">/dev/null", "2>>/home/jweisz/html/errors", "</dev/null", "&"]
 
     def wrap_ssh_args(self,args):
         return self.ssh_start_args + args + self.ssh_end_args
 
     def launch_job(self):
         args = self.wrap_ssh_args(["/home/jweisz/gm/run_dispatcher.sh"])
-        subprocess.Popen(args)
+        subprocess.Popen(args).wait()
         self.dead_count = 0
 
     def kill_client(self):
         args = self.wrap_ssh_args(["killall", "python", "graspit"])
-        subprocess.Popen(args)
+        subprocess.Popen(args).wait()
 
     def do_all(self):        
         self.kill_client()
@@ -89,9 +89,9 @@ class RemoteDispatcher(object):
                     server = self.server_dict[server_data['ip_addr']]
 
                     #There must be a better solution but this is easy.
-                    #If a server has been dead for 6 cycles, restart it
+                    #If a server has been dead for 12 cycles, restart it
                     #Adds in a buffer so the server can restart
-                    if server.dead_count >= 6:
+                    if server.dead_count >= 12:
                         server.do_all()
                     else:
                         server.dead_count += 1
