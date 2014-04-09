@@ -270,15 +270,17 @@ class EGHandDBaseInterface(object):
             return str(value)
 
     def get_max_hand_gen(self):
-        self.cursor.execute("SELECT id, type FROM generation LIMIT 1 ORDER BY id DESC;")
+        self.cursor.execute("SELECT id, type FROM generation ORDER BY id DESC LIMIT 1;")
         self.connection.commit()
-        return self.cursor.fetchone()[0]
+        result = self.cursor.fetchone()
+        if result == None:
+            return -1
+        else:
+            return result[0]
 
-    def insert_generation(self,gen_type = 1):
-        self.cursor.execute("INSERT INTO generation (type) VALUES (%s);"%gen_type)
+    def insert_generation(self,generation=0,gen_type = 1):
+        self.cursor.execute("INSERT INTO generation (id,type) VALUES (%i,%s);"%(generation,gen_type))
         self.connection.commit()
-
-
 
     def get_insert_command(self, table_name, data_object, keys = [], return_key = [], exclude_keys = []):
         """
