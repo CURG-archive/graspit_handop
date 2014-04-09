@@ -89,9 +89,9 @@ class RemoteDispatcher(object):
                     server = self.server_dict[server_data['ip_addr']]
 
                     #There must be a better solution but this is easy.
-                    #If a server has been dead for 6 cycles, restart it
+                    #If a server has been dead for 12 cycles, restart it
                     #Adds in a buffer so the server can restart
-                    if server.dead_count >= 6:
+                    if server.dead_count >= 12:
                         server.do_all()
                     else:
                         server.dead_count += 1
