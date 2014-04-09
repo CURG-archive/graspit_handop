@@ -57,13 +57,15 @@ class LocalDispatcher(object):
             self.status_file = open('/home/jweisz/html/graspit_handop/%s/server_status'%(socket.gethostname()),'w')
         except:
             self.status_file = open('/dev/null','w')
+
+        self.update_status()
             
     def get_num_processors(self):
         self.num_processors = psutil.NUM_CPUS
         return self.num_processors
 
     def get_idle_percent(self):
-        self.idle_percent = 100.0 - psutil.cpu_percent()
+        self.idle_percent = psutil.cpu_times_percent().idle
         return self.idle_percent
 
     def kill_existing_graspit(self):
