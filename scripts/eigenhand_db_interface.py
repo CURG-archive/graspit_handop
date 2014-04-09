@@ -270,9 +270,14 @@ class EGHandDBaseInterface(object):
             return str(value)
 
     def get_max_hand_gen(self):
-        self.cursor.execute("select max(generation) from hand;")
+        self.cursor.execute("SELECT id, type FROM generation LIMIT 1 ORDER BY id DESC;")
         self.connection.commit()
-        return self.cursor.fetchone()[0][-1]
+        return self.cursor.fetchone()[0]
+
+    def insert_generation(self,gen_type = 1):
+        self.cursor.execute("INSERT INTO generation (type) VALUES (%s);"%gen_type)
+        self.connection.commit()
+
 
 
     def get_insert_command(self, table_name, data_object, keys = [], return_key = [], exclude_keys = []):
@@ -525,7 +530,7 @@ class EGHandDBaseInterface(object):
         return self.cursor.fetchone()[0]
 
     def get_dead_servers(self, latency_allowed):
-        command_str = "select server_name, ip_addr, max(last_update) from servers where last_update + '%i seconds' < NOW() group by server_name, ip_addr;"%(latency_allowed)
+        command_str = "select server_name, ip_addr, max(last_update) from server where last_update + '%i seconds' < NOW() group by server_name, ip_addr;"%(latency_allowed)
         self.cursor.execute(command_str)
         self.connection.commit()
         return self.cursor.fetchall()
