@@ -81,23 +81,6 @@ class RemoteDispatcher(object):
         num_running = self.interface.get_num_running(60)
         while self.interface.get_num_incompletes() > 0 and time.time() - t < max_len and self.interface.get_num_running(60):
 
-            nonrunning_server_data = self.interface.get_dead_servers(60*10)
-            num_running = self.interface.get_num_running(60)
-            for server_data in nonrunning_server_data:
-                try:
-                    print "Restarting %s (%s); Time: %s"%(server_data['server_name'],server_data['ip_addr'],time.strftime("%a, %b %d, %Y %H:%M:%S"))
-                    server = self.server_dict[server_data['ip_addr']]
-
-                    #There must be a better solution but this is easy.
-                    #If a server has been dead for 12 cycles, restart it
-                    #Adds in a buffer so the server can restart
-                    if server.dead_count >= 12:
-                        server.do_all()
-                    else:
-                        server.dead_count += 1
-                except KeyError:
-                    print "Key Error on %s; Time: %s"%(server_data['ip_addr'],time.strftime("%a, %b %d, %Y %H:%M:%S"))
-
             self.file.seek(0)
             self.file.write('Generation %i, Running processes %i jobs %i %s \n'%(generation, num_running, self.interface.get_num_incompletes(), time.strftime('%c')))
             self.file.truncate()
