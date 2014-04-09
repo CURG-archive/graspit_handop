@@ -1,19 +1,19 @@
-import eigenhand_db_tools
-import generation_manager
-import eigenhand_db_objects
-import server_list
 import time
-import remote_dispatcher
-import atr
-import eigenhand_genetic_algorithm
-import examine_database
 import os
-import eigenhand_db_interface
+
+import remote_dispatcher,  generation_manager
+import eigenhand_db_interface, eigenhand_db_tools, eigenhand_db_objects
+import atr, ate
+import eigenhand_genetic_algorithm
+import task_models, server_list
+import examine_database
 
 class ExperimentManager(object):
-    def __init__(self, num_ga_iters, num_atr_iters, task_model_list, task_prototype,
-                 trials_per_task, eval_functor, db_interface, start_ga_iter = 0,
-                 server_dict = server_list.clic_lab_dict, experiment_name = "default"):
+    def __init__(self, config, task_model_list,
+                 eval_functor = ate.weighted_threshold_ATE_hand,
+                 server_dict = server_list.clic_lab_dict,
+                 task_prototype = eigenhand_db_objects.Task(task_type_id = 4, task_time = -1),
+                 db_interface = eigenhand_db_interface.EGHandDBaseInterface()):
         """
         @param num_ga_iters - The number of genetic algorithm generations to run
         @param num_atr_iters - The number of ATR iterations to run for each GA generation
@@ -28,19 +28,16 @@ class ExperimentManager(object):
         """
         self.task_prototype = task_prototype
         self.task_model_list = task_model_list
-        self.num_ga_iters = num_ga_iters
-        self.num_atr_iters = num_atr_iters
         self.eval_functor = eval_functor
         self.db_interface = db_interface
-        self.starting_ga_iter = 0
-        self.trials_per_task = trials_per_task
-        self.gm = []
+        self.config = config
         self.server_dict = server_dict
-        self.experiment_name = experiment_name
         self.e_list = dict()
+
+        self.gm = []
         self.rd = []       #self.score_array = numpy.array([4,0])
         
-
+        self.db_interface.update_config(config) 
 
     def get_current_ga_iteration(self):
 
@@ -110,50 +107,11 @@ class ExperimentManager(object):
         self.db_interface.set_incompletes_as_error()
         print "done.  Time %f \n"%(time.time() - t)
 
+    def backup_results(self):
+        self.db_interface.incremental_backup(generation=self.gm.generation)
 
-    def kill_existing(self):
-        rd_list = [remote_dispatcher.RemoteServer(server, []) for server in self.server_dict.keys()]
-        [rd.kill_previous() for rd in rd_list]
-        [rd.collect_subprocesses() for rd in rd_list]
-            
-
-    def get_grasp_file(self, generation_number):
-        '''
-        @brief generates a simplistic filename for a specified generation, using the experiment experiment_name
-        '''
-        return "/data/%s_generation_%i"%(self.experiment_name, generation_number)
-
-    def backup_grasps(self, generation):
-        self.db_interface.incremental_backup(self.get_grasp_file(generation), ['grasp'])
-        self.db_interface.clear_grasp_table()
-
-    def restore_grasps(self, generation):
-        d = {'grasp' : self.get_grasp_file(generation)+'_grasp'}
-        self.db_interface.incremental_restore(d)
-
-    def backup_hands(self):
-        self.db_interface.incremental_backup('/data/%s'%(self.experiment_name),['hand','finger'])
-
-    def restore_hands(self):
-        d = {'finger':'/data/%s_%s'%(self.experiment_name,'finger'),'hand':'/data/%s_hand'%(self.experiment_name)}
-        self.db_interface.incremental_restore(d)
-
-    def restore_all_grasps(self):
-        gen = 0
-        print 'restoring all grasps \n'
-        for gen in xrange(self.num_ga_iters * (self.num_atr_iters + 1) + 1):
-            if os.path.exists(self.get_grasp_file(gen)+'_grasp'):
-                print 'file exists %i \n'%(gen)
-                self.starting_ga_iter = gen//(self.num_atr_iters + 1)
-                try:
-                    self.restore_grasps(gen)
-                    
-                except Exception as e:
-                    print e
-                    self.db_interface.connection.commit()
-                
-
-
+    def restore_results(self, generation=0):
+        self.db_interface.incremental_restore(generation=self.gm.generation)
     
     def restore_all(self):
         self.db_interface.reset_database()
@@ -167,7 +125,6 @@ class ExperimentManager(object):
 
     def drop_dbase(self):
         self.db_interface.drop_database(self.experiment_name)
-        
 
     def run_experiment(self):
         """
@@ -209,8 +166,9 @@ class ExperimentManager(object):
             #Put the new hands in to the database.
             eigenhand_db_tools.insert_unique_hand_list(new_hand_list, self.db_interface)
 
-            #Backup old grasps and remove them from the grasp table
-            self.backup_grasps(self.gm.generation)
+            #Backup results and then remove everything from the grasp table
+            self.backup_results
+            self.clear_tables(['grasp'])
 
             #Run the planner to get grasps for the last set of hands
             self.gm.next_generation()
@@ -219,7 +177,25 @@ class ExperimentManager(object):
             self.run_remote_dispatcher_tasks()
 
 
-        self.backup_grasps(self.gm.generation)
-        self.backup_hands()
+        self.backup_results()
 
         self.rd.kill_all_servers()
+
+def new_em(name, ga_iterations, atr_iterations = 5, task_model_names = task_models.tiny_keys):
+    config = {'name':name,
+              'ga_iterations':ga_iterations,
+              'atr_iterations':atr_iterations,
+              'trials_per_task':5,
+              'task_type_id': 4,
+              'task_time': -1,
+              'task_models':task_model_names}
+    task_model_list = task_models.model_set(task_model_names)
+    em = ExperimentManager(config,task_model_list)
+    return em
+
+def resume_em():
+    db_interface = eigenhand_db_interface.EGHandDBaseInterface()
+    config = db_interface.load_config()
+    task_model_list = task_models.model_set(config['task_models'])
+    em = ExperimentManager(config,task_model_list)
+    return em
