@@ -232,7 +232,7 @@ class EGHandDBaseInterface(object):
         self.reset_database()
         self.insert_gen_0()
 
-    def incremental_backup(self, base_filename = '/tmp/test', tables = ['finger','hand','grasp']):
+    def incremental_backup(self, base_directory = '/data', experiment_name="default", generation = 0, tables = ['finger','hand','grasp']):
         """
         @param filename - The filename to store to.
         @param tables - The name of the tables to backup
@@ -241,18 +241,19 @@ class EGHandDBaseInterface(object):
         filenames = []
         d = dict()
         for table in tables:
-            filename = base_filename + '_' + table
+            filename = "%s/%s/generation_%s/%s"%s(base_directory,experiment_name,generation,table)
             d[table] = filename
             self.cursor.execute("COPY %s TO '%s'"%(table, filename))
             self.connection.commit()
 
         return d
 
-    def incremental_restore(self, filename_dict):
+    def incremental_restore(self, base_directory = '/data', experiment_name="default", generation = 0, tables = ['finger','hand','grasp']):
         """
         @param filename_dict - Load data from filenames.
         """
-        for table, filename in filename_dict.iteritems():
+        for table in tables:
+            filename = "%s/%s/generation_%s/%s"%s(base_directory,experiment_name,generation,table)
             self.cursor.execute("COPY %s FROM '%s'"%(table, filename))
             self.connection.commit()
         return
@@ -534,3 +535,23 @@ class EGHandDBaseInterface(object):
         self.cursor.execute(command_str)
         self.connection.commit()
         return self.cursor.fetchall()
+
+    def update_config(self,config):
+        set_str = ""
+        for config_key, config_var in config.iteritems():
+            set_str += config_key + "='"
+            if type(config_var) == list:
+                set_str += "{" + ','.join(['"' + str(config_var_item) + '"' for config_var_item in config_var]) + "}"
+            else:
+                set_str += str(config_var)
+            set_str += "', "
+
+        command_str = "UPDATE config SET %s;"%set_str[:-2]
+        self.cursor.execute(command_str)
+        self.connection.commit()
+
+    def load_config(self):
+        command_str = "SELECT * FROM config;"
+        self.cursor.execute(command_str)
+        self.connection.commit()
+        return self.cursor.fetchone()
