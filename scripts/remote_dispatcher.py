@@ -14,7 +14,7 @@ class RemoteServer(object):
         self.server_name = server_name
         self.interface = interface
         self.killed_forcibly = False
-        self.restart_count = -1
+        self.dead_count = 0
         self.ssh_start_args = ["ssh", "-o", "ForwardX11=no", "-o","PasswordAuthentication=no", "-o","ConnectTimeout=30",server_name,"nohup"]
         self.ssh_end_args = [">/dev/null", "2>/home/jweisz/html/errors", "</dev/null", "&"]
 
@@ -24,7 +24,7 @@ class RemoteServer(object):
     def launch_job(self):
         args = self.wrap_ssh_args(["/home/jweisz/gm/run_dispatcher.sh"])
         subprocess.Popen(args)
-        self.restart_count += 1
+        self.dead_count = 0
 
     def kill_client(self):
         args = self.wrap_ssh_args(["killall", "python", "graspit"])
@@ -87,10 +87,14 @@ class RemoteDispatcher(object):
                 try:
                     print "Restarting %s (%s); Time: %s"%(server_data['server_name'],server_data['ip_addr'],time.strftime("%a, %b %d, %Y %H:%M:%S"))
                     server = self.server_dict[server_data['ip_addr']]
-                    #Don't want to just keep restarting a bad server
-                    #if server.restart_count < 10:
-                    #But maybe we do
-                    server.do_all()
+
+                    #There must be a better solution but this is easy.
+                    #If a server has been dead for 6 cycles, restart it
+                    #Adds in a buffer so the server can restart
+                    if server.dead_count >= 6:
+                        server.do_all()
+                    else
+                        server.dead_count += 1
                 except KeyError:
                     print "Key Error on %s; Time: %s"%(server_data['ip_addr'],time.strftime("%a, %b %d, %Y %H:%M:%S"))
 
