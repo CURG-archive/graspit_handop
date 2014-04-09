@@ -93,7 +93,7 @@ class RemoteDispatcher(object):
                     #Adds in a buffer so the server can restart
                     if server.dead_count >= 6:
                         server.do_all()
-                    else
+                    else:
                         server.dead_count += 1
                 except KeyError:
                     print "Key Error on %s; Time: %s"%(server_data['ip_addr'],time.strftime("%a, %b %d, %Y %H:%M:%S"))
