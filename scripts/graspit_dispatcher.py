@@ -57,6 +57,8 @@ class LocalDispatcher(object):
             self.status_file = open('/home/jweisz/html/graspit_handop/%s/server_status'%(socket.gethostname()),'w')
         except:
             self.status_file = open('/dev/null','w')
+
+        self.update_status()
             
     def get_num_processors(self):
         self.num_processors = psutil.NUM_CPUS
