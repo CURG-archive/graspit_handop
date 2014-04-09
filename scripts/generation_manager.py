@@ -97,4 +97,5 @@ class GenerationManager (object):
         @brief start the next generation
         """
         self.generation += 1
+        self.interface.insert_generation()
         self.start_generation()
