@@ -89,19 +89,6 @@ class ExperimentManager(object):
 
     def restore_results(self, generation=0):
         self.interface.incremental_restore(experiment_name=self.config['name'],generation=self.gm.generation)
-    
-    def restore_all(self):
-        self.interface.reset_database()
-        self.restore_hands()
-        self.restore_all_grasps()
-
-    def restore_to_new_dbase(self):
-        self.interface.prepare_empty_db(self.experiment_name)
-        self.interface = eigenhand_db_interface.EGHandDBaseInterface(self.experiment_name)
-        self.restore_all()
-
-    def drop_dbase(self):
-        self.interface.drop_database(self.experiment_name)
 
     def prepare_experiment(self):
         self.interface.reset_database()

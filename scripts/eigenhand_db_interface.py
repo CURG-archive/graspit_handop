@@ -186,7 +186,7 @@ class EGHandDBaseInterface(object):
         """
         self.clear_tables()
 
-    def clear_tables(self,tables=['task','grasp','hand','finger','server','job','log']):
+    def clear_tables(self,tables=['generation','task','grasp','hand','finger','server','job','log']):
         for table in tables:
             self.cursor.execute("delete from %s;"%table)
             self.connection.commit()
