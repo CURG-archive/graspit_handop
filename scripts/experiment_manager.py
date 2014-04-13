@@ -122,6 +122,10 @@ class ExperimentManager(object):
         @brief Run the whole experiment. Does num_ga_iters genetic algorithm runs each containing num_atr iterations
         of ATR.
         """
+
+        #Start it up
+        self.prepare_experiment()
+
         #Run through a bunch of iterations
         generations = ([1]*self.config['atr_iterations'] + [2])*self.config['ga_iterations']
 
