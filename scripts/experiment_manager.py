@@ -114,7 +114,6 @@ class ExperimentManager(object):
         #Build the new remote dispatcher and connect all the servers
         self.rd = remote_dispatcher.RemoteDispatcher(self.interface)
         self.rd.init_all_servers(self.server_dict)
-        self.run_remote_dispatcher_tasks()
         
 
     def run_experiment(self):
@@ -125,6 +124,7 @@ class ExperimentManager(object):
 
         #Start it up
         self.prepare_experiment()
+        self.run_remote_dispatcher_tasks()
 
         #Run through a bunch of iterations
         generations = ([1]*self.config['atr_iterations'] + [2])*self.config['ga_iterations']
