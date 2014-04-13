@@ -2,7 +2,7 @@ import time
 import os
 
 import remote_dispatcher,  generation_manager
-import eigenhand_interface, eigenhand_db_tools, eigenhand_db_objects
+import eigenhand_db_interface, eigenhand_db_tools, eigenhand_db_objects
 import atr, ate
 import eigenhand_genetic_algorithm
 import task_models, server_list
