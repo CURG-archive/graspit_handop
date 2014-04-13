@@ -26,27 +26,22 @@ class TaskModel(object):
 """
 Create a TaskModel for each model
 """
-full_model_dict = dict()
-full_model_dict['hammer'] = TaskModel(18548,'harvard_hammer','worlds/HammerWorld.xml',[0,0,3.5,0,-4.55,0])
-full_model_dict['drill'] = TaskModel(18547,'harvard_drill','worlds/DrillWorld2.xml',[0,0,24.52,.0,-2.25,0])
-full_model_dict['doorknob'] = TaskModel(18546,'harvard_doorknob','worlds/DoorknobWorld.xml',[0,0,3.45,-.25,0,0])
-full_model_dict['laptop'] = TaskModel(18545,'harvard_laptop','worlds/LaptopWorld.xml',[0,0,31.75,0,0,0])
-full_model_dict['beerbottle'] = TaskModel(18544,'harvard_beerbottle','worlds/BeerbottleWorld.xml',[0,0,9.05,0,-0.45,0])
-full_model_dict['sodabottle'] = TaskModel(18543,'harvard_sodabottle','worlds/TwoliterWorld.xml',[0,0,21.12,0,-1.57,0])
-full_model_dict['wrench'] = TaskModel(18542,'harvard_wrench','worlds/WrenchWorld.xml',[0,3.25,0,-3.25,0])
-full_model_dict['coffeemug'] = TaskModel(18541,'harvard_coffeemug','worlds/CoffeemugWorld.xml',[0,0,3.5,0,-4.55,0])
-full_model_dict['bowl'] = TaskModel(18540,'harvard_bowl','worlds/BowlWorld.xml',[0,0,3.45,0,0,0])
-full_model_dict['aerosol'] = TaskModel(18539,'harvard_aersol','worlds/AerosolcanWorld.xml',[0,0,3.55,0,0,0])
+models = dict()
+models['hammer'] = TaskModel(18548,'harvard_hammer','worlds/HammerWorld.xml',[0,0,3.5,0,-4.55,0])
+models['drill'] = TaskModel(18547,'harvard_drill','worlds/DrillWorld2.xml',[0,0,24.52,.0,-2.25,0])
+models['doorknob'] = TaskModel(18546,'harvard_doorknob','worlds/DoorknobWorld.xml',[0,0,3.45,-.25,0,0])
+models['laptop'] = TaskModel(18545,'harvard_laptop','worlds/LaptopWorld.xml',[0,0,31.75,0,0,0])
+models['beerbottle'] = TaskModel(18544,'harvard_beerbottle','worlds/BeerbottleWorld.xml',[0,0,9.05,0,-0.45,0])
+models['sodabottle'] = TaskModel(18543,'harvard_sodabottle','worlds/TwoliterWorld.xml',[0,0,21.12,0,-1.57,0])
+models['wrench'] = TaskModel(18542,'harvard_wrench','worlds/WrenchWorld.xml',[0,3.25,0,-3.25,0])
+models['coffeemug'] = TaskModel(18541,'harvard_coffeemug','worlds/CoffeemugWorld.xml',[0,0,3.5,0,-4.55,0])
+models['bowl'] = TaskModel(18540,'harvard_bowl','worlds/BowlWorld.xml',[0,0,3.45,0,0,0])
+models['aerosol'] = TaskModel(18539,'harvard_aersol','worlds/AerosolcanWorld.xml',[0,0,3.55,0,0,0])
 
+def model_set(keys):
+    safe_keys = list(set(keys) & set(models.keys()))
+    return {k: models[k] for k in safe_keys}
+       
 
-small_model_dict = dict()
-small_model_dict['hammer'] = TaskModel(18548,'harvard_hammer','worlds/HammerWorld.xml',[0,0,3.5,0,-4.55,0])
-small_model_dict['drill'] = TaskModel(18547,'harvard_drill','worlds/DrillWorld2.xml',[0,0,24.52,.0,-2.25,0])
-small_model_dict['aerosol'] = TaskModel(18539,'harvard_aersol','worlds/AerosolcanWorld.xml',[0,0,3.55,0,0,0])
-
-small_model_dict['doorknob'] = TaskModel(18546,'harvard_doorknob','worlds/DoorknobWorld.xml',[0,0,3.45,-.25,0,0])
-small_model_dict['laptop'] = TaskModel(18545,'harvard_laptop','worlds/LaptopWorld.xml',[0,0,31.75,0,0,0])
-
-tiny_model_dict = dict()
-tiny_model_dict['drill'] = TaskModel(18547,'harvard_drill','worlds/DrillWorld2.xml',[0,0,24.52,.0,-2.25,0])
-tiny_model_dict['aerosol'] = TaskModel(18539,'harvard_aersol','worlds/AerosolcanWorld.xml',[0,0,3.55,0,0,0])
+small_keys = ['hammer','drill','aerosol','doorknob','laptop']
+tiny_keys = ['drill','aerosol']

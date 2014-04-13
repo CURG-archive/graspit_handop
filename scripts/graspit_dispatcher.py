@@ -179,8 +179,8 @@ class LocalDispatcher(object):
         self.get_idle_percent()
 
         #Update server entries
-        self.cursor.execute("DELETE FROM servers WHERE server_name = %s AND server_pid = %s;",(self.server_name,self.server_pid))
-        self.cursor.execute("INSERT INTO servers (server_name,server_pid,ip_addr,idle_percent,num_processors,running_jobs,paused_jobs,killed_jobs,finished_jobs) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s);",(self.server_name,self.server_pid,self.ip_addr,self.idle_percent,self.num_processors,num_running,num_paused,num_killed,num_finished))
+        self.cursor.execute("DELETE FROM server WHERE server_name = %s AND server_pid = %s;",(self.server_name,self.server_pid))
+        self.cursor.execute("INSERT INTO server (server_name,server_pid,ip_addr,idle_percent,num_processors,running_jobs,paused_jobs,killed_jobs,finished_jobs) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s);",(self.server_name,self.server_pid,self.ip_addr,self.idle_percent,self.num_processors,num_running,num_paused,num_killed,num_finished))
         self.connection.commit()
 
         #Find out if there is still stuff to do
@@ -237,7 +237,7 @@ class LocalJob(object):
         self.log("Starting process from graspit_dispatcher")
         self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=self.log_file, stderr=self.log_file)
 
-        self.dispatcher.cursor.execute("INSERT INTO jobs (server_name, job_lid, server_pid, last_updated) VALUES(%s,%s,%s,now())",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
+        self.dispatcher.cursor.execute("INSERT INTO job (server_name, job_lid, server_pid, last_updated) VALUES(%s,%s,%s,now())",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
         self.dispatcher.connection.commit()        
 
     def log(self,message):
@@ -269,13 +269,13 @@ class LocalJob(object):
             self.dispatcher.can_launch = (self.exit_code != 5) #I/O IS IMPORTANT
 
             self.log("Process finished with return code %i"%self.exit_code)
-            self.dispatcher.cursor.execute("UPDATE jobs SET exit_code = %s, end_time = now(),last_updated = now() WHERE server_name = %s AND job_lid = %s AND server_pid = %s;",[self.exit_code,self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
+            self.dispatcher.cursor.execute("UPDATE job SET exit_code = %s, end_time = now(),last_updated = now() WHERE server_name = %s AND job_lid = %s AND server_pid = %s;",[self.exit_code,self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
             self.dispatcher.connection.commit()        
 
             #Clean it out
             self.subprocess.communicate()
         else:
-            self.dispatcher.cursor.execute("UPDATE jobs SET last_updated = now() WHERE server_name = %s AND job_lid = %s AND server_pid = %s;",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
+            self.dispatcher.cursor.execute("UPDATE job SET last_updated = now() WHERE server_name = %s AND job_lid = %s AND server_pid = %s;",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
             self.dispatcher.connection.commit()        
 
     def is_running(self):

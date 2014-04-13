@@ -92,9 +92,10 @@ class GenerationManager (object):
         self.insert_tasks()
 #        send_condor_jobs()
 
-    def next_generation(self):
+    def next_generation(self,gen_type):
         """
         @brief start the next generation
         """
         self.generation += 1
+        self.interface.insert_generation(self.generation,gen_type)
         self.start_generation()

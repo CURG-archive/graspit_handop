@@ -184,18 +184,12 @@ class EGHandDBaseInterface(object):
 
         Assumes that the starting set of hands is all hands with an id below 313.
         """
-        self.cursor.execute("delete from task;")
-        self.cursor.execute("delete from grasp;")
-        self.cursor.execute("delete from hand;")
-        self.cursor.execute("delete from finger;")
-        self.cursor.execute("delete from servers;")
-        self.cursor.execute("delete from jobs;")
-        self.cursor.execute("delete from log;")
-        self.connection.commit()
+        self.clear_tables()
 
-    def clear_grasp_table(self):
-        self.cursor.execute("delete from grasp;")
-        self.connection.commit()
+    def clear_tables(self,tables=['task','grasp','hand','finger','server','job','log']):
+        for table in tables:
+            self.cursor.execute("delete from %s;"%table)
+            self.connection.commit()
 
     def insert_gen_0(self):
         """
@@ -232,7 +226,7 @@ class EGHandDBaseInterface(object):
         self.reset_database()
         self.insert_gen_0()
 
-    def incremental_backup(self, base_filename = '/tmp/test', tables = ['finger','hand','grasp']):
+    def incremental_backup(self, base_directory = '/data', experiment_name="default", generation = 0, tables = ['finger','hand','grasp']):
         """
         @param filename - The filename to store to.
         @param tables - The name of the tables to backup
@@ -241,18 +235,19 @@ class EGHandDBaseInterface(object):
         filenames = []
         d = dict()
         for table in tables:
-            filename = base_filename + '_' + table
+            filename = "%s/%s/generation_%s/%s"%s(base_directory,experiment_name,generation,table)
             d[table] = filename
             self.cursor.execute("COPY %s TO '%s'"%(table, filename))
             self.connection.commit()
 
         return d
 
-    def incremental_restore(self, filename_dict):
+    def incremental_restore(self, base_directory = '/data', experiment_name="default", generation = 0, tables = ['finger','hand','grasp']):
         """
         @param filename_dict - Load data from filenames.
         """
-        for table, filename in filename_dict.iteritems():
+        for table in tables:
+            filename = "%s/%s/generation_%s/%s"%s(base_directory,experiment_name,generation,table)
             self.cursor.execute("COPY %s FROM '%s'"%(table, filename))
             self.connection.commit()
         return
@@ -275,10 +270,17 @@ class EGHandDBaseInterface(object):
             return str(value)
 
     def get_max_hand_gen(self):
-        self.cursor.execute("select max(generation) from hand;")
+        self.cursor.execute("SELECT id, type FROM generation ORDER BY id DESC LIMIT 1;")
         self.connection.commit()
-        return self.cursor.fetchone()[0][-1]
+        result = self.cursor.fetchone()
+        if result == None:
+            return -1
+        else:
+            return result[0]
 
+    def insert_generation(self,generation=0,gen_type = 1):
+        self.cursor.execute("INSERT INTO generation (id,type) VALUES (%i,%s);"%(generation,gen_type))
+        self.connection.commit()
 
     def get_insert_command(self, table_name, data_object, keys = [], return_key = [], exclude_keys = []):
         """
@@ -530,7 +532,27 @@ class EGHandDBaseInterface(object):
         return self.cursor.fetchone()[0]
 
     def get_dead_servers(self, latency_allowed):
-        command_str = "select server_name, ip_addr, max(last_update) from servers where last_update + '%i seconds' < NOW() group by server_name, ip_addr;"%(latency_allowed)
+        command_str = "select server_name, ip_addr, max(last_update) from server where last_update + '%i seconds' < NOW() group by server_name, ip_addr;"%(latency_allowed)
         self.cursor.execute(command_str)
         self.connection.commit()
         return self.cursor.fetchall()
+
+    def update_config(self,config):
+        set_str = ""
+        for config_key, config_var in config.iteritems():
+            set_str += config_key + "='"
+            if type(config_var) == list:
+                set_str += "{" + ','.join(['"' + str(config_var_item) + '"' for config_var_item in config_var]) + "}"
+            else:
+                set_str += str(config_var)
+            set_str += "', "
+
+        command_str = "UPDATE config SET %s;"%set_str[:-2]
+        self.cursor.execute(command_str)
+        self.connection.commit()
+
+    def load_config(self):
+        command_str = "SELECT * FROM config;"
+        self.cursor.execute(command_str)
+        self.connection.commit()
+        return self.cursor.fetchone()

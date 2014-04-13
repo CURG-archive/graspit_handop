@@ -1,5 +1,4 @@
 import subprocess
-import sh
 import select
 import time
 import pdb
