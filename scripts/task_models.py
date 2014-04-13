@@ -40,7 +40,7 @@ models['aerosol'] = TaskModel(18539,'harvard_aersol','worlds/AerosolcanWorld.xml
 
 def model_set(keys):
     safe_keys = list(set(keys) & set(models.keys()))
-    return {k: models[k] for k in safe_keys}
+    return dict((k, models[k]) for k in safe_keys)
        
 
 small_keys = ['hammer','drill','aerosol','doorknob','laptop']
