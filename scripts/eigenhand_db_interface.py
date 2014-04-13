@@ -235,7 +235,7 @@ class EGHandDBaseInterface(object):
         filenames = []
         d = dict()
         for table in tables:
-            filename = "%s/%s/generation_%s/%s"%s(base_directory,experiment_name,generation,table)
+            filename = "%s/%s/generation_%s/%s"%(base_directory,experiment_name,generation,table)
             d[table] = filename
             self.cursor.execute("COPY %s TO '%s'"%(table, filename))
             self.connection.commit()
