@@ -45,8 +45,8 @@ class ExperimentManager(object):
         """
         return generation_manager.GenerationManager(self.db_interface, self.task_model_list,
                                                     self.db_interface.get_max_hand_gen(),
-                                                    self.config.task_time, self.config.trials_per_task,
-                                                    self.config.task_type_id,
+                                                    self.config['task_time'], self.config['trials_per_task'],
+                                                    self.config['task_type_id'],
                                                     self.eval_functor)
 
 
@@ -85,10 +85,10 @@ class ExperimentManager(object):
         print "done.  Time %f \n"%(time.time() - t)
 
     def backup_results(self):
-        self.db_interface.incremental_backup(experiment_name=self.config.name,generation=self.gm.generation)
+        self.db_interface.incremental_backup(experiment_name=self.config['name'],generation=self.gm.generation)
 
     def restore_results(self, generation=0):
-        self.db_interface.incremental_restore(experiment_name=self.config.name,generation=self.gm.generation)
+        self.db_interface.incremental_restore(experiment_name=self.config['name'],generation=self.gm.generation)
     
     def restore_all(self):
         self.db_interface.reset_database()
@@ -118,7 +118,7 @@ class ExperimentManager(object):
         self.run_remote_dispatcher_tasks()
 
         #Run through a bunch of iterations
-        generations = ([1]*self.config.atr_iterations + [2])*self.config.ga_iterations
+        generations = ([1]*self.config['atr_iterations'] + [2])*self.config['ga_iterations']
 
         for generation,gen_type in enumerate(generations,1):
             #Get the resulting grasps for the latest generation of hands
@@ -132,7 +132,7 @@ class ExperimentManager(object):
             elif gen_type == 2:
                 #Generate new hands based on these grasps, scaling the variance of the mutations down linearly as the
                 #generations progress.
-                new_hand_list = eigenhand_genetic_algorithm.GA_generation(grasp_list, self.gm.hands, self.eval_functor, .5-.4/(self.config.ga_iterations*generation/(1+self.config.atr_iterations)))
+                new_hand_list = eigenhand_genetic_algorithm.GA_generation(grasp_list, self.gm.hands, self.eval_functor, .5-.4/(self.config['ga_iterations']*generation/(1+self.config['atr_iterations'])))
 
             #Put the new hands in to the database.
             eigenhand_db_tools.insert_unique_hand_list(new_hand_list, self.db_interface)
