@@ -144,7 +144,7 @@ class ExperimentManager(object):
 
             #Backup results and then remove everything from the grasp table
             self.backup_results
-            self.clear_tables(['grasp','job'])
+            self.interface.clear_tables(['grasp','job'])
 
             #Run the planner to get grasps for the last set of hands
             self.gm.next_generation(gen_type=gen_type)
