@@ -92,15 +92,20 @@ class ExperimentManager(object):
 
     def prepare_experiment(self):
         self.interface.reset_database()
+        print "Working database reset"
         self.interface.prepare_gen_0()
+        print "Gen 0 fingers, hands and grasps inserted"
 
         #initialize new generation manager to configure the database to start running.
         self.gm = self.initialize_generation_manager()
         self.gm.next_generation(gen_type=0)
+        print "Generation manager initialized at generation %i"%self.gm.generation
 
         #Build the new remote dispatcher and connect all the servers
         self.rd = remote_dispatcher.RemoteDispatcher(self.interface)
+        print "Remote dispatcher initialized"
         self.rd.init_all_servers(self.server_dict)
+        print "Clustering servers started"
         
 
     def run_experiment(self):
@@ -111,7 +116,10 @@ class ExperimentManager(object):
 
         #Start it up
         self.prepare_experiment()
+        print "Experiment set up"
+        print "Running vanilla generation 0"
         self.run_remote_dispatcher_tasks()
+        print "Generation %i complete"%self.gm.generation
 
         #Run through a bunch of iterations
         generations = ([1]*self.config['atr_iterations'] + [2])*self.config['ga_iterations']
@@ -125,10 +133,12 @@ class ExperimentManager(object):
             if gen_type == 1:
                 #Run atr on the existing hand for the latest generation of grasps
                 new_hand_list = atr.ATR_generation(grasp_list, self.gm.hands)
+                print "New hands generated through ATR on the results of generation %i"%self.gm.generation
             elif gen_type == 2:
                 #Generate new hands based on these grasps, scaling the variance of the mutations down linearly as the
                 #generations progress.
                 new_hand_list = eigenhand_genetic_algorithm.GA_generation(grasp_list, self.gm.hands, self.eval_functor, .5-.4/(self.config['ga_iterations']*generation/(1+self.config['atr_iterations'])))
+                print "New hands generated through genetic algorithm on the results of generation %i"%self.gm.generation
 
             #Put the new hands in to the database.
             eigenhand_db_tools.insert_unique_hand_list(new_hand_list, self.interface)
@@ -137,16 +147,22 @@ class ExperimentManager(object):
             self.backup_results
             self.interface.clear_tables(['grasp','job'])
 
+            print "Backed up and reset for new generation"
+
             #Run the planner to get grasps for the last set of hands
             self.gm.next_generation(gen_type=gen_type)
+            print "Starting generation %i"%self.gm.generation
 
             #Run the planning jobs
             self.run_remote_dispatcher_tasks()
+            print "Finished generation %i"%self.gm.generation
 
 
         self.backup_results()
+        print "Backed up final results"
 
         self.rd.kill_all_servers()
+        print "Killed all servers"
 
 def new_em(name, ga_iterations, atr_iterations = 5, task_model_names = task_models.tiny_keys):
     config = {'name':name,
