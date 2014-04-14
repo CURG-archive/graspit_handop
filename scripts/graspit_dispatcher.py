@@ -242,8 +242,8 @@ class LocalJob(object):
         self.log("Starting process from graspit_dispatcher")
         self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=self.log_file, stderr=self.log_file)
 
-        self.dispatcher.cursor.execute("INSERT INTO job (server_name, job_lid, server_pid, last_updated) VALUES(%s,%s,%s,now())",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
-        self.dispatcher.connection.commit()        
+        #self.dispatcher.cursor.execute("INSERT INTO job (server_name, job_lid, server_pid, last_updated) VALUES(%s,%s,%s,now())",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
+        #self.dispatcher.connection.commit()        
 
     def log(self,message):
         timestamp = datetime.datetime.now().isoformat()
@@ -274,14 +274,15 @@ class LocalJob(object):
             self.dispatcher.can_launch = (self.exit_code != 5) #I/O IS IMPORTANT
 
             self.log("Process finished with return code %i"%self.exit_code)
-            self.dispatcher.cursor.execute("UPDATE job SET exit_code = %s, end_time = now(),last_updated = now() WHERE server_name = %s AND job_lid = %s AND server_pid = %s;",[self.exit_code,self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
-            self.dispatcher.connection.commit()        
+            #self.dispatcher.cursor.execute("UPDATE job SET exit_code = %s, end_time = now(),last_updated = now() WHERE server_name = %s AND job_lid = %s AND server_pid = %s;",[self.exit_code,self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
+            #self.dispatcher.connection.commit()        
 
             #Clean it out
             self.subprocess.communicate()
         else:
-            self.dispatcher.cursor.execute("UPDATE job SET last_updated = now() WHERE server_name = %s AND job_lid = %s AND server_pid = %s;",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
-            self.dispatcher.connection.commit()        
+            #self.dispatcher.cursor.execute("UPDATE job SET last_updated = now() WHERE server_name = %s AND job_lid = %s AND server_pid = %s;",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
+            #self.dispatcher.connection.commit()        
+            pass
 
     def is_running(self):
         return self.status == 1
