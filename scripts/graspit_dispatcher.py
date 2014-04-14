@@ -59,6 +59,11 @@ class LocalDispatcher(object):
             self.status_file = open('/dev/null','w')
 
         self.update_status()
+
+    def __exit__(self):
+        self.status_file.close()
+        self.connection.commit()
+        self.connection.close()
             
     def get_num_processors(self):
         self.num_processors = psutil.NUM_CPUS
