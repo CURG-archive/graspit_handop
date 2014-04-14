@@ -239,7 +239,7 @@ class EGHandDBaseInterface(object):
         if not os.path.exists(dirname):
             os.makedirs(dirname)
             postgres_id = pwd.getpwnam('postgres').pw_uid
-            os.chgrp(dirname,postgres_id,postgres_id)
+            os.chown(dirname,postgres_id,postgres_id)
         for table in tables:
             filename = "%s/%s"%(dirname,table)
             d[table] = filename
