@@ -234,6 +234,9 @@ class EGHandDBaseInterface(object):
         """
         filenames = []
         d = dict()
+        if not os.path.exists(filename):
+            dirname = "%s/%s/generation_%s/"%(base_directory,experiment_name,generation)
+            os.makedirs(dirname)
         for table in tables:
             filename = "%s/%s/generation_%s/%s"%(base_directory,experiment_name,generation,table)
             d[table] = filename
