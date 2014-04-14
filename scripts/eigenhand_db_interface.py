@@ -3,6 +3,7 @@ import psycopg2.extras
 import eigenhand_db_objects
 import socket
 import os
+import pwd
 import pdb
 
 #The task table outcome codes.
@@ -234,9 +235,11 @@ class EGHandDBaseInterface(object):
         """
         filenames = []
         d = dict()
-        dirname = "%s/%s/generation_%s/"%(base_directory,experiment_name,generation)
+        dirname = "%s/%s/generation_%s"%(base_directory,experiment_name,generation)
         if not os.path.exists(dirname):
             os.makedirs(dirname)
+            postgres_id = pwd.getpwnam('postgres').pw_uid
+            os.chgrp(dirname,postgres_id,postgres_id)
         for table in tables:
             filename = "%s/%s"%(dirname,table)
             d[table] = filename
