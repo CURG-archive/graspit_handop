@@ -237,9 +237,7 @@ class EGHandDBaseInterface(object):
         d = dict()
         dirname = "%s/%s/generation_%s"%(base_directory,experiment_name,generation)
         if not os.path.exists(dirname):
-            os.makedirs(dirname)
-            postgres_id = pwd.getpwnam('postgres').pw_uid
-            os.chown(dirname,postgres_id,postgres_id)
+            os.makedirs(dirname,0666)
         for table in tables:
             filename = "%s/%s"%(dirname,table)
             d[table] = filename
