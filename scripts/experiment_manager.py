@@ -144,7 +144,7 @@ class ExperimentManager(object):
             eigenhand_db_tools.insert_unique_hand_list(new_hand_list, self.interface)
 
             #Backup results and then remove everything from the grasp table
-            self.backup_results
+            self.backup_results()
             self.interface.clear_tables(['grasp','job'])
 
             print "Backed up and reset for new generation"
