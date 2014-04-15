@@ -70,10 +70,8 @@ class LocalDispatcher(object):
         return self.num_processors
 
     def get_idle_percent(self):
-        mpstat_proc = subprocess.Popen(['mpstat'],stdout=subprocess.PIPE)
-        awk_proc = subprocess.Popen(['awk', "'NR==4 {print $12}'"],stdin=mpstat_proc.stdout,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        mpstat_proc.stdout.close()
-        out,err = awk_proc.communicate()
+        mpstat_proc = subprocess.Popen(['./mpstat_idle'],stdout=subprocess.PIPE)
+        out,err = mpstat_proc.communicate()
         self.idle_percent = float(out)
         return self.idle_percent
 
