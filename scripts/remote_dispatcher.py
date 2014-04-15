@@ -15,7 +15,7 @@ class RemoteServer(object):
         self.killed_forcibly = False
         self.dead_count = 0
         self.ssh_start_args = ["ssh", "-o", "ForwardX11=no", "-o","PasswordAuthentication=no", "-o","ConnectTimeout=30",server_name,"nohup"]
-        self.ssh_end_args = [">/dev/null", "2>>/home/jweisz/html/errors", "</dev/null", "&"]
+        self.ssh_end_args = [">>/home/jweisz/html/server_output/%s"%server_name, "2>>&1", "</dev/null", "&"]
 
     def wrap_ssh_args(self,args):
         return self.ssh_start_args + args + self.ssh_end_args
@@ -67,6 +67,16 @@ class RemoteDispatcher(object):
 
         self.file.close()
 
+    def restart_dead_servers(self):
+        nonrunning_server_data = self.interface.get_dead_servers(60)
+        num_running = self.interface.get_num_running(60)
+        for server_data in nonrunning_server_data:
+            try:
+                print "Restarting %s (%s); Time: %s"%(server_data['server_name'],server_data['ip_addr'],time.strftime("%a, %b %d, %Y %H:%M:%S"))
+                server = self.server_dict[server_data['ip_addr']]
+            except KeyError:
+                print "Key Error on %s; Time: %s"%(server_data['ip_addr'],time.strftime("%a, %b %d, %Y %H:%M:%S"))
+
     def run(self, max_len = 9800):
         t = time.time()
         generation = self.interface.get_max_hand_gen()
@@ -93,4 +103,7 @@ class RemoteDispatcher(object):
         self.file.write(finished_string)
         self.file.truncate()
         self.file.flush()
+
+        #Just in case something failed out
+        self.restart_dead_servers()
         
