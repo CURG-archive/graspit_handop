@@ -70,7 +70,11 @@ class LocalDispatcher(object):
         return self.num_processors
 
     def get_idle_percent(self):
-        self.idle_percent = psutil.cpu_times_percent().idle
+        mpstat_proc = subprocess.Popen(['mpstat'],stdout=subprocess.PIPE)
+        awk_proc = subprocess.Popen(['awk', "'NR==4 {print $12}'"],stdin=mpstat_proc.stdout,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        mpstat_proc.stdout.close()
+        out,err = awk_proc.communicate()
+        self.idle_percent = float(out)
         return self.idle_percent
 
     def kill_existing_graspit(self):
