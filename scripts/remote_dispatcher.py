@@ -15,7 +15,7 @@ class RemoteServer(object):
         self.killed_forcibly = False
         self.dead_count = 0
         self.ssh_start_args = ["ssh", "-o", "ForwardX11=no", "-o","PasswordAuthentication=no", "-o","ConnectTimeout=30",server_name,"nohup"]
-        self.ssh_end_args = [">>/home/jweisz/html/server_output/%s"%server_name, "2>>&1", "</dev/null", "&"]
+        self.ssh_end_args = [">>/home/jweisz/html/server_output/%s"%server_name, "2>&1", "</dev/null", "&"]
 
     def wrap_ssh_args(self,args):
         return self.ssh_start_args + args + self.ssh_end_args
