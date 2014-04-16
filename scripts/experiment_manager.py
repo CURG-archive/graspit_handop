@@ -114,13 +114,14 @@ class ExperimentManager(object):
         of ATR.
         """
 
+        #Run through a bunch of iterations
+        generations = ([1]*self.config['atr_iterations'] + [2])*self.config['ga_iterations']
+        print "%s generations: {%s}"%(len(generations),', '.join(str(generation) for generation in generations))
+
         #Start it up
         print "Running vanilla generation 0"
         self.run_remote_dispatcher_tasks()
         print "Generation %i complete"%self.gm.generation
-
-        #Run through a bunch of iterations
-        generations = [0] + ([1]*self.config['atr_iterations'] + [2])*self.config['ga_iterations']
 
         for generation,gen_type in enumerate(generations,1):
             #Get the resulting grasps for the latest generation of hands
