@@ -23,7 +23,7 @@ class RemoteServer(object):
     def launch_job(self):
         args = self.wrap_ssh_args(["/home/jweisz/gm/run_dispatcher.sh"])
         subprocess.Popen(args).wait()
-        self.dead_count = 0
+        self.dead_count = self.dead_count + 1
 
     def kill_client(self):
         args = self.wrap_ssh_args(["killall", "python", "graspit"])
@@ -72,8 +72,14 @@ class RemoteDispatcher(object):
         num_running = self.interface.get_num_running(60)
         for server_data in nonrunning_server_data:
             try:
-                print "Restarting %s (%s); Time: %s"%(server_data['server_name'],server_data['ip_addr'],time.strftime("%a, %b %d, %Y %H:%M:%S"))
                 server = self.server_dict[server_data['ip_addr']]
+                if server.dead_count < 5:
+                    print "Restarting %s (%s); Time: %s"%(server_data['server_name'],server_data['ip_addr'],time.strftime("%a, %b %d, %Y %H:%M:%S"))
+                    server.do_all()
+                else:
+                    print "Removing %s (%s) from server list due to inactivity"%(server_data['server_name'],server_data['ip_addr'])
+                    del self.server_dict[server_data['ip_addr']]
+
             except KeyError:
                 print "Key Error on %s; Time: %s"%(server_data['ip_addr'],time.strftime("%a, %b %d, %Y %H:%M:%S"))
 
