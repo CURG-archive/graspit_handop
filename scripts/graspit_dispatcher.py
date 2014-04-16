@@ -70,7 +70,7 @@ class LocalDispatcher(object):
         return self.num_processors
 
     def get_idle_percent(self):
-        mpstat_proc = subprocess.Popen(['./mpstat_idle'],stdout=subprocess.PIPE)
+        mpstat_proc = subprocess.Popen(['/home/jweisz/gm/mpstat_idle'],stdout=subprocess.PIPE)
         out,err = mpstat_proc.communicate()
         self.idle_percent = float(out)
         return self.idle_percent
