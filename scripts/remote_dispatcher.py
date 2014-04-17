@@ -68,7 +68,7 @@ class RemoteDispatcher(object):
         self.file.close()
 
     def restart_dead_servers(self):
-        nonrunning_server_data = self.interface.get_dead_servers(60)
+        nonrunning_server_data = self.interface.get_dead_servers(60*10)
         num_running = self.interface.get_num_running(60)
         for server_data in nonrunning_server_data:
             try:
