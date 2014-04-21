@@ -86,6 +86,7 @@ class ExperimentManager(object):
 
     def backup_results(self):
         self.interface.incremental_backup(experiment_name=self.config['name'],generation=self.gm.generation)
+        self.interface.state_backup(experiment_name=self.config['name'])
 
     def restore_results(self, generation=0):
         self.interface.incremental_restore(experiment_name=self.config['name'],generation=self.gm.generation)
@@ -187,3 +188,8 @@ def resume_em():
     task_model_list = task_models.model_set(config['task_models'])
     em = ExperimentManager(config,task_model_list,interface=interface)
     return em
+
+def restart_servers(server_dict = server_list.clic_lab_dict):
+    interface = eigenhand_db_interface.EGHandDBaseInterface()
+    rd = remote_dispatcher.RemoteDispatcher(interface)
+    rd.init_all_servers(server_dict)

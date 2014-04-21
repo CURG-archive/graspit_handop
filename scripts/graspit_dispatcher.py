@@ -242,7 +242,7 @@ class LocalJob(object):
         #        args = "nice -n 50 /home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
         args = "/home/jweisz/gm/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console".split(" ")
         self.log("Starting process from graspit_dispatcher")
-        self.subprocess = subprocess.Popen(args, stdin = subprocess.PIPE, stdout=self.log_file, stderr=self.log_file)
+        self.subprocess = subprocess.Popen(args, stdout=self.log_file, stderr=self.log_file)
 
         #self.dispatcher.cursor.execute("INSERT INTO job (server_name, job_lid, server_pid, last_updated) VALUES(%s,%s,%s,now())",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
         #self.dispatcher.connection.commit()        
@@ -280,7 +280,7 @@ class LocalJob(object):
             #self.dispatcher.connection.commit()        
 
             #Clean it out
-            self.subprocess.communicate()
+            self.log_file.close()
         else:
             #self.dispatcher.cursor.execute("UPDATE job SET last_updated = now() WHERE server_name = %s AND job_lid = %s AND server_pid = %s;",[self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
             #self.dispatcher.connection.commit()        
