@@ -188,7 +188,7 @@ class EGHandDBaseInterface(object):
         """
         self.clear_tables(schema=schema)
 
-    def clear_tables(self,tables=['generation','task','grasp','hand','finger','server','job','log'],schema="public"):
+    def clear_tables(self,tables=['config','generation','task','grasp','hand','finger','server','job','log'],schema="public"):
         for table in tables:
             self.cursor.execute("delete from %s.%s;"%(schema,table))
             self.connection.commit()
@@ -270,10 +270,21 @@ class EGHandDBaseInterface(object):
         @param filename_dict - Load data from filenames.
         """
         for table in tables:
-            filename = "%s/%s/generation_%s/%s"%s(base_directory,experiment_name,generation,table)
+            filename = "%s/%s/generation_%s/%s"%(base_directory,experiment_name,generation,table)
             self.cursor.execute("COPY %s.%s FROM '%s'"%(schema,table, filename))
             self.connection.commit()
         return
+
+    def load_for_analysis(interface, base_directory = '/data', experiment_name="default",schema = "public"):
+        interface.reset_database(schema=schema)
+        interface.restore_state(experiment_name=experiment_name,schema=schema)
+        generations = interface.get_generations(experiment_name=experiment_name,schema=schema)
+        last_gen = generations[0]['id']
+        interface.incremental_restore(generation = last_gen, \
+            base_directory = base_directory, experiment_name = experiment_name, schema=schema)
+        for generation in generations[1:]:
+            interface.incremental_restore(generation = generation['id'], tables=['grasp'], \
+                base_directory = base_directory, experiment_name = experiment_name, schema=schema)
 
     @staticmethod
     def get_value_str(value):
