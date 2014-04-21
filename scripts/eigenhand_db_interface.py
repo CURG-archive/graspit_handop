@@ -228,7 +228,7 @@ class EGHandDBaseInterface(object):
         self.insert_gen_0()
 
     def state_backup(self, base_directory = '/data', experiment_name="default"):
-        dirname = "/%s/%s"%(base_directory,experiment_name)
+        dirname = "%s/%s"%(base_directory,experiment_name)
         if not os.path.exists(dirname):
             os.makedirs(dirname)
             os.chmod(dirname,0777)
@@ -238,7 +238,7 @@ class EGHandDBaseInterface(object):
         self.connection.commit()
 
     def state_restore(self, base_directory = '/data', experiment_name="default",schema="public"):
-        dirname = "/%s/%s"%(base_directory,experiment_name)
+        dirname = "%s/%s"%(base_directory,experiment_name)
 
         self.cursor.execute("COPY %s.%s FROM '%s/%s'"%(schema,"config", dirname, "config"))
         self.cursor.execute("COPY %s.%s FROM '%s/%s'"%(schema,"generation", dirname, "generation"))
