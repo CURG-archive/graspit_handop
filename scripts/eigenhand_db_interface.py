@@ -274,15 +274,15 @@ class EGHandDBaseInterface(object):
             self.connection.commit()
         return
 
-    def load_for_analysis(interface, base_directory = '/data', experiment_name="default",schema = "public"):
-        interface.reset_database(schema=schema)
-        interface.restore_state(experiment_name=experiment_name,schema=schema)
-        generations = interface.get_generations(experiment_name=experiment_name,schema=schema)
+    def load_for_analysis(self, base_directory = '/data', experiment_name="default",schema = "public"):
+        self.reset_database(schema=schema)
+        self.restore_state(experiment_name=experiment_name,schema=schema)
+        generations = self.get_generations(experiment_name=experiment_name,schema=schema)
         last_gen = generations[0]['id']
-        interface.incremental_restore(generation = last_gen, \
+        self.incremental_restore(generation = last_gen, \
             base_directory = base_directory, experiment_name = experiment_name, schema=schema)
         for generation in generations[1:]:
-            interface.incremental_restore(generation = generation['id'], tables=['grasp'], \
+            self.incremental_restore(generation = generation['id'], tables=['grasp'], \
                 base_directory = base_directory, experiment_name = experiment_name, schema=schema)
 
     @staticmethod
