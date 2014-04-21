@@ -6,6 +6,7 @@ import os
 import pwd
 import pdb
 
+
 #The task table outcome codes.
 TASK_READY = 1
 TASK_RUNNING = 2
@@ -561,3 +562,38 @@ class EGHandDBaseInterface(object):
         self.cursor.execute(command_str)
         self.connection.commit()
         return self.cursor.fetchone()
+
+
+    def get_failed_hands(self):
+        command_str = "select * from log where strpos(log_message,'code 135') > 0"
+        self.cursor.execute(command_str)
+        self.connection.commit()
+        rows = self.cursor.fetchall()
+        columns = self.get_table_columns('log')
+        column_ind = columns.index('log_message')
+        invalid_tasks = []
+        for row in rows:
+            log_message = row[column_ind]
+            first_ind = log_message.find(' ') + 1            
+            last_ind = log_message.find(':')
+            task_num = int(log_message[first_ind:last_ind])
+            invalid_tasks.append(task_num)
+        return invalid_tasks
+
+    def set_invalid_hands_failed(self):
+        invalid_tasks = self.get_failed_hands()
+        task_set = set(invalid_tasks)
+        invalid_task_dict = {}
+        for task in task_set:
+            invalid_task_dict[task] = 0
+        
+        for task in invalid_tasks:
+            invalid_task_dict[task] = invalid_task_dict[task] + 1
+            
+            
+        if invalid_tasks:
+            invalid_task_str = str([k for k,v in list(invalid_task_dict.items()) if v > 3])
+            invalid_task_str = '(' + invalid_task_str[1:-1] + ')'
+            command_str = "update task set task_outcome_id = 5, last_updater='%s' where task_id in %s;"%(socket.gethostname(), invalid_task_str)
+            self.cursor.execute(command_str)
+            self.connection.commit()
