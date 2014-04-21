@@ -278,7 +278,7 @@ class EGHandDBaseInterface(object):
     def load_for_analysis(self, base_directory = '/data', experiment_name="default",schema = "public"):
         self.reset_database(schema=schema)
         self.state_restore(experiment_name=experiment_name,schema=schema)
-        generations = self.get_generations(experiment_name=experiment_name,schema=schema)
+        generations = self.get_generations(schema=schema)
         last_gen = generations[0]['id']
         self.incremental_restore(generation = last_gen, \
             base_directory = base_directory, experiment_name = experiment_name, schema=schema)
