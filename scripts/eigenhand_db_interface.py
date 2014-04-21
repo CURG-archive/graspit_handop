@@ -180,17 +180,17 @@ class EGHandDBaseInterface(object):
 
 
 
-    def reset_database(self):
+    def reset_database(self,schema="public"):
         """
         @brief Reset the database to it's starting condition. Deletes all tasks, grasps, and derived hands.
 
         Assumes that the starting set of hands is all hands with an id below 313.
         """
-        self.clear_tables()
+        self.clear_tables(schema=schema)
 
-    def clear_tables(self,tables=['generation','task','grasp','hand','finger','server','job','log']):
+    def clear_tables(self,tables=['generation','task','grasp','hand','finger','server','job','log'],schema="public"):
         for table in tables:
-            self.cursor.execute("delete from %s;"%table)
+            self.cursor.execute("delete from %s.%s;"%(schema,table))
             self.connection.commit()
 
     def insert_gen_0(self):
@@ -300,6 +300,12 @@ class EGHandDBaseInterface(object):
             return -1
         else:
             return result[0]
+
+    def get_generations(self,schema="public"):
+        self.cursor.execute("SELECT id, type FROM %s.generation ORDER BY id DESC;"%schema)
+        self.connection.commit()
+        result = self.cursor.fetchall()
+        return result
 
     def insert_generation(self,generation=0,gen_type = 1):
         self.cursor.execute("INSERT INTO generation (id,type) VALUES (%i,%s);"%(generation,gen_type))
