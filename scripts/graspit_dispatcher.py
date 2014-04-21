@@ -207,7 +207,7 @@ class LocalDispatcher(object):
 class LocalJob(object):
     def __init__(self, dispatcher, job_lid = -1):
         self.status = 1 #1 = running, 2 = suspended, 3 = killed, 4 = finished
-        self.task_id = -1
+        self.task_id = 0
         self.job_lid = job_lid #The id of the job on the local dispatcher
         self.exit_code = None
 
@@ -249,7 +249,7 @@ class LocalJob(object):
 
     def log(self,message):
         timestamp = datetime.datetime.now().isoformat()
-        self.dispatcher.status_file.write("%s local job %s: %s\n"%(timestamp,self.job_lid,message))
+        self.dispatcher.status_file.write("%s task_id %i: local job %s: %s\n"%(timestamp, self.task_id, self.job_lid,message))
         self.dispatcher.cursor.execute("INSERT INTO log(server_name, log_message) VALUES(%s,%s)",[self.dispatcher.server_name,'task %i: %s'%(self.job_lid,message)])
         self.dispatcher.connection.commit()        
 
@@ -266,16 +266,20 @@ class LocalJob(object):
         if err is not None:
             self.log(err + " (graspit error)")
         '''
-
+        if not self.task_id:
+            self.get_job_task_id()
         #Find out if it's exited out
         self.subprocess.poll()
         if self.subprocess.returncode is not None:
             self.status = 4
             self.exit_code = self.subprocess.returncode
 
+            if self.exit_code == 135:
+                self.set_job_error()
+            
             self.dispatcher.can_launch = (self.exit_code != 5) #I/O IS IMPORTANT
 
-            self.log("Process finished with return code %i"%self.exit_code)
+            self.log("Process finished with return code %i task %i"%(self.exit_code, self.task_id))
             #self.dispatcher.cursor.execute("UPDATE job SET exit_code = %s, end_time = now(),last_updated = now() WHERE server_name = %s AND job_lid = %s AND server_pid = %s;",[self.exit_code,self.dispatcher.server_name,self.job_lid,self.dispatcher.server_pid])
             #self.dispatcher.connection.commit()        
 
@@ -335,7 +339,21 @@ class LocalJob(object):
     '''So...this isn't ever called. Huh.'''
     def reset_job(self, job_id):
         self.dispatcher.cursor.execute("UPDATE task SET task_outcome_id = 1, last_updater=%s WHERE task_id = %s",[job_id,self.server_name]);
-        self.dispatcher.connection.commit()        
+        self.dispatcher.connection.commit()
+
+
+    def set_job_error(self):
+        self.dispatcher.cursor.execute("UPDATE task SET task_outcome_id = 4, last_updater=%s WHERE task_id = %i",[self.server_name, self.task_id]);
+        self.dispatcher.connection.commit()
+
+    def get_job_task_id(self):
+        try:
+            self.dispatcher.cursor.execute("SELECT task_id from task where (strpos(last_updater,'%s') > 0 AND strpos(last_updater,'PID:%i'))"%(self.server_name, self.subprocess.pid));
+            self.dispatcher.connection.commit()
+            self.task_id = int(self.dispatcher.cursor.fetchone()[0])
+            self.log("Got task id: %i"%(self.task_id))
+        except:
+            pass
 
     '''This maybe doesn't make a large amount of sense. Look into later'''
     def get_task_id(self):
@@ -365,7 +383,7 @@ class LocalJob(object):
                 print lines
         except:
             pass
-        print "job %d failed to start when getting task id on server %s \n"%(self.subprocess.pid, self.server_name)
+        print "job %i failed to start when getting task id on server %s \n"%(self.subprocess.pid, self.server_name)
         self.kill()
         return False
             
