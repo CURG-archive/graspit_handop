@@ -227,7 +227,24 @@ class EGHandDBaseInterface(object):
         self.reset_database()
         self.insert_gen_0()
 
-    def incremental_backup(self, base_directory = '/data', experiment_name="default", generation = 0, tables = ['finger','hand','grasp']):
+    def state_backup(self, base_directory = '/data', experiment_name="default"):
+        dirname = "%s/%s/"%(base_directory,experiment_name)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+            os.chmod(dirname,0777)
+
+        self.cursor.execute("COPY %s TO '%s/%s'"%("config", dirname, "config"))
+        self.cursor.execute("COPY %s TO '%s/%s'"%("generation", dirname, "generation"))
+        self.connection.commit()
+
+    def state_restore(self, base_directory = '/data', experiment_name="default",schema="public"):
+        dirname = "%s/%s/"%(base_directory,experiment_name)
+
+        self.cursor.execute("COPY %s.%s FROM '%s/%s'"%(schema,"config", dirname, "config"))
+        self.cursor.execute("COPY %s.%s FROM '%s/%s'"%(schema,"generation", dirname, "generation"))
+        self.connection.commit()
+
+    def incremental_backup(self, base_directory = '/data', experiment_name="default", generation = 0, tables = ['finger','hand','grasp'],schema="public"):
         """
         @param filename - The filename to store to.
         @param tables - The name of the tables to backup
@@ -242,18 +259,18 @@ class EGHandDBaseInterface(object):
         for table in tables:
             filename = "%s/%s"%(dirname,table)
             d[table] = filename
-            self.cursor.execute("COPY %s TO '%s'"%(table, filename))
+            self.cursor.execute("COPY %s.%s TO '%s'"%(schema,table, filename))
             self.connection.commit()
 
         return d
 
-    def incremental_restore(self, base_directory = '/data', experiment_name="default", generation = 0, tables = ['finger','hand','grasp']):
+    def incremental_restore(self, base_directory = '/data', experiment_name="default", generation = 0, tables = ['finger','hand','grasp'], schema = "public"):
         """
         @param filename_dict - Load data from filenames.
         """
         for table in tables:
             filename = "%s/%s/generation_%s/%s"%s(base_directory,experiment_name,generation,table)
-            self.cursor.execute("COPY %s FROM '%s'"%(table, filename))
+            self.cursor.execute("COPY %s.%s FROM '%s'"%(schema,table, filename))
             self.connection.commit()
         return
 

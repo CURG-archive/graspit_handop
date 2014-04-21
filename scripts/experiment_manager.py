@@ -86,6 +86,7 @@ class ExperimentManager(object):
 
     def backup_results(self):
         self.interface.incremental_backup(experiment_name=self.config['name'],generation=self.gm.generation)
+        self.interface.state_backup(experiment_name=self.config['name'])
 
     def restore_results(self, generation=0):
         self.interface.incremental_restore(experiment_name=self.config['name'],generation=self.gm.generation)
