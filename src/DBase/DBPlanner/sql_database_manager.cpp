@@ -37,6 +37,7 @@ using namespace std;
 #include "debug.h"
 
 #include "eigenhand_db_interface.h"
+#include <QApplication>
 
 PROF_DECLARE(GET_GRASPS_SQL);
 PROF_DECLARE(GET_GRASPS_GETCOLUMN);
@@ -291,7 +292,8 @@ bool SqlDatabaseManager::SetTaskStatus(const TaskRecord &rec, const string &stat
 	stringstream id;
 	id << rec.taskId;
 	bool succeeded = true;
-	
+	QString pidStr;
+	pidStr.setNum(QApplication::instance()->applicationPid());
 	//start transaction
 	if (requestTransaction){
 	  database_.DBOpen();
@@ -310,7 +312,7 @@ bool SqlDatabaseManager::SetTaskStatus(const TaskRecord &rec, const string &stat
 	  }
 	param_string.erase(param_string.length() - 1,1);
 	param_string += "}'";
-	std::string query_string = "UPDATE task SET task_outcome_id=(SELECT task_outcome_id FROM task_outcome WHERE task_outcome_name='"+status+"'), task_time_stamp=NOW(), last_updater='"+QHostInfo::localHostName().toStdString().c_str()+"',parameters=" + param_string + " WHERE task_id="+id.str()+";";
+	std::string query_string = "UPDATE task SET task_outcome_id=(SELECT task_outcome_id FROM task_outcome WHERE task_outcome_name='"+status+"'), task_time_stamp=NOW(), last_updater='"+QHostInfo::localHostName().toStdString().c_str() + ":PID:" + pidStr.toStdString().c_str() + "',parameters=" + param_string + " WHERE task_id="+id.str()+";";
 	//mark it as current status and timestamp this status
 	if (!succeeded || !database_.Query(query_string, NULL)) {
 	  DBGA("SqlDatabaseManager:SetTaskStatus:Failed to update task: " << query_string);

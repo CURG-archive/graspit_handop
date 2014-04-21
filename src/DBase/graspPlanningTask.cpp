@@ -102,6 +102,7 @@ void GraspPlanningTask::getHand(){
 
     if ( !mHand || !mDBMgr->setHand(mHand)) {
       DBGA("Failed to load hand");
+      mDBMgr->SetTaskStatus(mRecord, "ERROR",true);
       exit(FAILED_TO_LOAD_HAND);
       mStatus = ERROR;
       return;

@@ -194,9 +194,10 @@ namespace egPlannerUtils
    static_cast<SimAnnPlanner *>(mPlanner)->setModelState(ns);
    mPlanner->setEnergyType(ENERGY_CONTACT);
    mPlanner->setContactType(CONTACT_PRESET);
-   mPlanner->setMaxSteps(400);
+   mPlanner->setMaxSteps(60000);
    mPlanner->setRepeat(false);  
    mPlanner->invalidateReset();
+   mPlanner->resetPlanner();
    return mPlanner;
  }
 
