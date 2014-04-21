@@ -36,7 +36,8 @@ SimAnnPlanner::SimAnnPlanner(Hand *h)
 	init();
 	mEnergyCalculator = new SearchEnergy();
 	mSimAnn = new SimAnn();
-	//mSimAnn->writeResults(true);
+    mSimAnn->writeResults(true);
+
 }
 
 SimAnnPlanner::~SimAnnPlanner()
@@ -117,6 +118,7 @@ SimAnnPlanner::mainLoop()
 		return;
 	}
 	DBGP("Sim Ann success");
+
 
 	//put result in list if there's room or it's better than the worst solution so far
 	double worstEnergy;

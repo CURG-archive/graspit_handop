@@ -236,7 +236,7 @@ SimAnn::iterate(GraspPlanningState *currentState, SearchEnergy *energyCalculator
 		fprintf(mFile,"%d %d %f %f %f %f\n",mCurrentStep,mTotalSteps,T,currentState->getEnergy(),
 										 currentState->readPosition()->readVariable("Tx"),
 										 targetState->readPosition()->readVariable("Tx"));
-		//currentState->writeToFile(mFile);
+        currentState->writeToFile(mFile);
 	}
 
 	return r;
