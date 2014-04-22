@@ -139,13 +139,11 @@ void SimAnn::setParameters(AnnealingType type)
 }
 
 void SimAnn::reset()
-{
-
-  std::ifstream randFile;
-  randFile.open("/dev/urandom");
+{  
+  File * f = fopen("/dev/urandom");
   int random_seed = 0;
   while(!random_seed)
-    randFile >> random_seed;
+      fread(&random_seed,sizeof(random_seed), 1,f);
   printf("Random seed: %i", random_seed);
   srand(random_seed);
   double first_rand = rand();
