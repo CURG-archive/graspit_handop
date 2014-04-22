@@ -11,8 +11,11 @@ import os
 import pdb
 
 def output_results(experiment_name):
-    eigenhand_db_interface.load_for_analysis(experiment_name=experiment_name)
-    em = resume_em()
+    interface = eigenhand_db_interface.EGHandDBaseInterface('eigenhanddb_view')
+    interface.load_for_analysis(experiment_name=experiment_name)
+    config = interface.load_config()
+    task_model_list = task_models.model_set(config['task_models'])
+    em = ExperimentManager(config,task_model_list,interface=interface)
 
     def add_to_zip(mat, filename, zf):
         numpy.savetxt('/tmp/' + filename,mat,delimiter=',')
