@@ -143,8 +143,9 @@ void SimAnn::reset()
 
   std::ifstream randFile;
   randFile.open("/dev/urandom");
-  int random_seed;
-  randFile >> random_seed;
+  int random_seed = 0;
+  while(!random_seed)
+    randFile >> random_seed;
   printf("Random seed: %i", random_seed);
   srand(random_seed);
   double first_rand = rand();
