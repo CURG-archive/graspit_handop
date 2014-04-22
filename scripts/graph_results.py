@@ -11,7 +11,7 @@ import os
 import pdb
 
 def output_results(experiment_name):
-    load_for_analysis(experiment_name=experiment_name)
+    eigenhand_db_interface.load_for_analysis(experiment_name=experiment_name)
     em = resume_em()
 
     def add_to_zip(mat, filename, zf):
