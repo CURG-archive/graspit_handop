@@ -25,6 +25,7 @@
 #include "graspPlanningTask.h"
 #include <QApplication>
 #include <QHostInfo>
+#include <QDir>
 
 #include "debug.h"
 #include "exitReturnCodes.h"
@@ -151,11 +152,11 @@ void TaskDispatcher::start()
 	}
 
     string dirname = "/home/jweisz/graspit_handop/servers/" + QHostInfo::localHostName().toStdString() +"/tasks/";
-    QDir * logdir = dir(dirname);
-    if(logdir->exists())
-        logdir->mkpath();
+    QDir logdir(dirname.c_str());
+    if(logdir.exists())
+        logdir.mkpath(".");
 
-    assert(logdir->exists());
+    assert(logdir.exists());
 
     string filename = dirname + "id_" + QString::number(rec.taskId).toStdString();
 	freopen (filename.c_str(), "w",stdout);
