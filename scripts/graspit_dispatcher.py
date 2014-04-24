@@ -49,12 +49,12 @@ class LocalDispatcher(object):
         self.cursor = self.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
         try:
-            os.makedirs("/home/jweisz/html/graspit_handop/%s/%s_jobs"%(self.server_name,self.server_pid))
+            os.makedirs("/home/jweisz/html/graspit_handop/servers/%s/%s_jobs"%(self.server_name,self.server_pid))
         except OSError:
             pass
 
         try:
-            self.status_file = open('/home/jweisz/html/graspit_handop/%s/server_status'%(socket.gethostname()),'w')
+            self.status_file = open('/home/jweisz/html/graspit_handop/servers/%s/status'%(socket.gethostname()),'w')
         except:
             self.status_file = open('/dev/null','w')
 

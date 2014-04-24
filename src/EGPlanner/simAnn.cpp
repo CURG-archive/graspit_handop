@@ -26,6 +26,7 @@
 
 //#define GRASPITDBG
 #include "debug.h"
+#include <cstdio>
 
 #define TINY 1.0e-7
 
@@ -138,19 +139,30 @@ void SimAnn::setParameters(AnnealingType type)
 	}
 }
 
+
+unsigned long mix(unsigned long a, unsigned long b, unsigned long c)
+{
+  a=a-b;  a=a-c;  a=a^(c >> 13);
+  b=b-c;  b=b-a;  b=b^(a << 8);
+  c=c-a;  c=c-b;  c=c^(b >> 13);
+  a=a-b;  a=a-c;  a=a^(c >> 12);
+  b=b-c;  b=b-a;  b=b^(a << 16);
+  c=c-a;  c=c-b;  c=c^(b >> 5);
+  a=a-b;  a=a-c;  a=a^(c >> 3);
+  b=b-c;  b=b-a;  b=b^(a << 10);
+  c=c-a;  c=c-b;  c=c^(b >> 15);
+  return c;
+}
+
 void SimAnn::reset()
 {  
-  File * f = fopen("/dev/urandom");
-  int random_seed = 0;
-  while(!random_seed)
-      fread(&random_seed,sizeof(random_seed), 1,f);
-  printf("Random seed: %i", random_seed);
-  srand(random_seed);
+  unsigned long seed = mix(clock(), time(NULL), getpid());
+  srand(seed);
+  printf("Random seed: %i", seed);
   double first_rand = rand();
   printf("First random number: %d",first_rand);
   mCurrentStep = DEF_K0;
   mT0 = DEF_T0;
-  randFile.close();
 }
 
 /*! The caller passes it a HandObjectState and a calculator that can be used

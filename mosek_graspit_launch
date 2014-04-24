@@ -5,10 +5,9 @@ export LD_LIBRARY_PATH=$PWD/mosek_6/tools/platform/linux32x86/bin:$PWD/mosek_6/t
 export CGDB_MODEL_ROOT=$GRASPIT/cgdb
 export GRASPIT_WAIT_DISPLAY_LEN=0
 export GRASPIT_QUIT_ON_TASK_COMPLETE=NO #YES|anything else
-export DISPLAY=picard.cs.columbia.edu:0.0
+export DISPLAY=darcy.cs.columbia.edu:1.0
 export MOSEKLM_LICENSE_FILE=/home/jweisz/graspit_handop/mosek_lib/
 
-./bin/graspit 
-#test_planner_task PLAN_EGPLANNER_SIMAN use_console
+./bin/graspit test_planner_task PLAN_EGPLANNER_SIMAN use_console
 
 echo $?

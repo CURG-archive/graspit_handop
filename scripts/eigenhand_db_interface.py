@@ -229,11 +229,20 @@ class EGHandDBaseInterface(object):
         self.insert_gen_0()
 
     def state_backup(self, base_directory = '/data', experiment_name="default"):
+        def touch(fname, times=None):
+            with open(fname, 'a'):
+                os.utime(fname, times)
+                os.chmod(fname,0777)
+                
         dirname = "%s/%s"%(base_directory,experiment_name)
+        
         if not os.path.exists(dirname):
             os.makedirs(dirname)
             os.chmod(dirname,0777)
 
+        touch(dirname + '/config')
+        touch(dirname + '/generation')
+        
         self.cursor.execute("COPY %s TO '%s/%s'"%("config", dirname, "config"))
         self.cursor.execute("COPY %s TO '%s/%s'"%("generation", dirname, "generation"))
         self.connection.commit()
@@ -588,6 +597,7 @@ class EGHandDBaseInterface(object):
             set_str += "', "
 
         command_str = "UPDATE config SET %s;"%set_str[:-2]
+	print command_str
         self.cursor.execute(command_str)
         self.connection.commit()
 

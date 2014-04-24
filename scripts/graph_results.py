@@ -10,20 +10,25 @@ import numpy
 import os
 import pdb
 
-def output_results(experiment_name):
+def load_results(experiment_name):
     interface = eigenhand_db_interface.EGHandDBaseInterface('eigenhanddb_view')
     interface.load_for_analysis(experiment_name=experiment_name)
     config = interface.load_config()
     task_model_list = task_models.model_set(config['task_models'])
-    em = ExperimentManager(config,task_model_list,interface=interface)
+    em = experiment_manager.ExperimentManager(config,task_model_list,interface=interface)
+    print "%s loaded into eigenhanddb_view"%experiment_name
+    return em
+
+def output_results(experiment_name):
+    em = load_results(experiment_name)
 
     def add_to_zip(mat, filename, zf):
         numpy.savetxt('/tmp/' + filename,mat,delimiter=',')
         zf.write('/tmp/' + filename, filename)
         os.remove('/tmp/' + filename)
-    experiment_name = em.experiment_name
+    experiment_name = em.config['name']
         
-    self.em.gm = em.initialize_generation_manager()
+    em.gm = em.initialize_generation_manager()
 
     #Open a zip file to put results in
     zip_file_name = '/var/www/eigenhand_project/' + experiment_name + '_csv.zip'
@@ -32,6 +37,8 @@ def output_results(experiment_name):
     #Create data structures for storing results
     e_list = dict()
     total_score_array = None
+
+    print "Starting score calculation"
 
     #Iterate over generations calculating the scores
     for gen in xrange(em.interface.get_max_hand_gen() + 1):
@@ -91,25 +98,26 @@ def output_frontend_report(em, description = '', score_array = None):
     
     template = open('/var/www/eigenhand_project/experiment_results_template.html','r')
     template_string = template.read()
-    output_string = template_string%(em.experiment_name, description,
-                                     em.experiment_name,
-                                     em.experiment_name,
-                                     em.experiment_name,
-                                     em.experiment_name,
-                                     em.experiment_name)
-    output_file = open('/var/www/eigenhand_project/%s_results.html'%(em.experiment_name),'w')
+    experiment_name = em.config['name']
+    output_string = template_string%(experiment_name, description,
+                                     experiment_name,
+                                     experiment_name,
+                                     experiment_name,
+                                     experiment_name,
+                                     experiment_name)
+    output_file = open('/var/www/eigenhand_project/%s_results.html'%(experiment_name),'w')
     output_file.write(output_string)
     template.close()
     output_file.close()
     directory_file_writer = open('/var/www/eigenhand_project/experiment_results.html','a')
     directory_file_reader = open('/var/www/eigenhand_project/experiment_results.html','r')
-    new_results_string = '<a href=%s_results.html> %s </a><p>\n'%(em.experiment_name, em.experiment_name)
+    new_results_string = '<a href=%s_results.html> %s </a><p>\n'%(experiment_name, experiment_name)
     if directory_file_reader.read().find(new_results_string) < 0:
         directory_file_writer.write(new_results_string)
     directory_file_writer.close()
     directory_file_reader.close()
     if score_array is not None:
-        examine_database.plot_elist_vs_gen(score_array,'/var/www/eigenhand_project/%s'%(em.experiment_name))
+        examine_database.plot_elist_vs_gen(score_array,'/var/www/eigenhand_project/%s'%(experiment_name))
                             
         
         
