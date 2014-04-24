@@ -151,7 +151,7 @@ void TaskDispatcher::start()
 		return;
 	}
 
-    string dirname = "/home/jweisz/graspit_handop/servers/" + QHostInfo::localHostName().toStdString() +"/tasks/";
+    string dirname = "/home/jweisz/html/graspit_handop/servers/" + QHostInfo::localHostName().toStdString() +"/tasks/";
     QDir logdir(dirname.c_str());
     if(!logdir.exists())
         logdir.mkpath(".");
