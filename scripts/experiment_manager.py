@@ -94,7 +94,7 @@ class ExperimentManager(object):
         self.interface.reset_database()
         print "Working database reset"
 
-        self.interface.update_config(config) 
+        self.interface.update_config(self.config) 
         print "Pushed configuration to database"
 
         self.interface.prepare_gen_0()

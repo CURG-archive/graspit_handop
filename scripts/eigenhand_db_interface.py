@@ -187,8 +187,9 @@ class EGHandDBaseInterface(object):
         Assumes that the starting set of hands is all hands with an id below 313.
         """
         self.clear_tables(schema=schema)
+        self.update_config({'name':'<NONE>','ga_iterations':-1,'atr_iterations':-1,'task_time':1,'task_type_id':4,'trials_per_task':5,'task_models':['aerosol']})
 
-    def clear_tables(self,tables=['config','generation','task','grasp','hand','finger','server','job','log'],schema="public"):
+    def clear_tables(self,tables=['generation','task','grasp','hand','finger','server','job','log'],schema="public"):
         for table in tables:
             self.cursor.execute("delete from %s.%s;"%(schema,table))
             self.connection.commit()
@@ -597,7 +598,6 @@ class EGHandDBaseInterface(object):
             set_str += "', "
 
         command_str = "UPDATE config SET %s;"%set_str[:-2]
-	print command_str
         self.cursor.execute(command_str)
         self.connection.commit()
 
