@@ -97,7 +97,7 @@ class ExperimentManager(object):
         self.interface.update_config(self.config) 
         print "Pushed configuration to database"
 
-        self.interface.prepare_gen_0()
+        self.interface.insert_gen_0()
         print "Gen 0 fingers, hands and grasps inserted"
 
         #initialize new generation manager to configure the database to start running.

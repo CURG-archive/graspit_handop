@@ -225,10 +225,6 @@ class EGHandDBaseInterface(object):
         self.cursor.execute("DROP DATABASE IF EXISTS  %s;"%(db_name))
         self.connection.commit()
 
-    def prepare_gen_0(self):
-        self.reset_database()
-        self.insert_gen_0()
-
     def state_backup(self, base_directory = '/data', experiment_name="default"):
         def touch(fname, times=None):
             with open(fname, 'a'):
@@ -589,6 +585,7 @@ class EGHandDBaseInterface(object):
 
     def update_config(self,config):
         set_str = ""
+        print config
         for config_key, config_var in config.iteritems():
             set_str += config_key + "='"
             if type(config_var) == list:
