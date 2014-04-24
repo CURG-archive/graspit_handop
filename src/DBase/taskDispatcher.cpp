@@ -149,7 +149,15 @@ void TaskDispatcher::start()
 		exit(NO_JOBS);
 		return;
 	}
-	string filename = "/home/jweisz/task_status/" + QHostInfo::localHostName().toStdString() +"task_id_" + QString::number(rec.taskId).toStdString();
+
+    string dirname = "/home/jweisz/graspit_handop/servers/" + QHostInfo::localHostName().toStdString() +"/tasks/";
+    QDir * logdir = dir(dirname);
+    if(logdir->exists())
+        logdir->mkpath();
+
+    assert(logdir->exists());
+
+    string filename = dirname + "id_" + QString::number(rec.taskId).toStdString();
 	freopen (filename.c_str(), "w",stdout);
 	freopen (filename.c_str(), "a",stderr);
 	std::cout <<" Process id:" <<  getpid() << "\n";
