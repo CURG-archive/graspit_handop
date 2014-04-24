@@ -37,7 +37,6 @@ class ExperimentManager(object):
         self.gm = []
         self.rd = []       #self.score_array = numpy.array([4,0])
         
-        self.interface.update_config(config) 
 
     def initialize_generation_manager(self):
         """
@@ -94,6 +93,10 @@ class ExperimentManager(object):
     def prepare_experiment(self):
         self.interface.reset_database()
         print "Working database reset"
+
+        self.interface.update_config(config) 
+        print "Pushed configuration to database"
+
         self.interface.prepare_gen_0()
         print "Gen 0 fingers, hands and grasps inserted"
 
