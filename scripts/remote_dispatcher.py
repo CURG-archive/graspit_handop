@@ -25,6 +25,9 @@ class RemoteServer(object):
         subprocess.Popen(args).wait()
         self.dead_count = self.dead_count + 1
 
+    def clear_server_status_files():
+        args = self.wrap_ssh_args(["yes","|","rm","-rf","/home/jweisz/html/graspit_handop/servers/*"])
+
     def kill_client(self):
         args = self.wrap_ssh_args(["killall", "python", "graspit"])
         subprocess.Popen(args).wait()
@@ -104,7 +107,7 @@ class RemoteDispatcher(object):
             time.sleep(20)
         finished_string = 'Finished running generation %i. time taken %i num incompletes %i. time %s \n'%(generation, time.time() - t, self.interface.get_num_incompletes(), time.strftime('%c'))
         print finished_string
-        
+        self.server_dict.values()[0].clear_server_status_files()
         self.file.seek(0)
         self.file.write(finished_string)
         self.file.truncate()

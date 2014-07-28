@@ -43,5 +43,5 @@ def model_set(keys):
     return dict((k, models[k]) for k in safe_keys)
        
 
-small_keys = ['hammer','drill','aerosol','doorknob','laptop']
+small_keys = ['hammer','drill','aerosol','doorknob','coffeemug']
 tiny_keys = ['drill','aerosol']

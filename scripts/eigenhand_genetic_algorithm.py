@@ -309,6 +309,37 @@ def GA_mutate(hand, rel_stdev):
     new_hand.parents = [hand.hand_id]
     return new_hand
 
+def GA_get_elite_hands(grasp_list, hand_list, eval_functor):
+    new_hand_list = list()
+
+    #Organize the grasp list
+    grasp_dict = grasp_sorting_utils.get_grasps_by_hand(grasp_list)
+
+    #organize the hand list into a dictionary sorted by hand_id keys.
+    hand_dict = dict()
+    for h in hand_list:
+        hand_dict[h.hand_id] = h
+
+    energy_list = list()
+
+    #Evaluate the score of each hand using the grasp_dict. Lower scores are better.
+    key_list = []
+    for k in hand_dict:
+        try:
+            energy_list.append(eval_functor(grasp_dict[k],hand_dict[k]))
+            key_list.append(k)
+        except:
+            #If the evaluation fails, assign an arbitrarily high score.
+            print k
+            energy_list.append(1e10)
+
+    #Now we get the best hands by lowest energy
+    import pdb
+    pdb.set_trace()
+    sorted_key_indices = [hand_dict.keys()[i] for i in argsort(energy_list)]
+    elite_list_len = 4
+    elite_hand_list = [hand_dict[k] for k in sorted_key_indices[:elite_list_len]]
+    return elite_hand_list, energy_list
 
 def GA_generation(grasp_list, hand_list, eval_functor, rel_stdev):
     """
@@ -336,6 +367,7 @@ def GA_generation(grasp_list, hand_list, eval_functor, rel_stdev):
     #Evaluate the score of each hand using the grasp_dict. Lower scores are better.
     for k in hand_dict:
         try:
+            hand_dict[k].energy_list = list()
             energy_list.append(eval_functor(grasp_dict[k],hand_dict[k]))
         except:
             #If the evaluation fails, assign an arbitrarily high score.
@@ -379,4 +411,6 @@ def GA_generation(grasp_list, hand_list, eval_functor, rel_stdev):
         new_hand_list.append(hand)
 
     return new_hand_list
+
+
 

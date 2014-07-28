@@ -90,7 +90,7 @@ def plot_elist_vs_gen(score_array, base_filename = None):
     rescale_view()
     pylab.savefig(base_filename + '_actuator_complexity.png')
     pylab.clf()
-    final_score = score_array[:,4]* (score_array[:,3]*.4 + score_array[:,2] * .6 * score_array[:,5])
+    final_score = score_array[:,2]* (score_array[:,3]*.4 + score_array[:,4] * .6) * score_array[:,5]
     pylab.plot(score_array[:,0],final_score , '.')
     plot_poly_fit(score_array[:,0],final_score)
     rescale_view()

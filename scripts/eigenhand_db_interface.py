@@ -244,9 +244,42 @@ class EGHandDBaseInterface(object):
         self.cursor.execute("COPY %s TO '%s/%s'"%("generation", dirname, "generation"))
         self.connection.commit()
 
+    def table_restore(self, base_directory = '/data', table_name="hand",
+                      experiment_name="default",schema="public", table_filename="hand", generation = 0):
+        
+        dirname = "%s/%s/generation_%i"%(base_directory, experiment_name, generation)
+
+        try:
+            command_str = "DROP TABLE IF EXISTS %s.temp_%s;"%(schema, table_name)
+            command_str = "SELECT * into %s.temp_%s from %s.%s LIMIT 0"%(schema, table_name,
+                                                                         schema, table_name)
+            self.cursor.execute(command_str)        
+            self.connection.commit()
+        except:
+            print command_str
+            self.connection.commit()
+            
+        
+        self.cursor.execute("COPY %s.temp_%s FROM '%s/%s';"%(schema,table_name, dirname, table_filename))
+        self.cursor.execute("CREATE OR REPLACE RULE ignore_duplicate_inserts AS "
+                             + "ON INSERT TO %s.%s "%(schema, table_name)
+                             + "WHERE (EXISTS ( SELECT %s.%s_id "%(table_name, table_name)
+                             + "FROM %s "%(table_name)
+                             + "WHERE %s.%s_id = new.%s_id)) DO INSTEAD NOTHING;"%(table_name, table_name, table_name))
+                            
+        self.cursor.execute("INSERT INTO %s.%s SELECT * FROM %s.temp_%s;"%(schema, table_name, schema, table_name))
+        self.connection.commit()
+        self.cursor.execute("DROP RULE ignore_duplicate_inserts ON %s.%s;"%(schema, table_name))
+        self.cursor.commit()
+                                                                                           
+        self.cursor.execute("DROP TABLE IF EXISTS %s.temp_%s;"%(schema, table_name))
+        self.connection.commit()
+              
+
     def state_restore(self, base_directory = '/data', experiment_name="default",schema="public"):
         dirname = "%s/%s"%(base_directory,experiment_name)
 
+        self.clear_tables(schema=schema,tables=['config','generation'])
         self.cursor.execute("COPY %s.%s FROM '%s/%s'"%(schema,"config", dirname, "config"))
         self.cursor.execute("COPY %s.%s FROM '%s/%s'"%(schema,"generation", dirname, "generation"))
         self.connection.commit()
@@ -276,8 +309,16 @@ class EGHandDBaseInterface(object):
         @param filename_dict - Load data from filenames.
         """
         for table in tables:
+            """ignore duplicate finger_ids and hand_ids"""
+            #self.cursor.execute('CREATE RULE "%s_on_duplicate_ignore" AS ON INSERT TO "%s" WHERE EXISTS(SELECT 1 FROM %s WHERE %s_id=NEW.%s_id) DO INSTEAD NOTHING;'%('hand', 'hand', 'hand', 'hand','hand'))
+            #self.cursor.execute('CREATE RULE "%s_on_duplicate_ignore" AS ON INSERT TO "%s" WHERE EXISTS(SELECT 1 FROM %s WHERE %s_id=NEW.%s_id) DO INSTEAD NOTHING;'%('finger','finger','finger','finger','finger'))
+
             filename = "%s/%s/generation_%s/%s"%(base_directory,experiment_name,generation,table)
-            self.cursor.execute("COPY %s.%s FROM '%s'"%(schema,table, filename))
+            command_str = "COPY %s.%s FROM '%s'"%(schema,table, filename)
+            print command_str
+            self.cursor.execute(command_str)
+            #self.cursor.execute('DROP RULE "%s_on_duplicate_ignore" ON "%s";'%("hand"))
+            #self.cursor.execute('DROP RULE "%s_on_duplicate_ignore" ON "%s";'%("finger"))
             self.connection.commit()
         return
 
@@ -585,7 +626,6 @@ class EGHandDBaseInterface(object):
 
     def update_config(self,config):
         set_str = ""
-        print config
         for config_key, config_var in config.iteritems():
             set_str += config_key + "='"
             if type(config_var) == list:

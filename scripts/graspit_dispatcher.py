@@ -216,7 +216,7 @@ class LocalJob(object):
 
         self.log_file = []
         if job_lid > 0:
-            self.log_file = open('/home/jweisz/html/graspit_handop/%s/%s_jobs/%s'%(self.dispatcher.server_name,self.dispatcher.server_pid,self.job_lid), "a+")
+            self.log_file = open('/home/jweisz/html/graspit_handop/servers/%s/%s_jobs/%s'%(self.dispatcher.server_name,self.dispatcher.server_pid,self.job_lid), "a+")
         else:
             self.log_file = open("/dev/null","rw")
 

@@ -8,7 +8,14 @@ import eigenhand_genetic_algorithm
 import task_models, server_list
 import examine_database
 
+class GenType (object):
+        ATR_GENERATION = 1
+        GA_GENERATION = 2
+        REPLICATE_GENERATION = 3
+
 class ExperimentManager(object):
+    
+        
     def __init__(self, config, task_model_list,
                  eval_functor = ate.weighted_threshold_ATE_hand,
                  server_dict = server_list.clic_lab_dict,
@@ -119,7 +126,8 @@ class ExperimentManager(object):
         """
 
         #Run through a bunch of iterations
-        generations = ([1]*self.config['atr_iterations'] + [2])*self.config['ga_iterations']
+        generations = ([GenType.ATR_GENERATION]*self.config['atr_iterations'] + [GenType.GA_GENERATION])*self.config['ga_iterations']
+        #generations = [GenType.GA_GENERATION, GenType.REPLICATE_GENERATION]*self.config['ga_iterations']
         print "%s generations: {%s}"%(len(generations),', '.join(str(generation) for generation in generations))
 
         #Start it up
@@ -128,20 +136,33 @@ class ExperimentManager(object):
         print "Generation %i complete"%self.gm.generation
 
         for generation,gen_type in enumerate(generations,1):
+            new_hand_list = []
             #Get the resulting grasps for the latest generation of hands
             grasp_list = self.gm.get_all_grasps()
             #self.output_current_status()
 
             #Every num_atr_iters+1th iteration is a genetic swap
-            if gen_type == 1:
+            if gen_type == GenType.ATR_GENERATION:
                 #Run atr on the existing hand for the latest generation of grasps
                 new_hand_list = atr.ATR_generation(grasp_list, self.gm.hands)
                 print "New hands generated through ATR on the results of generation %i"%self.gm.generation
-            elif gen_type == 2:
+            elif gen_type == GenType.GA_GENERATION:
                 #Generate new hands based on these grasps, scaling the variance of the mutations down linearly as the
                 #generations progress.
                 new_hand_list = eigenhand_genetic_algorithm.GA_generation(grasp_list, self.gm.hands, self.eval_functor, .5-.4/(self.config['ga_iterations']*generation/(1+self.config['atr_iterations'])))
                 print "New hands generated through genetic algorithm on the results of generation %i"%self.gm.generation
+
+            elif gen_type == GenType.REPLICATE_GENERATION:
+                self.gm.load_hands()
+                for hand in self.gm.hands:
+                    if not generation in hand.generation:
+                        hand.generation.append(generation)
+                    new_hand_list.append(hand)
+                
+                    
+                
+
+            
 
             #Put the new hands in to the database.
             eigenhand_db_tools.insert_unique_hand_list(new_hand_list, self.interface)
